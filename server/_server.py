@@ -149,7 +149,11 @@ def login(user_id: str, user_pw: str):
             )
 
         # 인증 성공
-        return {"message": "로그인 성공", "user_id": db_user['USER_ID']}
+        return {"message": "로그인 성공", 
+                "NICKNAME": db_user['NICKNAME'],
+                "USER_CHARACTER": db_user['USER_CHARACTER'],
+                "LV": db_user['LV'],
+                "INTRODUCE": db_user['INTRODUCE']}
 
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")

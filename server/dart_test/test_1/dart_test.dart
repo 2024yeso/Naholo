@@ -44,12 +44,14 @@ Future<void> testAddUser() async {
 
 Future<void> testLoginSuccess() async {
   // 로그인 성공 테스트
+  var res;
   final response = await http.get(
     Uri.parse('$baseUrl/login/?user_id=test_user&user_pw=password123'),
   );
 
   if (response.statusCode == 200) {
-    print("Login Success Response: ${utf8.decode(response.bodyBytes)}");
+    res = jsonDecode(utf8.decode(response.bodyBytes));
+    print("Login Success Response: ${res["NICKNAME"]}, ${res["USER_CHARACTER"]}, ${res["LV"]}, ${res["INTRODUCE"]}");
   } else {
     print("Login Success Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
   }
@@ -82,18 +84,20 @@ Future<void> testLoginFailureNonexistentUser() async {
 }
 
 void main() async {
+/*
   print("=== Testing ID Check ===");
   await checkId();
 
   print("\n=== Testing User Registration ===");
   await testAddUser();
-
+*/
   print("\n=== Testing Login Success ===");
   await testLoginSuccess();
-
+/*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
 
   print("\n=== Testing Login Failure (Nonexistent User) ===");
   await testLoginFailureNonexistentUser();
+*/
 }
