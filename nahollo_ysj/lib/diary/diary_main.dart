@@ -17,33 +17,49 @@ class _DiaryMainState extends State<DiaryMain> {
   // 현재 선택된 버튼을 관리하기 위한 변수
   int _selectedIndex = 0;
 
+  // 샘플 데이터
+  List<DiaryPostList> allBlogPosts = [
+    DiaryPostList(
+      author: '시금치',
+      createdAt: DateTime.now().subtract(Duration(hours: 3)),
+      title: '드디어 레고 조립을 완료하였습니다.',
+      content: '저의 취미인 레고 조립.. 그동안 시간이 없어서 많이 못했었는데요! 약 반년 걸린...',
+      hot: 10,
+      subscribe: false,
+    ),
+    DiaryPostList(
+      author: '바나나',
+      createdAt: DateTime.now().subtract(Duration(days: 2)),
+      title: '제목',
+      content: '미리보기 글...',
+      hot: 9,
+      subscribe: true,
+    ),
+    DiaryPostList(
+      author: '샐러드',
+      createdAt: DateTime.now().subtract(Duration(days: 3)),
+      title: '자취생 꿀팁 모음',
+      content: '안녕하세요! 오늘은 여러분들을 위해 혼놀 꿀팁을 가져와봤습니다! 요즘 같은...',
+      hot: 10,
+      subscribe: true,
+    ),
+  ];
+
+  // 화면에 보여질 포스트 리스트
+  List<DiaryPostList> blogPosts = [];
+
   // 버튼 라벨
   final List<String> _buttonLabels = ['인기순', '최신순', '구독'];
 
   @override
-  Widget build(BuildContext context) {
-    // 샘플 데이터
-    final List<DiaryPostList> blogPosts = [
-      DiaryPostList(
-        author: '시금치',
-        createdAt: DateTime.now().subtract(Duration(hours: 3)),
-        title: '드디어 레고 조립을 완료하였습니다.',
-        content: '저의 취미인 레고 조립.. 그동안 시간이 없어서 많이 못했었는데요! 약 반년 걸린...',
-      ),
-      DiaryPostList(
-        author: '바나나',
-        createdAt: DateTime.now().subtract(Duration(days: 2)),
-        title: '제목',
-        content: '미리보기 글...',
-      ),
-      DiaryPostList(
-        author: '샐러드',
-        createdAt: DateTime.now().subtract(Duration(days: 3)),
-        title: '자취생 꿀팁 모음',
-        content: '안녕하세요! 오늘은 여러분들을 위해 혼놀 꿀팁을 가져와봤습니다! 요즘 같은...',
-      ),
-    ];
+  void initState() {
+    super.initState();
+    blogPosts = List.from(allBlogPosts); // 기본 설정인 인기순에 맞춰 모든 포스트를 보여주기 위해 blogPosts에 모든 원본 데이터 복사
+    blogPosts.sort((a, b) => b.hot.compareTo(a.hot)); // 인기순 정렬
+  } // 만약 설정으로 기본 정렬을 고를 수 있게 할 경우 이곳을 수정
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -51,11 +67,12 @@ class _DiaryMainState extends State<DiaryMain> {
           AppBar(
             backgroundColor: Colors.white,
             title: Center(
-              child: Text('나홀로일지', style: TextStyle(
-                fontSize: SizeScaler.scaleSize(context, 8.0),
-                fontWeight: FontWeight.bold,
-                color: Colors.black,)
-            ),
+              child: Text('나홀로일지',
+                  style: TextStyle(
+                    fontSize: SizeScaler.scaleSize(context, 8.0),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  )),
             ),
             actions: [
               Row(
@@ -76,7 +93,8 @@ class _DiaryMainState extends State<DiaryMain> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DiaryUser(author: '유저이름'), // '유저이름'은 실제 유저 이름으로 변경해야 함
+                          builder: (context) => DiaryUser(
+                              author: '유저이름'), // '유저이름'은 실제 유저 이름으로 변경해야 함
                         ),
                       );
                     },
@@ -86,7 +104,8 @@ class _DiaryMainState extends State<DiaryMain> {
                       child: Icon(Icons.person, color: Colors.white),
                     ),
                   ),
-                  SizedBox(width: SizeScaler.scaleSize(context, 2.0)), // 버튼 사이의 여백
+                  SizedBox(
+                      width: SizeScaler.scaleSize(context, 2.0)), // 버튼 사이의 여백
                 ],
               ),
             ],
@@ -105,23 +124,49 @@ class _DiaryMainState extends State<DiaryMain> {
                   onTap: () {
                     setState(() {
                       _selectedIndex = index; // 선택된 버튼의 인덱스 업데이트
+                      if (_selectedIndex == 0) {
+                        // 인기순: 'hot' 값으로 내림차순 정렬
+                        blogPosts = List.from(allBlogPosts);
+                        blogPosts.sort((a, b) => b.hot.compareTo(a.hot));
+                      } else if (_selectedIndex == 1) {
+                        // 최신순: 'createdAt' 값으로 내림차순 정렬
+                        blogPosts = List.from(allBlogPosts);
+                        blogPosts
+                            .sort((a, b) => b.createdAt.compareTo(a.createdAt));
+                      } else if (_selectedIndex == 2) {
+                        blogPosts = allBlogPosts
+                            .where((post) => post.subscribe)
+                            .toList();
+                        blogPosts.sort((a, b) => b.createdAt
+                            .compareTo(a.createdAt)); // 구독한 포스트들을 최신순으로 정렬
+                      }
                     });
                   },
                   child: Container(
                     width: SizeScaler.scaleSize(context, 29.0), // 버튼의 가로 길이 설정
                     height: SizeScaler.scaleSize(context, 12.0), // 버튼의 세로 길이 설정
-                    margin: EdgeInsets.only(right: SizeScaler.scaleSize(context, 2.0)), // 버튼 사이 간격 설정
-                    padding: EdgeInsets.symmetric(vertical: SizeScaler.scaleSize(context, 2.0), horizontal: SizeScaler.scaleSize(context, 4.0)), // 버튼 내부 패딩
+                    margin: EdgeInsets.only(
+                        right:
+                            SizeScaler.scaleSize(context, 2.0)), // 버튼 사이 간격 설정
+                    padding: EdgeInsets.symmetric(
+                        vertical: SizeScaler.scaleSize(context, 2.0),
+                        horizontal:
+                            SizeScaler.scaleSize(context, 4.0)), // 버튼 내부 패딩
                     decoration: BoxDecoration(
-                      color: _selectedIndex == index ? const Color(0xFFE7E7E7) : Colors.white, // 선택된 버튼 색상 : 선택되지 않은 버튼 색상
-                      border: Border.all(color: const Color(0xFF9C9C9C)), // 테두리 색상
-                      borderRadius: BorderRadius.circular(SizeScaler.scaleSize(context, 12.0)), // 모서리 둥글게
+                      color: _selectedIndex == index
+                          ? const Color(0xFFE7E7E7)
+                          : Colors.white, // 선택된 버튼 색상 : 선택되지 않은 버튼 색상
+                      border:
+                          Border.all(color: const Color(0xFF9C9C9C)), // 테두리 색상
+                      borderRadius: BorderRadius.circular(
+                          SizeScaler.scaleSize(context, 12.0)), // 모서리 둥글게
                     ),
                     child: Center(
                       child: Text(
                         _buttonLabels[index],
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 5.0), // 버튼 텍스트 폰트 크기 설정
+                          fontSize: SizeScaler.scaleSize(
+                              context, 5.0), // 버튼 텍스트 폰트 크기 설정
                           fontWeight: FontWeight.w400,
                           color: Colors.black,
                         ),
@@ -157,7 +202,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => DiaryUser(author: post.author), // DiaryUser로 이동
+                                    builder: (context) => DiaryUser(
+                                        author: post.author), // DiaryUser로 이동
                                   ),
                                 );
                               },
@@ -166,20 +212,27 @@ class _DiaryMainState extends State<DiaryMain> {
                                   CircleAvatar(
                                     radius: SizeScaler.scaleSize(context, 10.0),
                                     backgroundColor: Colors.grey, // 회색 프로필 사진
-                                    child: Icon(Icons.person, color: Colors.white), // 기본 아이콘
+                                    child: Icon(Icons.person,
+                                        color: Colors.white), // 기본 아이콘
                                   ),
                                   SizedBox(width: 8.0),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        Text(post.author, style: TextStyle(
-                                          fontSize: SizeScaler.scaleSize(context, 8.0), 
-                                          fontWeight: FontWeight.w600)),
-                                        Text(_formatDateTime(post.createdAt), style: TextStyle(
-                                          fontSize: SizeScaler.scaleSize(context, 6.0), 
-                                          fontWeight: FontWeight.w300,
-                                          color: const Color(0xFF7E7E7E))),
+                                        Text(post.author,
+                                            style: TextStyle(
+                                                fontSize: SizeScaler.scaleSize(
+                                                    context, 8.0),
+                                                fontWeight: FontWeight.w600)),
+                                        Text(_formatDateTime(post.createdAt),
+                                            style: TextStyle(
+                                                fontSize: SizeScaler.scaleSize(
+                                                    context, 6.0),
+                                                fontWeight: FontWeight.w300,
+                                                color:
+                                                    const Color(0xFF7E7E7E))),
                                       ],
                                     ),
                                   ),
@@ -204,13 +257,17 @@ class _DiaryMainState extends State<DiaryMain> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(post.title, style: TextStyle(
-                                    fontSize: SizeScaler.scaleSize(context, 8.0))),
+                                  Text(post.title,
+                                      style: TextStyle(
+                                          fontSize: SizeScaler.scaleSize(
+                                              context, 8.0))),
                                   SizedBox(height: 12.0),
-                                  Text(post.getContentPreview(50), style: TextStyle(
-                                    fontSize: SizeScaler.scaleSize(context, 6.0),
-                                    fontWeight: FontWeight.w200,
-                                    color: const Color(0xFF7E7E7E))),
+                                  Text(post.getContentPreview(50),
+                                      style: TextStyle(
+                                          fontSize: SizeScaler.scaleSize(
+                                              context, 6.0),
+                                          fontWeight: FontWeight.w200,
+                                          color: const Color(0xFF7E7E7E))),
                                 ],
                               ),
                             ),
@@ -220,14 +277,17 @@ class _DiaryMainState extends State<DiaryMain> {
                       SizedBox(width: 8.0),
                       // 오른쪽 칸 (사진)
                       Container(
-                        width: 120.0, // 사진의 가로 길이
-                        height: 120.0, // 사진의 세로 길이
+                        width: SizeScaler.scaleSize(context, 62.0), // 사진의 가로 길이
+                        height:
+                            SizeScaler.scaleSize(context, 64.0), // 사진의 세로 길이
                         decoration: BoxDecoration(
                           color: Colors.grey[300], // 회색 상자
-                          borderRadius: BorderRadius.circular(8.0), // 둥근 모서리
+                          borderRadius: BorderRadius.circular(
+                              SizeScaler.scaleSize(context, 4.0)), // 둥근 모서리
                         ),
                         child: Center(
-                          child: Icon(Icons.image, color: Colors.grey[700], size: 50.0), // 이미지 아이콘
+                          child: Icon(Icons.image,
+                              color: Colors.grey[700], size: 50.0), // 이미지 아이콘
                         ),
                       ),
                     ],
