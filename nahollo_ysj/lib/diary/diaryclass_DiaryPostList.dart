@@ -4,12 +4,16 @@ class DiaryPostList {
   final DateTime createdAt;
   final String title;
   final String content;
+  final int hot;
+  final bool subscribe;
 
   DiaryPostList({
     required this.author,
     required this.createdAt,
     required this.title,
     required this.content,
+    required this.hot,
+    required this.subscribe,
   });
 
   String getContentPreview(int length) {
