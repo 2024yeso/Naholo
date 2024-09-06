@@ -83,6 +83,22 @@ Future<void> testLoginFailureNonexistentUser() async {
   }
 }
 
+Future<void> my_page() async {
+  // 로그인 성공 테스트
+  var res;
+  final response = await http.get(
+    Uri.parse('$baseUrl/my_page/?user_id=test_user'),
+  );
+
+  if (response.statusCode == 200) {
+    res = jsonDecode(utf8.decode(response.bodyBytes));
+    print("Login Success Response: ${res}");
+  } else {
+    print("Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
+
+
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -91,8 +107,7 @@ void main() async {
   print("\n=== Testing User Registration ===");
   await testAddUser();
 */
-  print("\n=== Testing Login Success ===");
-  await testLoginSuccess();
+  await my_page();
 /*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
