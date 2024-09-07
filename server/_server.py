@@ -162,6 +162,141 @@ def login(user_id: str, user_pw: str):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 
+#리뷰 호출
+def call_review(user_id):
+    
+    query = """
+    SELECT 
+        w.WHERE_NAME,
+        w.WHERE_LOCATE,
+        wr.REVIEW_CONTENT,
+        wr.WHERE_RATE,
+        ri.IMAGE AS REVIEW_IMAGE
+    FROM 
+        WHERE_REVIEW wr
+    JOIN 
+        `Where` w ON wr.WHERE_ID = w.WHERE_ID
+    LEFT JOIN 
+        REVIEW_IMAGE ri ON wr.REVIEW_ID = ri.REVIEW_ID
+    WHERE 
+        wr.USER_ID = %s;
+    """
+    
+    conn = mysql.connector.connect(**db_config)
+    
+    review_conn = conn.cursor(dictionary=True)
+    review_conn.execute(query, (user_id,))
+    review_list = review_conn.fetchall()
+    
+    conn.close()
+    
+    return review_list
+        
+#좋아요 호출
+def call_wanted(user_id):
+    
+    query = """
+    SELECT 
+        w.WHERE_NAME,
+        w.WHERE_LOCATE,
+        w.WHERE_RATE,
+        wi.IMAGE AS PLACE_IMAGE
+    FROM 
+        LIKES l
+    JOIN 
+        `Where` w ON l.WHERE_ID = w.WHERE_ID
+    LEFT JOIN 
+        WHERE_IMAGE wi ON w.WHERE_ID = wi.WHERE_ID
+    WHERE 
+        l.USER_ID = %s;
+    """
+    
+    conn = mysql.connector.connect(**db_config)
+    wanted_conn = conn.cursor(dictionary=True)
+    wanted_conn.execute(query, (user_id,))
+    where_wanted = wanted_conn.fetchall()
+    wanted_conn.close()
+    
+    return where_wanted
+
+
+#마이페이지 엔드포인트
+@app.get("/my_page/")
+def login(user_id: str):
+    try:
+        conn = mysql.connector.connect(**db_config)
+
+        #가고싶어요 목록
+
+        r_review = call_review(user_id)
+        r_wanted = call_wanted(user_id)
+        """
+        if r_wanted == False:
+            r_wanted = None
+        if r_review == False:
+            r_review = None
+        """
+        return {"reviews":r_review, "wanted":r_wanted}
+    
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+@app.get("/naholo_where/")
+def login(user_id: str):
+    try:
+        conn = mysql.connector.connect(**db_config)
+
+        #가고싶어요 목록
+        likes = conn.cursor(dictionary=True)
+        likes.execute("SELECT WHERE_ID FROM LIKES WHERE USER_ID = %s", (user_id,))
+        where_likes = likes.fetchall()
+        likes.close()
+        
+        call_review(user_id)
+    
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+#리뷰 추가 엔드포인트
+@app.post("/add_review/")
+def add_review(user: User,):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+
+        insert_query = """
+        INSERT INTO Users (USER_ID, USER_PW, NAME, PHONE, BIRTH, GENDER, NICKNAME, USER_CHARACTER, LV, INTRODUCE, IMAGE)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_query, (
+            user.USER_ID, user.USER_PW, user.NAME, user.PHONE, user.BIRTH, user.GENDER,
+            user.NICKNAME, user.USER_CHARACTER, user.LV, user.INTRODUCE, user.IMAGE
+        ))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return {"message": "User added successfully"}
+    
+    #id 중복확인인데 혹시 몰라서 넣어놨음
+    except IntegrityError as err:
+        if err.errno == 1062:
+            raise HTTPException(status_code=400, detail="Duplicate entry for primary key")
+        else:
+            raise HTTPException(status_code=500, detail=f"Integrity error: {err}")
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 if __name__ == "__main__":
     import uvicorn

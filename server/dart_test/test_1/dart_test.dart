@@ -57,42 +57,16 @@ Future<void> testLoginSuccess() async {
   }
 }
 
-Future<void> testLoginFailureWrongPassword() async {
-  // 잘못된 비밀번호로 로그인 실패 테스트
-  final response = await http.get(
-    Uri.parse('$baseUrl/login/?user_id=test_user&user_pw=wrongpassword'),
-  );
-
-  if (response.statusCode == 401) {
-    print("Login Failure (Wrong Password) Response: ${utf8.decode(response.bodyBytes)}");
-  } else {
-    print("Unexpected Response: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
-  }
-}
-
-Future<void> testLoginFailureNonexistentUser() async {
-  // 존재하지 않는 사용자로 로그인 실패 테스트
-  final response = await http.get(
-    Uri.parse('$baseUrl/login/?user_id=nonexistent_user&user_pw=password123'),
-  );
-
-  if (response.statusCode == 401) {
-    print("Login Failure (Nonexistent User) Response: ${utf8.decode(response.bodyBytes)}");
-  } else {
-    print("Unexpected Response: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
-  }
-}
-
-Future<void> my_page() async {
-  // 로그인 성공 테스트
+Future<void> myPage() async {
+  // 마이페이지 테스트
   var res;
   final response = await http.get(
-    Uri.parse('$baseUrl/my_page/?user_id=test_user'),
+    Uri.parse('$baseUrl/my_page/?user_id=user1'),
   );
 
   if (response.statusCode == 200) {
     res = jsonDecode(utf8.decode(response.bodyBytes));
-    print("Login Success Response: ${res}");
+    print("reviews: ${res["reviews"]}, wanted: ${res["wanted"]}");
   } else {
     print("Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
   }
@@ -107,7 +81,7 @@ void main() async {
   print("\n=== Testing User Registration ===");
   await testAddUser();
 */
-  await my_page();
+  await myPage();
 /*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
