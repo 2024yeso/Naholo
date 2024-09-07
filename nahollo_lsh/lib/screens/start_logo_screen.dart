@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nahollo/screens/login_screen.dart';
+import 'package:nahollo/screens/login_screens/login_screen.dart';
 
 class StartLogoScreen extends StatefulWidget {
   const StartLogoScreen({super.key});
