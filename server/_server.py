@@ -183,7 +183,6 @@ def call_review(user_id):
     """
     
     conn = mysql.connector.connect(**db_config)
-    
     review_conn = conn.cursor(dictionary=True)
     review_conn.execute(query, (user_id,))
     review_list = review_conn.fetchall()
@@ -222,12 +221,8 @@ def call_wanted(user_id):
 
 #마이페이지 엔드포인트
 @app.get("/my_page/")
-def login(user_id: str):
+def my_page(user_id: str):
     try:
-        conn = mysql.connector.connect(**db_config)
-
-        #가고싶어요 목록
-
         r_review = call_review(user_id)
         r_wanted = call_wanted(user_id)
         """
@@ -243,6 +238,30 @@ def login(user_id: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+
+#팔로우페이지 엔드포인트
+@app.get("/follow_page/")
+def follow_page(user_id: str):
+    try:
+    
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT FOLLOWER FROM FOLLOW WHERE USER_ID = %s", (user_id,))
+        follow = cursor.fetchall()
+        cursor.execute("SELECT USER_ID FROM FOLLOW WHERE FOLLOWER = %s", (user_id,))
+        follower = cursor.fetchall()
+        conn.close()
+
+        return{"follow":follow,"follower":follower}
+        
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+
 
 @app.get("/naholo_where/")
 def login(user_id: str):

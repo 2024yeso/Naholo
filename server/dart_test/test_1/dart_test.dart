@@ -72,6 +72,20 @@ Future<void> myPage() async {
   }
 }
 
+Future<void> followPage() async {
+  // 팔로우페이지 테스트
+  var res;
+  final response = await http.get(
+    Uri.parse('$baseUrl/follow_page/?user_id=user1'),
+  );
+
+  if (response.statusCode == 200) {
+    res = jsonDecode(utf8.decode(response.bodyBytes));
+    print("follow: ${res["follower"]}, follower: ${res["follower"]}");
+  } else {
+    print("Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
 
 void main() async {
 /*
@@ -82,6 +96,7 @@ void main() async {
   await testAddUser();
 */
   await myPage();
+  await followPage();
 /*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
