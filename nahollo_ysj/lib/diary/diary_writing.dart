@@ -55,6 +55,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
                     builder: (context) => DiaryText(
                       postTitle: _titleController.text,
                       postContent: _contentController.text,
+                      author: '작성자', // 작성자를 고정값으로 설정
+                      createdAt: DateTime.now(), // 현재 시간을 작성 시간으로 설정
                     ),
                   ),
                 );
@@ -67,3 +69,5 @@ class _DiaryWritingState extends State<DiaryWriting> {
     );
   }
 }
+
+// 글 작성 후 서버로 전송하는 코드 추가

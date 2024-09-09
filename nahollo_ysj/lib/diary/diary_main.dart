@@ -250,6 +250,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                     builder: (context) => DiaryText(
                                       postTitle: post.title,
                                       postContent: post.content,
+                                      author: post.author,
+                                      createdAt: post.createdAt,
                                     ),
                                   ),
                                 );
