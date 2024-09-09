@@ -1,4 +1,3 @@
-// diary_comment.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
 
@@ -17,11 +16,45 @@ class DiaryComment extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Comments for $postTitle'),
-      ),
+      backgroundColor: Colors.white,
       body: Column(
         children: [
+          AppBar(
+            backgroundColor: Colors.white,
+            title: Center(
+              child: Text(
+                '댓글',
+                style: TextStyle(
+                  fontSize: SizeScaler.scaleSize(context, 8.0),
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+          Container(
+            color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
+            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              top: SizeScaler.scaleSize(context, 8.0),
+              left: SizeScaler.scaleSize(context, 12.0),
+              right: SizeScaler.scaleSize(context, 12.0),
+            ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                '댓글 ${comments.length}',
+                style: TextStyle(
+                  fontSize: SizeScaler.scaleSize(context, 6),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF7E7E7E),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 10, 10)), // 댓글수와 첫 댓글 사이의 여백
           Expanded(
             child: ListView.builder(
               itemCount: comments.length,
@@ -33,7 +66,7 @@ class DiaryComment extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16)),
             child: Row(
               children: [
                 Expanded(
@@ -44,6 +77,7 @@ class DiaryComment extends StatelessWidget {
                     ),
                   ),
                 ),
+                SizedBox(width: SizeScaler.scaleSize(context, 8)),
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () {
