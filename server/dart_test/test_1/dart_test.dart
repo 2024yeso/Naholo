@@ -87,6 +87,50 @@ Future<void> followPage() async {
   }
 }
 
+  
+Future<void> naholoWhere() async {
+  // 팔로우페이지 테스트
+  var res;
+  final response = await http.get(
+    Uri.parse('$baseUrl/naholo_where/?user_id=user1'),
+  );
+
+  if (response.statusCode == 200) {
+    res = jsonDecode(utf8.decode(response.bodyBytes));
+    print("follow: ${res["follower"]}, follower: ${res["follower"]}");
+  } else {
+    print("Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
+
+// Top-rated places 테스트 함수 추가
+Future<void> testTopRatedPlaces() async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/where/top-rated'),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    print("Top-rated Places by Type:");
+
+    // 'by_type' 데이터를 반복하여 출력
+    (data["data"]["by_type"] as Map<String, dynamic>).forEach((type, places) {
+      print("\nType: $type");
+      for (var place in places) {
+        print("Name: ${place['WHERE_NAME']}, Rate: ${place['WHERE_RATE']}, Image: ${place['IMAGE']}");
+      }
+    });
+
+    // 전체 상위 8개 데이터 출력
+    print("\nOverall Top 8 Places:");
+    for (var place in data["data"]["overall_top_8"]) {
+      print("Name: ${place['WHERE_NAME']}, Rate: ${place['WHERE_RATE']}, Image: ${place['IMAGE']}");
+    }
+
+  } else {
+    print("Failed to fetch top-rated places: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -97,6 +141,7 @@ void main() async {
 */
   await myPage();
   await followPage();
+  await testTopRatedPlaces();
 /*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();

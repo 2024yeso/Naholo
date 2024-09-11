@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel
 import mysql.connector
 from mysql.connector.errors import IntegrityError
@@ -16,7 +16,6 @@ db_config = {
 }
 
 # Pydantic 모델 정의
-
 class User(BaseModel):
     USER_ID: str
     USER_PW: str
@@ -72,6 +71,14 @@ class JournalImage(BaseModel):
     POST_ID: int
     IMAGE: str
 
+# Database 연결 함수
+def get_db():
+    conn = mysql.connector.connect(**db_config)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 # 사용자 검색 함수
 def get_user(db, username: str):
     cursor = db.cursor(dictionary=True)
@@ -80,7 +87,7 @@ def get_user(db, username: str):
     cursor.close()
     return user
 
-#중복확인 엔드포인트
+# 중복확인 엔드포인트
 @app.get("/check_id/")
 def check_id(user_id: str):
     try:
@@ -99,7 +106,7 @@ def check_id(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-#회원가입 엔드포인트
+# 회원가입 엔드포인트
 @app.post("/add_user/")
 def add_user(user: User):
     try:
@@ -120,7 +127,6 @@ def add_user(user: User):
         conn.close()
         return {"message": "User added successfully"}
     
-    #id 중복확인인데 혹시 몰라서 넣어놨음
     except IntegrityError as err:
         if err.errno == 1062:
             raise HTTPException(status_code=400, detail="Duplicate entry for primary key")
@@ -133,22 +139,20 @@ def add_user(user: User):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-#로그인 엔드포인트
+# 로그인 엔드포인트
 @app.get("/login/")
 def login(user_id: str, user_pw: str):
     try:
         conn = mysql.connector.connect(**db_config)
         db_user = get_user(conn, user_id)
         conn.close()
-        print(db_user)
-        # 사용자가 없거나 비밀번호가 일치하지 않는 경우
+
         if not db_user or db_user['USER_PW'] != user_pw:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="유저 정보가 없거나 비밀번호가 맞지 않습니다"
             )
 
-        # 인증 성공
         return {"message": "로그인 성공", 
                 "NICKNAME": db_user['NICKNAME'],
                 "USER_CHARACTER": db_user['USER_CHARACTER'],
@@ -161,10 +165,8 @@ def login(user_id: str, user_pw: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-
-#리뷰 호출
+# 리뷰 호출 함수
 def call_review(user_id):
-    
     query = """
     SELECT 
         w.WHERE_NAME,
@@ -186,14 +188,13 @@ def call_review(user_id):
     review_conn = conn.cursor(dictionary=True)
     review_conn.execute(query, (user_id,))
     review_list = review_conn.fetchall()
-    
+    review_conn.close()
     conn.close()
     
     return review_list
         
-#좋아요 호출
+# 좋아요 호출 함수
 def call_wanted(user_id):
-    
     query = """
     SELECT 
         w.WHERE_NAME,
@@ -215,23 +216,18 @@ def call_wanted(user_id):
     wanted_conn.execute(query, (user_id,))
     where_wanted = wanted_conn.fetchall()
     wanted_conn.close()
+    conn.close()
     
     return where_wanted
 
-
-#마이페이지 엔드포인트
+# 마이페이지 엔드포인트
 @app.get("/my_page/")
 def my_page(user_id: str):
     try:
         r_review = call_review(user_id)
         r_wanted = call_wanted(user_id)
-        """
-        if r_wanted == False:
-            r_wanted = None
-        if r_review == False:
-            r_review = None
-        """
-        return {"reviews":r_review, "wanted":r_wanted}
+
+        return {"reviews": r_review, "wanted": r_wanted}
     
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
@@ -239,76 +235,64 @@ def my_page(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-
-#팔로우페이지 엔드포인트
+# 팔로우페이지 엔드포인트
 @app.get("/follow_page/")
 def follow_page(user_id: str):
     try:
-    
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT FOLLOWER FROM FOLLOW WHERE USER_ID = %s", (user_id,))
         follow = cursor.fetchall()
         cursor.execute("SELECT USER_ID FROM FOLLOW WHERE FOLLOWER = %s", (user_id,))
         follower = cursor.fetchall()
-        conn.close()
-
-        return{"follow":follow,"follower":follower}
-        
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-
-
-@app.get("/naholo_where/")
-def login(user_id: str):
-    try:
-        conn = mysql.connector.connect(**db_config)
-
-        #가고싶어요 목록
-        likes = conn.cursor(dictionary=True)
-        likes.execute("SELECT WHERE_ID FROM LIKES WHERE USER_ID = %s", (user_id,))
-        where_likes = likes.fetchall()
-        likes.close()
-        
-        call_review(user_id)
-    
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-#리뷰 추가 엔드포인트
-@app.post("/add_review/")
-def add_review(user: User,):
-    try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-
-        insert_query = """
-        INSERT INTO Users (USER_ID, USER_PW, NAME, PHONE, BIRTH, GENDER, NICKNAME, USER_CHARACTER, LV, INTRODUCE, IMAGE)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (
-            user.USER_ID, user.USER_PW, user.NAME, user.PHONE, user.BIRTH, user.GENDER,
-            user.NICKNAME, user.USER_CHARACTER, user.LV, user.INTRODUCE, user.IMAGE
-        ))
-
-        conn.commit()
         cursor.close()
         conn.close()
-        return {"message": "User added successfully"}
-    
-    #id 중복확인인데 혹시 몰라서 넣어놨음
-    except IntegrityError as err:
-        if err.errno == 1062:
-            raise HTTPException(status_code=400, detail="Duplicate entry for primary key")
-        else:
-            raise HTTPException(status_code=500, detail=f"Integrity error: {err}")
+
+        return {"follow": follow, "follower": follower}
+        
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+# 각 type별로 상위 8개 항목과 이미지를 불러오는 엔드포인트
+@app.get("/where/top-rated")
+def get_top_rated_places(db = Depends(get_db)):
+    types = ["play", "eat", "sleep", "drink"]
+    results = {"by_type": {}, "overall_top_8": []}
+
+    try:
+        cursor = db.cursor(dictionary=True)
+        
+        # 각 타입별로 평점이 높은 순서대로 8개의 항목을 가져오는 쿼리
+        for place_type in types:
+            query = """
+            SELECT w.*, wi.IMAGE
+            FROM `Where` w
+            LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+            WHERE w.WHERE_TYPE = %s
+            ORDER BY w.WHERE_RATE DESC
+            LIMIT 8;
+            """
+            cursor.execute(query, (place_type,))
+            rows = cursor.fetchall()
+            results["by_type"][place_type] = rows
+
+        # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
+        overall_query = """
+        SELECT w.*, wi.IMAGE
+        FROM `Where` w
+        LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+        ORDER BY w.WHERE_RATE DESC
+        LIMIT 8;
+        """
+        cursor.execute(overall_query)
+        overall_top_8 = cursor.fetchall()
+        results["overall_top_8"] = overall_top_8
+
+        cursor.close()
+        return {"data": results}
 
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
