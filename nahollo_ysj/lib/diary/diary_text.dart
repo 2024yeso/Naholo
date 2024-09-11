@@ -25,10 +25,17 @@ class DiaryText extends StatelessWidget {
         children: [
           AppBar(
             backgroundColor: Colors.white,
+            toolbarHeight: SizeScaler.scaleSize(context, 25, 50), 
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
             title: Center(
               child: Text('일지 상세 보기',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8.0),
+                    fontSize: SizeScaler.scaleSize(context, 8, 16),
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   )),
@@ -38,24 +45,24 @@ class DiaryText extends StatelessWidget {
                 children: [
                   // 공유 버튼
                   IconButton(
-                    icon: const Icon(Icons.share),
+                    icon: Icon(Icons.share, size: SizeScaler.scaleSize(context, 10, 20)),
                     onPressed: () {
                       // 공유 기능 추가
                       // 이곳에 공유 기능 관련 코드를 추가해야 합니다.
                     },
                   ),
                   SizedBox(
-                      width: SizeScaler.scaleSize(context, 2.0)), // 버튼 사이의 여백
+                      width: SizeScaler.scaleSize(context, 2, 4)), // 버튼 사이의 여백
                 ],
               ),
             ],
           ),
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+            height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
           ),
           Padding(
-            padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16)),
+            padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16, 32)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,7 +70,7 @@ class DiaryText extends StatelessWidget {
                 Row(
                   children: [
                     CircleAvatar(
-                      radius: SizeScaler.scaleSize(context, 10.0),
+                      radius: SizeScaler.scaleSize(context, 10, 20),
                       backgroundColor: Colors.grey,
                       child: Icon(Icons.person, color: Colors.white),
                     ),
@@ -75,13 +82,13 @@ class DiaryText extends StatelessWidget {
                           Text(
                             author, // 작성자 이름
                             style: TextStyle(
-                                fontSize: SizeScaler.scaleSize(context, 8.0),
+                                fontSize: SizeScaler.scaleSize(context, 8, 16),
                                 fontWeight: FontWeight.w600),
                           ),
                           Text(
                             _formatDateTimeRelative(createdAt), // 작성 시간 (상대적)
                             style: TextStyle(
-                                fontSize: SizeScaler.scaleSize(context, 6.0),
+                                fontSize: SizeScaler.scaleSize(context, 6, 12),
                                 fontWeight: FontWeight.w300,
                                 color: const Color(0xFF7E7E7E)),
                           ),
@@ -90,43 +97,43 @@ class DiaryText extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: SizeScaler.scaleSize(context, 12, 24)),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       postTitle, // 글 제목
                       style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 10),
+                          fontSize: SizeScaler.scaleSize(context, 10, 20),
                           fontWeight: FontWeight.w400),
                     ),
-                    SizedBox(height: SizeScaler.scaleSize(context, 4)),
+                    SizedBox(height: SizeScaler.scaleSize(context, 2, 4)),
                     Text(
                       _formatDateTimeAbsolute(createdAt), // 작성 시간 (yyyy.MM.dd. HH:mm 형식)
                       style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 5),
+                          fontSize: SizeScaler.scaleSize(context, 5, 10),
                           fontWeight: FontWeight.w300,
                           color: const Color(0xFF7E7E7E)),
                     ),
                   ],
                 ),
-                SizedBox(height: SizeScaler.scaleSize(context, SizeScaler.scaleSize(context, 8, 8))),
+                SizedBox(height: SizeScaler.scaleSize(context, 10, 20)),
                 Row(
                   children: [
                     Expanded(
                       child: Container(
                          color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-                         height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+                         height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: SizeScaler.scaleSize(context, 20, 40)),
                 // 글 내용 표시
                 Text(
                   postContent,
                   style: TextStyle(
-                      fontSize: SizeScaler.scaleSize(context, 7),
+                      fontSize: SizeScaler.scaleSize(context, 7, 14),
                       fontWeight: FontWeight.w300),
                 ),
                 SizedBox(height: 20),

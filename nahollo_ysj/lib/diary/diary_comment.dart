@@ -21,40 +21,48 @@ class DiaryComment extends StatelessWidget {
         children: [
           AppBar(
             backgroundColor: Colors.white,
+            toolbarHeight: SizeScaler.scaleSize(context, 25, 50),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20),),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
             title: Center(
               child: Text(
                 '댓글',
                 style: TextStyle(
-                  fontSize: SizeScaler.scaleSize(context, 8.0),
+                  fontSize: SizeScaler.scaleSize(context, 8, 16),
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
             ),
+            actions: [SizedBox(width: SizeScaler.scaleSize(context, 20, 40))], // 화면 중앙 맞추기 위한 여백 추가
           ),
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+            height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
           ),
           Padding(
             padding: EdgeInsets.only(
-              top: SizeScaler.scaleSize(context, 8.0),
-              left: SizeScaler.scaleSize(context, 12.0),
-              right: SizeScaler.scaleSize(context, 12.0),
+              top: SizeScaler.scaleSize(context, 8, 16),
+              left: SizeScaler.scaleSize(context, 12, 24),
+              right: SizeScaler.scaleSize(context, 12, 24),
             ),
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 '댓글 ${comments.length}',
                 style: TextStyle(
-                  fontSize: SizeScaler.scaleSize(context, 6),
+                  fontSize: SizeScaler.scaleSize(context, 6, 12),
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF7E7E7E),
                 ),
               ),
             ),
           ),
-          SizedBox(height: SizeScaler.scaleSize(context, 10, 10)), // 댓글수와 첫 댓글 사이의 여백
+          SizedBox(height: SizeScaler.scaleSize(context, 5, 10)), // 댓글수와 첫 댓글 사이의 여백
           Expanded(
             child: ListView.builder(
               itemCount: comments.length,
@@ -72,7 +80,7 @@ class DiaryComment extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     decoration: InputDecoration(
-                      hintText: 'Add a comment...',
+                      hintText: '댓글을 작성해주세요',
                       border: OutlineInputBorder(),
                     ),
                   ),

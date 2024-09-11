@@ -66,10 +66,11 @@ class _DiaryMainState extends State<DiaryMain> {
         children: [
           AppBar(
             backgroundColor: Colors.white,
+            toolbarHeight: SizeScaler.scaleSize(context, 25, 50), 
             title: Center(
               child: Text('나홀로일지',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8.0),
+                    fontSize: SizeScaler.scaleSize(context, 8, 16),
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   )),
@@ -79,7 +80,7 @@ class _DiaryMainState extends State<DiaryMain> {
                 children: [
                   // 검색 페이지로 이동하는 버튼
                   IconButton(
-                    icon: const Icon(Icons.search),
+                    icon: Icon(Icons.search, size: SizeScaler.scaleSize(context, 14, 28)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -99,20 +100,20 @@ class _DiaryMainState extends State<DiaryMain> {
                       );
                     },
                     child: CircleAvatar(
-                      radius: SizeScaler.scaleSize(context, 7.25),
+                      radius: SizeScaler.scaleSize(context, 7.25, 14.5),
                       backgroundColor: Colors.grey,
-                      child: Icon(Icons.person, color: Colors.white),
+                      child: Icon(Icons.person, color: Colors.white, size: SizeScaler.scaleSize(context, 15, 30)),
                     ),
                   ),
                   SizedBox(
-                      width: SizeScaler.scaleSize(context, 2.0)), // 버튼 사이의 여백
+                      width: SizeScaler.scaleSize(context, 2, 4)), // 버튼 사이의 여백
                 ],
               ),
             ],
           ),
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+            height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
           ),
           // 정렬 버튼
           Container(
@@ -143,15 +144,15 @@ class _DiaryMainState extends State<DiaryMain> {
                     });
                   },
                   child: Container(
-                    width: SizeScaler.scaleSize(context, 29.0), // 버튼의 가로 길이 설정
-                    height: SizeScaler.scaleSize(context, 12.0), // 버튼의 세로 길이 설정
+                    width: SizeScaler.scaleSize(context, 29, 58), // 버튼의 가로 길이 설정
+                    height: SizeScaler.scaleSize(context, 12, 24), // 버튼의 세로 길이 설정
                     margin: EdgeInsets.only(
                         right:
-                            SizeScaler.scaleSize(context, 2.0)), // 버튼 사이 간격 설정
+                            SizeScaler.scaleSize(context, 2, 4)), // 버튼 사이 간격 설정
                     padding: EdgeInsets.symmetric(
-                        vertical: SizeScaler.scaleSize(context, 2.0),
+                        vertical: SizeScaler.scaleSize(context, 2, 4),
                         horizontal:
-                            SizeScaler.scaleSize(context, 4.0)), // 버튼 내부 패딩
+                            SizeScaler.scaleSize(context, 4, 8)), // 버튼 내부 패딩
                     decoration: BoxDecoration(
                       color: _selectedIndex == index
                           ? const Color(0xFFE7E7E7)
@@ -159,14 +160,13 @@ class _DiaryMainState extends State<DiaryMain> {
                       border:
                           Border.all(color: const Color(0xFF9C9C9C)), // 테두리 색상
                       borderRadius: BorderRadius.circular(
-                          SizeScaler.scaleSize(context, 12.0)), // 모서리 둥글게
+                          SizeScaler.scaleSize(context, 12, 24)), // 모서리 둥글게
                     ),
                     child: Center(
                       child: Text(
                         _buttonLabels[index],
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(
-                              context, 5.0), // 버튼 텍스트 폰트 크기 설정
+                          fontSize: SizeScaler.scaleSize(context, 5, 10), // 버튼 텍스트 폰트 크기 설정
                           fontWeight: FontWeight.w400,
                           color: Colors.black,
                         ),
@@ -182,7 +182,7 @@ class _DiaryMainState extends State<DiaryMain> {
               itemCount: blogPosts.length,
               separatorBuilder: (context, index) => Divider(
                 color: const Color(0xFFD9D9D9), // 회색 바
-                thickness: SizeScaler.scaleSize(context, 3.0), // 글 구분선 두께
+                thickness: SizeScaler.scaleSize(context, 3, 6), // 글 구분선 두께
               ),
               itemBuilder: (context, index) {
                 final post = blogPosts[index];
@@ -210,10 +210,9 @@ class _DiaryMainState extends State<DiaryMain> {
                               child: Row(
                                 children: [
                                   CircleAvatar(
-                                    radius: SizeScaler.scaleSize(context, 10.0),
+                                    radius: SizeScaler.scaleSize(context, 10, 20),
                                     backgroundColor: Colors.grey, // 회색 프로필 사진
-                                    child: Icon(Icons.person,
-                                        color: Colors.white), // 기본 아이콘
+                                    child: Icon(Icons.person, color: Colors.white, size: SizeScaler.scaleSize(context, 20, 40)), // 기본 아이콘
                                   ),
                                   SizedBox(width: 8.0),
                                   Expanded(
@@ -223,13 +222,11 @@ class _DiaryMainState extends State<DiaryMain> {
                                       children: [
                                         Text(post.author,
                                             style: TextStyle(
-                                                fontSize: SizeScaler.scaleSize(
-                                                    context, 8.0),
+                                                fontSize: SizeScaler.scaleSize(context, 8, 16),
                                                 fontWeight: FontWeight.w600)),
                                         Text(_formatDateTime(post.createdAt),
                                             style: TextStyle(
-                                                fontSize: SizeScaler.scaleSize(
-                                                    context, 6.0),
+                                                fontSize: SizeScaler.scaleSize(context, 6, 12),
                                                 fontWeight: FontWeight.w300,
                                                 color:
                                                     const Color(0xFF7E7E7E))),
@@ -261,13 +258,11 @@ class _DiaryMainState extends State<DiaryMain> {
                                 children: [
                                   Text(post.title,
                                       style: TextStyle(
-                                          fontSize: SizeScaler.scaleSize(
-                                              context, 8.0))),
+                                          fontSize: SizeScaler.scaleSize(context, 8, 16))),
                                   SizedBox(height: 12.0),
                                   Text(post.getContentPreview(50),
                                       style: TextStyle(
-                                          fontSize: SizeScaler.scaleSize(
-                                              context, 6.0),
+                                          fontSize: SizeScaler.scaleSize(context, 6, 12),
                                           fontWeight: FontWeight.w200,
                                           color: const Color(0xFF7E7E7E))),
                                 ],
@@ -279,17 +274,13 @@ class _DiaryMainState extends State<DiaryMain> {
                       SizedBox(width: 8.0),
                       // 오른쪽 칸 (사진)
                       Container(
-                        width: SizeScaler.scaleSize(context, 62.0), // 사진의 가로 길이
+                        width: SizeScaler.scaleSize(context, 62, 124), // 사진의 가로 길이
                         height:
-                            SizeScaler.scaleSize(context, 64.0), // 사진의 세로 길이
+                            SizeScaler.scaleSize(context, 64, 128), // 사진의 세로 길이
                         decoration: BoxDecoration(
                           color: Colors.grey[300], // 회색 상자
                           borderRadius: BorderRadius.circular(
-                              SizeScaler.scaleSize(context, 4.0)), // 둥근 모서리
-                        ),
-                        child: Center(
-                          child: Icon(Icons.image,
-                              color: Colors.grey[700], size: 50.0), // 이미지 아이콘
+                              SizeScaler.scaleSize(context, 4, 8)), // 둥근 모서리
                         ),
                       ),
                     ],
