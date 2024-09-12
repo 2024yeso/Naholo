@@ -122,6 +122,9 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                     if (value!.isEmpty) {
                       return '비밀번호를 입력하세요.';
                     }
+                    if (value.length <= 5) {
+                      return '비밀번호는 최소 6자 이상이어야합니다.';
+                    }
                     return null;
                   },
                 ),

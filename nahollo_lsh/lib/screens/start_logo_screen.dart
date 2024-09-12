@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class StartLogoScreen extends StatefulWidget {
   const StartLogoScreen({super.key});
@@ -27,17 +28,24 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.of(context).size.width;
     // final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2E235C),
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/nahollo_logo.png',
+            SvgPicture.asset(
+              'assets/images/nahollo_logo_purple.svg', // 로컬에 저장된 SVG 파일 경로
+              width: screenWidth * 0.5,
+              height: screenWidth * 0.5,
+            ),
+            SvgPicture.asset(
+              'assets/images/nahollo_name_purple.svg', // 로컬에 저장된 SVG 파일 경로
+              width: screenWidth * 0.5,
+              height: screenWidth * 0.15,
             )
           ],
         ),

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/typetest_logo_screen.dart';
-import 'package:nahollo/temporary_server.dart';
+import 'package:provider/provider.dart';
 
-class WelcomeScreen extends StatelessWidget {
-  final nickname = user_nickname;
-  WelcomeScreen({super.key});
+class LoginWelcomeScreen extends StatelessWidget {
+  const LoginWelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UserProvider>(context).user;
+
     final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: darkpurpleColor,
@@ -18,7 +20,7 @@ class WelcomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "$nickname 님",
+              "${user?.nickName} 님",
               style: const TextStyle(
                 color: lightpurpleColor,
                 fontSize: 30,
@@ -53,7 +55,24 @@ class WelcomeScreen extends StatelessWidget {
               child: const Text(
                 "나만의 캐릭터 만들기",
               ),
-            )
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: lightpurpleColor,
+                foregroundColor: darkpurpleColor,
+              ),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const TypetestLogoScreen(), // 버튼을 누르면 TypetestScreen으로 이동
+                    ));
+              },
+              child: const Text(
+                "바로 시작하기",
+              ),
+            ),
           ],
         ),
       ),

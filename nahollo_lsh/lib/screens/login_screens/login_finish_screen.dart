@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/screens/login_screens/welcome_screen.dart';
-import 'package:nahollo/temporary_server.dart';
+import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/login_screens/login_welcome_screen.dart';
+import 'package:provider/provider.dart';
 
 class LoginFinishScreen extends StatefulWidget {
   const LoginFinishScreen({super.key});
@@ -11,10 +12,11 @@ class LoginFinishScreen extends StatefulWidget {
 }
 
 class _LoginFinishScreenState extends State<LoginFinishScreen> {
-  final nickname = user_nickname;
-
   @override
   Widget build(BuildContext context) {
+    // provider에서 유저 정보를 가져옴
+    final user = Provider.of<UserProvider>(context).user;
+
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -35,7 +37,7 @@ class _LoginFinishScreenState extends State<LoginFinishScreen> {
                 height: size.height * 0.02,
               ),
               Text(
-                "$nickname님, 환영합니다!",
+                "${user?.nickName}님, 환영합니다!",
                 style: const TextStyle(
                   color: lightpurpleColor,
                 ),
@@ -53,7 +55,7 @@ class _LoginFinishScreenState extends State<LoginFinishScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            WelcomeScreen(), // 버튼을 누르면 TypetestScreen으로 이동
+                            const LoginWelcomeScreen(), // 버튼을 누르면 LoginWelcomeScreen으로 이동
                       ));
                 },
                 style: ElevatedButton.styleFrom(
