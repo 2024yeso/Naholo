@@ -41,11 +41,7 @@ class UsersImage(BaseModel):
     USER_ID: str
     IMAGE: str
 
-class Where(BaseModel):
-    WHERE_NAME: str
-    WHERE_LOCATE: str
-    WHERE_RATE: float
-    WHERE_TYPE: str
+
 
 class JournalComment(BaseModel):
     POST_ID: int
@@ -55,6 +51,12 @@ class JournalComment(BaseModel):
 class ReviewImage(BaseModel):
     REVIEW_ID: int
     IMAGE: str
+    
+class Where(BaseModel):
+    WHERE_NAME: str
+    WHERE_LOCATE: str
+    WHERE_RATE: float
+    WHERE_TYPE: str
 
 class WhereReview(BaseModel):
     USER_ID: str
@@ -62,13 +64,22 @@ class WhereReview(BaseModel):
     REVIEW_CONTENT: str
     WHERE_LIKE: int
     WHERE_RATE: float
+    REASON_MENU: bool
+    REASON_MOOD: bool
+    REASON_SAFE: bool
+    REASON_SEAT: bool
+    REASON_TRANSPORT: bool
+    REASON_PARK: bool
+    REASON_LONG: bool
+    REASON_VIEW: bool
+    REASON_INTERACTION: bool
+    REASON_QUITE: bool
+    REASON_PHOTO: bool
+    REASON_WATCH: bool
+    IMAGES: list[str]  # 리뷰 이미지 리스트
 
 class WhereImage(BaseModel):
     WHERE_ID: int
-    IMAGE: str
-
-class JournalImage(BaseModel):
-    POST_ID: int
     IMAGE: str
 
 # Database 연결 함수
@@ -300,6 +311,92 @@ def get_top_rated_places(db = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+# 장소 세부 정보를 불러오는 엔드포인트
+@app.get("/where/place-info")
+def get_top_rated_places(db = Depends(get_db)):
+    types = ["play", "eat", "sleep", "drink"]
+    results = {"by_type": {}, "overall_top_8": []}
+
+    try:
+        cursor = db.cursor(dictionary=True)
+        
+        
+        for place_type in types:
+            query = """
+            SELECT w.*, wi.IMAGE
+            FROM `Where` w
+            LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+            WHERE w.WHERE_TYPE = %s
+            ORDER BY w.WHERE_RATE DESC
+            LIMIT 8;
+            """
+            cursor.execute(query, (place_type,))
+            rows = cursor.fetchall()
+            results["by_type"][place_type] = rows
+
+        # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
+        overall_query = """
+        SELECT w.*, wi.IMAGE
+        FROM `Where` w
+        LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+        ORDER BY w.WHERE_RATE DESC
+        LIMIT 8;
+        """
+        cursor.execute(overall_query)
+        overall_top_8 = cursor.fetchall()
+        results["overall_top_8"] = overall_top_8
+
+        cursor.close()
+        return {"data": results}
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    
+@app.post("/add_review/")
+def add_review(review: WhereReview, db=Depends(get_db)):
+    try:
+        cursor = db.cursor()
+
+        # 리뷰 데이터 삽입
+        insert_review_query = """
+        INSERT INTO WHERE_REVIEW (
+            USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
+            REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
+            REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
+            REASON_PHOTO, REASON_WATCH
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_review_query, (
+            review.USER_ID, review.WHERE_ID, review.REVIEW_CONTENT, review.WHERE_LIKE, review.WHERE_RATE,
+            review.REASON_MENU, review.REASON_MOOD, review.REASON_SAFE, review.REASON_SEAT, review.REASON_TRANSPORT,
+            review.REASON_PARK, review.REASON_LONG, review.REASON_VIEW, review.REASON_INTERACTION, review.REASON_QUITE,
+            review.REASON_PHOTO, review.REASON_WATCH
+        ))      
+
+        # 삽입된 리뷰의 ID 가져오기
+        review_id = cursor.lastrowid
+
+        # 리뷰 이미지 삽입
+        insert_image_query = """
+        INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
+        """
+        for image in review.IMAGES:
+            cursor.execute(insert_image_query, (review_id, image))
+
+        db.commit()
+        cursor.close()
+
+        return {"message": "Review and images added successfully"}
+    
+    except mysql.connector.Error as err:
+        db.rollback()  # 데이터베이스 오류 시 롤백
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 if __name__ == "__main__":
     import uvicorn

@@ -131,6 +131,42 @@ Future<void> testTopRatedPlaces() async {
     print("Failed to fetch top-rated places: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
   }
 }
+
+
+Future<void> testAddReview() async {
+  final response = await http.post(
+    Uri.parse('$baseUrl/add_review/'),
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({
+      "USER_ID": "user1",
+      "WHERE_ID": 1,
+      "REVIEW_CONTENT": "Great place with beautiful scenery!",
+      "WHERE_LIKE": 10,
+      "WHERE_RATE": 4.8,
+      "REASON_MENU": true,
+      "REASON_MOOD": false,
+      "REASON_SAFE": true,
+      "REASON_SEAT": false,
+      "REASON_TRANSPORT": true,
+      "REASON_PARK": true,
+      "REASON_LONG": false,
+      "REASON_VIEW": true,
+      "REASON_INTERACTION": false,
+      "REASON_QUITE": true,
+      "REASON_PHOTO": true,
+      "REASON_WATCH": false,
+      "IMAGES": ["scenery1.jpg", "scenery2.jpg"] // 리뷰와 함께 추가할 이미지들
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    print("Add Review Response: ${utf8.decode(response.bodyBytes)}");
+  } else {
+    print("Add Review Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
+
+
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -142,6 +178,7 @@ void main() async {
   await myPage();
   await followPage();
   await testTopRatedPlaces();
+  await testAddReview();
 /*
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
