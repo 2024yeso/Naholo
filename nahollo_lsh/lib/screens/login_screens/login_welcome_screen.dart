@@ -13,67 +13,92 @@ class LoginWelcomeScreen extends StatelessWidget {
 
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: darkpurpleColor,
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              "${user?.nickName} 님",
-              style: const TextStyle(
-                color: lightpurpleColor,
-                fontSize: 30,
-                fontWeight: FontWeight.w600,
-              ),
+      body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/images/nickname_bg.png'),
+              fit: BoxFit.cover),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${user?.nickName} 님",
+                      style: const TextStyle(
+                        color: lightpurpleColor,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: size.height * 0.02),
+                const Text(
+                  '나홀로 행성 가입을 축하합니다! 멋있는 이름이네요',
+                  style: TextStyle(
+                    color: Color(0xff16377e),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(
+                  height: size.height * 0.1,
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: lightpurpleColor,
+                    foregroundColor: darkpurpleColor,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const TypetestLogoScreen(), // 버튼을 누르면 TypetestScreen으로 이동
+                        ));
+                  },
+                  child: SizedBox(
+                    width: size.width * 0.45,
+                    child: const Center(
+                      child: Text(
+                        "나만의 캐릭터 만들기",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: lightpurpleColor,
+                    foregroundColor: darkpurpleColor,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const TypetestLogoScreen(), // 버튼을 누르면 TypetestScreen으로 이동
+                        ));
+                  },
+                  child: SizedBox(
+                    width: size.width * 0.45,
+                    child: const Center(
+                      child: Text(
+                        "바로 시작하기",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: size.height * 0.02),
-            const Text(
-              '나홀로 행성 가입을 축하합니다!\n멋있는 이름이네요',
-              style: TextStyle(
-                color: lightpurpleColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-            SizedBox(
-              height: size.height * 0.1,
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: lightpurpleColor,
-                foregroundColor: darkpurpleColor,
-              ),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const TypetestLogoScreen(), // 버튼을 누르면 TypetestScreen으로 이동
-                    ));
-              },
-              child: const Text(
-                "나만의 캐릭터 만들기",
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: lightpurpleColor,
-                foregroundColor: darkpurpleColor,
-              ),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const TypetestLogoScreen(), // 버튼을 누르면 TypetestScreen으로 이동
-                    ));
-              },
-              child: const Text(
-                "바로 시작하기",
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

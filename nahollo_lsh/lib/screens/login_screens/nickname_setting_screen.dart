@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/colors.dart';
+import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
 import 'package:nahollo/providers/user_provider.dart';
@@ -135,8 +136,8 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
         "USER_PW": widget.info.userPw,
         "NAME": widget.info.userName,
         "PHONE": "010-1234-5678",
-        "BIRTH": "1990-01-01",
-        "GENDER": true,
+        "BIRTH": widget.info.birth,
+        "GENDER": widget.info.gender,
         "NICKNAME": widget.info.nickName,
         "USER_CHARACTER": "Hero",
         "LV": 1,
@@ -169,76 +170,107 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      backgroundColor: darkpurpleColor,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 25,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                '어플에서 사용하실 닉네임을 설정해주세요!',
-                style: TextStyle(
-                  color: lightpurpleColor,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(
-                height: size.height * 0.03,
-              ),
-              SizedBox(
-                width: size.width * 0.8,
-                child: TextField(
-                  controller: _nicknameController,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    hintText: '닉네임을 입력해주세요',
-                    errorText: _errorText,
-                    border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(15))),
+      body: Container(
+        width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
+        height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/images/nickname_bg.png'),
+              fit: BoxFit.cover),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 25,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '어플에서 사용하실 닉네임을 설정해주세요!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-              ),
-              SizedBox(height: size.height * 0.08),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: lightpurpleColor,
-                  foregroundColor: darkpurpleColor,
+                SizedBox(
+                  height: size.height * 0.02,
                 ),
-                onPressed: () async {
-                  _submitNickname();
-                  if (EmailVerifyStatic.needEmailVerify) {
-                    await _register();
-                    if (context.mounted) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginEmailverrifyScreen(
-                              info: widget.info,
-                            ),
-                          ));
-                    }
-                  } else {
-                    await addUser();
-                    await login();
-                    if (_isLoginSuccess) {
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      '닉네임',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: size.height * 0.02,
+                ),
+                SizedBox(
+                  width: size.width * 0.8,
+                  child: TextField(
+                    controller: _nicknameController,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      hintText: '한글 또는 영문 2자 이상 입력',
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 15),
+                      errorText: _errorText,
+                      border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(12))),
+                    ),
+                  ),
+                ),
+                SizedBox(height: size.height * 0.08),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF68bdff),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () async {
+                    _submitNickname();
+                    if (EmailVerifyStatic.needEmailVerify) {
+                      await _register();
                       if (context.mounted) {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LoginFinishScreen(),
+                              builder: (context) => LoginEmailverrifyScreen(
+                                info: widget.info,
+                              ),
                             ));
                       }
+                    } else {
+                      await addUser();
+                      await login();
+                      if (_isLoginSuccess) {
+                        if (context.mounted) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginFinishScreen(),
+                              ));
+                        }
+                      }
                     }
-                  }
-                },
-                child: const Text('회원가입 완료'),
-              ),
-            ],
+                  },
+                  child: SizedBox(
+                    width: MediaQueryUtil.getScreenWidth(context) * 0.4,
+                    child: const Center(
+                      child: Text('회원가입 완료'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

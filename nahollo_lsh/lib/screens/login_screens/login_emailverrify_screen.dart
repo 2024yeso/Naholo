@@ -76,8 +76,8 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
         "USER_PW": widget.info.userPw,
         "NAME": widget.info.userName,
         "PHONE": "010-1234-5678",
-        "BIRTH": "1990-01-01",
-        "GENDER": true,
+        "BIRTH": widget.info.birth,
+        "GENDER": widget.info.gender,
         "NICKNAME": widget.info.nickName,
         "USER_CHARACTER": "Hero",
         "LV": 1,
@@ -100,49 +100,56 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
     User? user = _auth.currentUser;
 
     if (user != null && !user.emailVerified) {
-      // 이메일 인증을 주기적으로 확인
-      Timer.periodic(const Duration(seconds: 5), (timer) async {
-        await user?.reload(); // Firebase에서 사용자 정보 새로고침
-        user = _auth.currentUser; // 새로고침된 사용자 정보 반영
+      // 이메일 인증 여부 확인
+      await user.reload(); // Firebase에서 사용자 정보 새로고침
+      user = _auth.currentUser; // 새로고침된 사용자 정보 반영
 
-        if (user!.emailVerified) {
-          print('이메일 인증이 완료되었습니다.');
-          Fluttertoast.showToast(msg: '이메일 인증이 완료되었습니다.');
-          timer.cancel(); // 타이머 중지
-          _isEmailVerify = true;
-          await addUser();
-          await login(widget.info.userId, widget.info.userPw);
-        } else {
-          print('아직 이메일 인증이 완료되지 않았습니다.');
-          Fluttertoast.showToast(msg: '아직 이메일 인증이 완료되지 않았습니다.');
-        }
-      });
+      if (user!.emailVerified) {
+        print('이메일 인증이 완료되었습니다.');
+        Fluttertoast.showToast(msg: '이메일 인증이 완료되었습니다.');
+        _isEmailVerify = true;
+        await addUser();
+        await login(widget.info.userId, widget.info.userPw);
+      } else {
+        print('아직 이메일 인증이 완료되지 않았습니다.');
+        Fluttertoast.showToast(msg: '아직 이메일 인증이 완료되지 않았습니다.');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('이메일 인증을 완료한 뒤 아래 버튼을 눌러주세요!'),
-            ElevatedButton(
-                onPressed: () async {
-                  await checkEmailVerified();
-                  if (_isEmailVerify) {
-                    if (context.mounted) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginFinishScreen(),
-                          ));
+      body: Container(
+        width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
+        height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
+
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/images/nickname_bg.png'),
+              fit: BoxFit.cover),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('이메일 인증을 완료한 뒤 아래 버튼을 눌러주세요!'),
+              ElevatedButton(
+                  onPressed: () async {
+                    await checkEmailVerified();
+                    if (_isEmailVerify) {
+                      if (context.mounted) {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LoginFinishScreen(),
+                            ));
+                      }
                     }
-                  }
-                },
-                child: const Text('이메일 인증 완료'))
-          ],
+                  },
+                  child: const Text('이메일 인증 완료'))
+            ],
+          ),
         ),
       ),
     );

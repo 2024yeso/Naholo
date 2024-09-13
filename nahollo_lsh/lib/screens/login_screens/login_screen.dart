@@ -326,7 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const Text("    "),
                   ],
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: size.width * 0.15),
 
                 // 로그인 버튼
                 ElevatedButton(
@@ -342,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     padding: const EdgeInsets.symmetric(
-                        vertical: 15, horizontal: 100),
+                        vertical: 10, horizontal: 70),
                   ),
                   child: const Text(
                     '로그인',
