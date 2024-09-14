@@ -15,6 +15,7 @@ import 'package:nahollo/screens/login_screens/login_screen.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:nahollo/test_info.dart';
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class NicknameSettingScreen extends StatefulWidget {
@@ -27,6 +28,7 @@ class NicknameSettingScreen extends StatefulWidget {
 }
 
 class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
+  bool _isNicknameGood = false;
   var _isLoginSuccess = false;
   var _isInfoSend = false;
   var _isEmailSend = false;
@@ -156,120 +158,133 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
   }
 
   void _submitNickname() {
-    if (_nicknameController.text.isEmpty) {
-      _errorText = '닉네임을 입력해주세요';
-    } else if (_nicknameController.text.length >= 8) {
-      _errorText = '닉네임은 최대 8자리까지 가능합니다';
-    } else {
-      _errorText = null;
-      widget.info.nickName = _nicknameController.text;
-    }
+    setState(() {
+      if (_nicknameController.text.isEmpty) {
+        _errorText = '닉네임을 입력해주세요';
+      } else if (_nicknameController.text.length > 8) {
+        _errorText = '닉네임은 최대 8자리까지 가능합니다';
+      } else {
+        _errorText = null;
+        _isNicknameGood = true;
+        widget.info.nickName = _nicknameController.text;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: Container(
-        width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
-        height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/images/nickname_bg.png'),
-              fit: BoxFit.cover),
-        ),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 25,
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  '어플에서 사용하실 닉네임을 설정해주세요!',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        showExitDialog(context);
+      },
+      child: Scaffold(
+        body: Container(
+          width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
+          height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/nickname_bg.png'),
+                fit: BoxFit.cover),
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 25,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    '어플에서 사용하실 닉네임을 설정해주세요!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      '닉네임',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        '닉네임',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  SizedBox(
+                    width: size.width * 0.8,
+                    child: TextField(
+                      controller: _nicknameController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.white,
+                        hintText: '한글 또는 영문 2자 이상 입력',
+                        hintStyle:
+                            const TextStyle(color: Colors.grey, fontSize: 15),
+                        errorText: _errorText,
+                        border: const OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(12))),
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                SizedBox(
-                  width: size.width * 0.8,
-                  child: TextField(
-                    controller: _nicknameController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: '한글 또는 영문 2자 이상 입력',
-                      hintStyle:
-                          const TextStyle(color: Colors.grey, fontSize: 15),
-                      errorText: _errorText,
-                      border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(12))),
+                  ),
+                  SizedBox(height: size.height * 0.08),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF68bdff),
+                      foregroundColor: Colors.white,
                     ),
-                  ),
-                ),
-                SizedBox(height: size.height * 0.08),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF68bdff),
-                    foregroundColor: Colors.white,
-                  ),
-                  onPressed: () async {
-                    _submitNickname();
-                    if (EmailVerifyStatic.needEmailVerify) {
-                      await _register();
-                      if (context.mounted) {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => LoginEmailverrifyScreen(
-                                info: widget.info,
-                              ),
-                            ));
-                      }
-                    } else {
-                      await addUser();
-                      await login();
-                      if (_isLoginSuccess) {
-                        if (context.mounted) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginFinishScreen(),
-                              ));
+                    onPressed: () async {
+                      _submitNickname();
+                      if (_isNicknameGood) {
+                        if (EmailVerifyStatic.needEmailVerify) {
+                          await _register();
+                          if (context.mounted) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LoginEmailverrifyScreen(
+                                    info: widget.info,
+                                  ),
+                                ));
+                          }
+                        } else {
+                          await addUser();
+                          await login();
+                          if (_isLoginSuccess) {
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const LoginFinishScreen(),
+                                  ));
+                            }
+                          }
                         }
                       }
-                    }
-                  },
-                  child: SizedBox(
-                    width: MediaQueryUtil.getScreenWidth(context) * 0.4,
-                    child: const Center(
-                      child: Text('회원가입 완료'),
+                    },
+                    child: SizedBox(
+                      width: MediaQueryUtil.getScreenWidth(context) * 0.4,
+                      child: const Center(
+                        child: Text('회원가입 완료'),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

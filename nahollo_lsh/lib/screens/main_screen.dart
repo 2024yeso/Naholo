@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:o3d/o3d.dart';
+import 'package:provider/provider.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -13,8 +15,31 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
+  String showcharacter(String character) {
+    if (character == "래서판다") {
+      return ('assets/glbs/red_panda.glb');
+    }
+    if (character == "오징어") {
+      return ('assets/glbs/squid.glb');
+    }
+    if (character == "고양이") {
+      return ('assets/glbs/cat.glb');
+    }
+    if (character == "코알라") {
+      return ('assets/glbs/koala.glb');
+    }
+    if (character == "올빼미") {
+      return ('assets/glbs/owl.glb');
+    } else {
+      //고슴도치
+      return ('assets/glbs/hedgehog.glb');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final userCharacter =
+        Provider.of<UserProvider>(context).user!.userCharacter;
     // 화면의 너비와 높이를 가져옵니다.
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -61,7 +86,7 @@ class _MainScreenState extends State<MainScreen> {
             const Text(
               "오늘은 혼술 어때?", // 메인 텍스트
               style: TextStyle(
-                fontSize: 30, // 텍스트 크기
+                fontSize: 20, // 텍스트 크기
                 color: Colors.white, // 텍스트 색상
               ),
             ),
@@ -84,7 +109,7 @@ class _MainScreenState extends State<MainScreen> {
                   disableZoom: true, // 줌 동작 비활성화
                   controller: controller, // 3D 모델 컨트롤러 사용
                   autoPlay: true, // 자동 재생 설정
-                  src: 'assets/glbs/test_1.glb', // 3D 모델 파일 경로
+                  src: showcharacter(userCharacter), // 3D 모델 파일 경로
                 ),
               ),
             ),
@@ -96,7 +121,7 @@ class _MainScreenState extends State<MainScreen> {
               "얼뚱이", // 캐릭터 이름
               style: TextStyle(
                 color: Colors.white, // 텍스트 색상
-                fontSize: 40, // 텍스트 크기
+                fontSize: 20, // 텍스트 크기
                 fontWeight: FontWeight.w600, // 텍스트 두께
               ),
             ),

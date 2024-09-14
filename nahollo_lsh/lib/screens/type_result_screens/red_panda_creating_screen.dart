@@ -2,10 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nahollo/colors.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/main_screen.dart';
+import 'package:provider/provider.dart';
 
 class RedPandaCreatingScreen extends StatefulWidget {
-  const RedPandaCreatingScreen({super.key});
+  String character;
+
+  RedPandaCreatingScreen({super.key, required this.character});
 
   @override
   State<RedPandaCreatingScreen> createState() => _RedPandaCreatingScreenState();
@@ -21,6 +25,9 @@ class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
         if (status == AnimationStatus.completed) {
           _controller.reverse(); // 애니메이션 반전
         } else if (status == AnimationStatus.dismissed) {
+          final userProvider =
+              Provider.of<UserProvider>(context, listen: false);
+          userProvider.updateUserCharacter(widget.character);
           // reverse 애니메이션이 끝난 후 다음 화면으로 이동
           Navigator.pushReplacement(
             context,
@@ -38,6 +45,28 @@ class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
   late final CurvedAnimation _curve =
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
 
+  Widget showcharacter() {
+    String character = widget.character;
+    if (character == "래서판다") {
+      return Image.asset('assets/images/red_panda.png');
+    }
+    if (character == "오징어") {
+      return Image.asset('assets/images/squid.png');
+    }
+    if (character == "고양이") {
+      return Image.asset('assets/images/cat.png');
+    }
+    if (character == "코알라") {
+      return Image.asset('assets/images/koala.png');
+    }
+    if (character == "올빼미") {
+      return Image.asset('assets/images/owl.png');
+    } else {
+      //고슴도치
+      return Image.asset('assets/images/hedgehog.png');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +82,7 @@ class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
   @override
   Widget build(BuildContext context) {
 // 화면의 너비와 높이를 가져옵니다.
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
@@ -75,9 +105,9 @@ class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
             SizedBox(
               height: screenHeight * 0.02,
             ),
-            const Text(
-              "래서판다",
-              style: TextStyle(
+            Text(
+              widget.character,
+              style: const TextStyle(
                 color: Color(0xFFf6841b),
                 fontSize: 40,
                 fontWeight: FontWeight.w600,
@@ -113,7 +143,7 @@ class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
                       radius: _animation.value,
                     ),
                   ),
-                  child: Image.asset('assets/images/red_panda.png'),
+                  child: showcharacter(),
                 );
               },
             ),

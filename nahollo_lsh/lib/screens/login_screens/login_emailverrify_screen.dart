@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
+import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_finish_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/test_info.dart';
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class LoginEmailverrifyScreen extends StatefulWidget {
@@ -119,36 +121,52 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
-        height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
+    var width = MediaQueryUtil.getScreenWidth(context);
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        showExitDialog(context);
+      },
+      child: Scaffold(
+        body: Container(
+          width: double.infinity, // 부모 위젯의 너비를 화면 전체로 설정
+          height: double.infinity, // 부모 위젯의 높이를 화면 전체로 설정
 
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/images/nickname_bg.png'),
-              fit: BoxFit.cover),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('이메일 인증을 완료한 뒤 아래 버튼을 눌러주세요!'),
-              ElevatedButton(
-                  onPressed: () async {
-                    await checkEmailVerified();
-                    if (_isEmailVerify) {
-                      if (context.mounted) {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginFinishScreen(),
-                            ));
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/nickname_bg.png'),
+                fit: BoxFit.cover),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  '이메일 인증을 완료한 뒤\n 아래 버튼을 눌러주세요!',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600),
+                ),
+                SizedBox(
+                  height: width * 0.2,
+                ),
+                ElevatedButton(
+                    onPressed: () async {
+                      await checkEmailVerified();
+                      if (_isEmailVerify) {
+                        if (context.mounted) {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginFinishScreen(),
+                              ));
+                        }
                       }
-                    }
-                  },
-                  child: const Text('이메일 인증 완료'))
-            ],
+                    },
+                    child: const Text('이메일 인증 완료'))
+              ],
+            ),
           ),
         ),
       ),

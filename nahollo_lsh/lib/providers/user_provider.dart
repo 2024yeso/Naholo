@@ -11,6 +11,14 @@ class UserProvider with ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
+  // userCharacter만 변경하는 메서드
+  void updateUserCharacter(String newCharacter) {
+    if (_user != null) {
+      _user!.userCharacter = newCharacter; // userCharacter만 변경
+      notifyListeners(); // 상태 변경 알림
+    }
+  }
+
   void clearUser() {
     _user = null;
     notifyListeners();

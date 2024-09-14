@@ -11,7 +11,7 @@ class TypetestScreen extends StatefulWidget {
 }
 
 class _TypetestScreenState extends State<TypetestScreen> {
-  int type = 0; // 타입 점수, 작을수록 내향형, 클수록 외향형
+  int _type = 0; // 타입 점수, 작을수록 내향형, 클수록 외향형
   final PageController _pageController = PageController(); // 페이지 전환을 위한 컨트롤러
   int _currentQuestionIndex = 0; // 현재 질문 인덱스
   int count = 1; // 질문 번호 카운터
@@ -22,15 +22,19 @@ class _TypetestScreenState extends State<TypetestScreen> {
     "아무도 없는 낯선 행성에 나혼자 있다는 것을 알게 된 당신! 이때 내가 하는 생각은?",
     "나홀로인 줄 알았던 행성에서 외계인을 만났다! 외계인이 나를 쳐다보고 있는데...",
     "외계인이랑 어찌저찌 친구가 되었다. 그런데 외계인이 우울해서 옆 행성을 침략을 하겠다고 한다.",
-    "나와 외계인은 함께 옆 행성을 침략하기로 한다."
+    "나와 외계인은 함께 옆 행성을 침략하기로 한다.",
+    "우주선이 고장 나서 돌아갈 방법이 없다면?",
+    "행성에서 신기한 생명체를 발견했다! 어떻게 할까?"
   ];
 
   final List<String> _outgoingAnswer = [
     // 외향적인 답변 목록
     "이렇게 된 이상 혼자 모험을 떠나보자!",
     "안녕? 우리 친구할래? 다가간다",
-    "어떻게 침략할 건데?",
+    "오, 재밌을 것 같은데? 나도 도와줄게!",
     "쳐들어가자",
+    "수리할 방법을 찾아서 해결해보자!",
+    "바로 다가가서 말을 걸어본다!"
   ];
 
   final List<String> _reservedAnswer = [
@@ -38,14 +42,37 @@ class _TypetestScreenState extends State<TypetestScreen> {
     "너무 무서워ㅜㅜ 가족들은 어디있을까?",
     "별로 말 걸고 싶지 않아... 눈을 돌려야겠다",
     "왜 우울한데? 내가 들어줄게",
-    "구체적인 침략 계획을 세우자!",
+    "안전하게 끝낼 수 있을까? 계획부터 세워야 해.",
+    "어쩌지? 너무 걱정돼... 천천히 생각해야겠다.",
+    "먼저 조심스럽게 관찰해봐야겠다."
   ];
+
+  String chooseCharacter() {
+    List<String> characters = ['오징어', '래서판다', '고양이', '코알라', '올빼미', '고슴도치'];
+    if (_type >= 4) {
+      return characters[0];
+    }
+    if (_type >= 2) {
+      return characters[1];
+    }
+    if (_type >= 0) {
+      return characters[2];
+    }
+    if (_type >= -2) {
+      return characters[3];
+    }
+    if (_type >= -4) {
+      return characters[4];
+    } else {
+      return characters[5];
+    }
+  }
 
   // 외향적인 답변을 선택했을 때 호출되는 함수
   void _outgoingNextQuestion() {
     if (_currentQuestionIndex < _questions.length - 1) {
       setState(() {
-        type += 1; // 외향형 점수 증가
+        _type += 1; // 외향형 점수 증가
         count += 1; // 질문 번호 증가
         _currentQuestionIndex++; // 다음 질문으로 이동
         progress += 1 / _questions.length; // 진행률 업데이트
@@ -55,11 +82,14 @@ class _TypetestScreenState extends State<TypetestScreen> {
         );
       });
     } else {
+      var character = chooseCharacter();
       // 모든 질문이 끝나면 결과 분석 화면으로 이동
-      Navigator.push(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AnalyzingResultsScreen(),
+            builder: (context) => AnalyzingResultsScreen(
+              character: character,
+            ),
           ));
     }
   }
@@ -68,7 +98,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
   void _reservedNextQuestion() {
     if (_currentQuestionIndex < _questions.length - 1) {
       setState(() {
-        type -= 1; // 내향형 점수 증가
+        _type -= 1; // 내향형 점수 증가
         count += 1; // 질문 번호 증가
         _currentQuestionIndex++; // 다음 질문으로 이동
         progress += 1 / _questions.length; // 진행률 업데이트
@@ -78,11 +108,14 @@ class _TypetestScreenState extends State<TypetestScreen> {
         );
       });
     } else {
+      var character = chooseCharacter();
       // 모든 질문이 끝나면 결과 분석 화면으로 이동
-      Navigator.push(
+      Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AnalyzingResultsScreen(),
+            builder: (context) => AnalyzingResultsScreen(
+              character: character,
+            ),
           ));
     }
   }
@@ -168,7 +201,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
         children: [
           Text(
             _questions[index], // 질문 텍스트
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             textAlign: TextAlign.center, // 텍스트 중앙 정렬
           ),
           SizedBox(height: screenHeight * 0.04),
@@ -187,7 +220,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
                   _outgoingAnswer[index], // 외향적인 답변 텍스트
                   style: const TextStyle(
                     color: lightpurpleColor, // 텍스트 색상
-                    fontSize: 20,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -212,7 +245,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
                   _reservedAnswer[index], // 내향적인 답변 텍스트
                   style: const TextStyle(
                     color: lightpurpleColor, // 텍스트 색상
-                    fontSize: 20,
+                    fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

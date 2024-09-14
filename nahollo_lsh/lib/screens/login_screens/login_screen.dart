@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
           "Login Success Response: ${res["NICKNAME"]}, ${res["USER_CHARACTER"]}, ${res["LV"]}, ${res["INTRODUCE"]}");
       isLoginSuccess = true;
       if (context.mounted) {
-        Navigator.push(context,
+        Navigator.pushReplacement(context,
             MaterialPageRoute(builder: (context) => const MainScreen()));
       }
     } else {
