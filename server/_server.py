@@ -398,6 +398,50 @@ def add_review(review: WhereReview, db=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+
+
+# 일지 메인페이지
+@app.get("/journal/main")
+def get_journal(db=Depends(get_db)):
+    results = {"latest_10": [], "top_10": []}
+
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # 최신순으로 10개의 일지를 가져오는 쿼리
+        latest_query = """
+        SELECT jp.*, ui.IMAGE AS USER_IMAGE
+        FROM `Journal_post` jp
+        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        ORDER BY jp.POST_UPDATE DESC
+        LIMIT 10;
+        """
+        cursor.execute(latest_query)
+        latest_10 = cursor.fetchall()
+        results["latest_10"] = latest_10
+
+        # 인기순으로 10개의 일지를 가져오는 쿼리 (POST_LIKE 순으로 정렬)
+        top_query = """
+        SELECT jp.*, ui.IMAGE AS USER_IMAGE
+        FROM `Journal_post` jp
+        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        ORDER BY jp.POST_LIKE DESC, jp.POST_UPDATE DESC
+        LIMIT 10;
+        """
+        cursor.execute(top_query)
+        top_10 = cursor.fetchall()
+        results["top_10"] = top_10
+
+        cursor.close()
+        return {"data": results}
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+    
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000)

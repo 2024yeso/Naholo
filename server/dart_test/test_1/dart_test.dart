@@ -167,6 +167,36 @@ Future<void> testAddReview() async {
 }
 
 
+// /journal/main 엔드포인트 테스트 함수
+Future<void> testJournalMain() async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/journal/main'),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    print("Journal Main Data:");
+
+    // 최신순 10개의 일지 데이터를 반복하여 출력
+    print("\nLatest 10 Journal Posts:");
+    for (var post in data["data"]["latest_10"]) {
+      print(
+          "Post Name: ${post['POST_NAME']}, User: ${post['USER_ID']}, Likes: ${post['POST_LIKE']}, Image: ${post['USER_IMAGE']}, UPDATED:${post['POST_UPDATE']}");
+    }
+
+    // 인기순 10개의 일지 데이터를 반복하여 출력
+    print("\nTop 10 Journal Posts by Likes:");
+    for (var post in data["data"]["top_10"]) {
+      print(
+          "Post Name: ${post['POST_NAME']}, User: ${post['USER_ID']}, Likes: ${post['POST_LIKE']}, Image: ${post['USER_IMAGE']},UPDATED:${post['POST_UPDATE']}");
+    }
+
+  } else {
+    print("Failed to fetch journal main data: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
+
+
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -174,16 +204,19 @@ void main() async {
 
   print("\n=== Testing User Registration ===");
   await testAddUser();
-*/
+
   await myPage();
   await followPage();
   await testTopRatedPlaces();
   await testAddReview();
-/*
+
   print("\n=== Testing Login Failure (Wrong Password) ===");
   await testLoginFailureWrongPassword();
 
   print("\n=== Testing Login Failure (Nonexistent User) ===");
   await testLoginFailureNonexistentUser();
 */
+
+  await testJournalMain();
+
 }
