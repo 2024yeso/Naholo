@@ -1,11 +1,11 @@
 // diaryclass_Diarypostlist.dart
 class DiaryPostList {
-  final String author;
-  final DateTime createdAt;
-  final String title;
-  final String content;
-  final int hot;
-  final bool subscribe;
+  final String author; // 일지 작성자
+  final DateTime createdAt; // 일지 작성 시간
+  final String title; // 일지 제목
+  final String content; // 일지 내용
+  final int hot; // 일지 좋아요 수
+  final bool subscribe; // 유저의 일지 구독 여부
 
   DiaryPostList({
     required this.author,
