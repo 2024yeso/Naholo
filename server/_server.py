@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import mysql.connector
 from mysql.connector.errors import IntegrityError
 from typing import Optional
+from collections import defaultdict
 
 app = FastAPI()
 
@@ -311,49 +312,53 @@ def get_top_rated_places(db = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+
 # 장소 세부 정보를 불러오는 엔드포인트
 @app.get("/where/place-info")
-def get_top_rated_places(db = Depends(get_db)):
-    types = ["play", "eat", "sleep", "drink"]
-    results = {"by_type": {}, "overall_top_8": []}
-
+def get_place_info(where_id: int, db=Depends(get_db)):
     try:
-        cursor = db.cursor(dictionary=True)
-        
-        
-        for place_type in types:
-            query = """
-            SELECT w.*, wi.IMAGE
-            FROM `Where` w
-            LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
-            WHERE w.WHERE_TYPE = %s
-            ORDER BY w.WHERE_RATE DESC
-            LIMIT 8;
-            """
-            cursor.execute(query, (place_type,))
-            rows = cursor.fetchall()
-            results["by_type"][place_type] = rows
+        # 커서를 buffered=True로 설정하여 모든 결과를 메모리에 버퍼링
+        cursor = db.cursor(dictionary=True, buffered=True)
 
-        # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
-        overall_query = """
+        # 장소의 기본 정보와 이미지 가져오기
+        place_query = """
         SELECT w.*, wi.IMAGE
         FROM `Where` w
         LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
-        ORDER BY w.WHERE_RATE DESC
-        LIMIT 8;
+        WHERE w.WHERE_ID = %s;
         """
-        cursor.execute(overall_query)
-        overall_top_8 = cursor.fetchall()
-        results["overall_top_8"] = overall_top_8
+        cursor.execute(place_query, (where_id,))
+        place_info = cursor.fetchone()
+
+        if not place_info:
+            cursor.close()
+            raise HTTPException(status_code=404, detail="Place not found")
+
+        # 장소의 리뷰와 리뷰 이미지 가져오기
+        review_query = """
+        SELECT wr.*, ri.IMAGE AS REVIEW_IMAGE
+        FROM `WHERE_REVIEW` wr
+        LEFT JOIN `REVIEW_IMAGE` ri ON wr.REVIEW_ID = ri.REVIEW_ID
+        WHERE wr.WHERE_ID = %s;
+        """
+        cursor.execute(review_query, (where_id,))
+        reviews = cursor.fetchall()
 
         cursor.close()
-        return {"data": results}
+
+        # 결과 반환
+        return {
+            "place_info": place_info,
+            "reviews": reviews
+        }
 
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+
     
 @app.post("/add_review/")
 def add_review(review: WhereReview, db=Depends(get_db)):
@@ -440,6 +445,38 @@ def get_journal(db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+# 일지 댓글
+@app.get("/journal/post_comment")
+def get_journal_comments(post_id: int):
+    try:
+        # 데이터베이스 연결
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # post_id에 맞는 댓글을 가져오는 쿼리
+        query = """
+        SELECT jc.*, u.NICKNAME, u.USER_CHARACTER, u.LV
+        FROM `Journal_comment` jc
+        LEFT JOIN `Users` u ON jc.USER_ID = u.USER_ID
+        WHERE jc.POST_ID = %s
+        ORDER BY jc.COMMENT_ID DESC;
+        """
+        cursor.execute(query, (post_id,))
+        comments = cursor.fetchall()
+
+        # 연결 종료
+        cursor.close()
+        conn.close()
+
+        return {"comments": comments}
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
     
 if __name__ == "__main__":

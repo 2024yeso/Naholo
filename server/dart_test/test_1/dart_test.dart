@@ -197,6 +197,91 @@ Future<void> testJournalMain() async {
 }
 
 
+// /journal/post_comment 엔드포인트 테스트 함수
+Future<void> testGetJournalComments(int postId) async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/journal/post_comment?post_id=$postId'),
+  );
+
+  if (response.statusCode == 200) {
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    print("Comments for Post ID $postId:");
+
+    // 댓글 데이터를 반복하여 출력
+    for (var comment in data["comments"]) {
+      print(
+          "Comment ID: ${comment['COMMENT_ID']}, User: ${comment['USER_ID']}, Nickname: ${comment['NICKNAME']}, "
+          "Content: ${comment['COMMENT_CONTENT']}, Level: ${comment['LV']}, Character: ${comment['USER_CHARACTER']}");
+    }
+  } else {
+    print("Failed to fetch comments: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+  }
+}
+
+// /where/place-info 엔드포인트 테스트 함수
+Future<void> testGetPlaceInfo(int whereId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/where/place-info?where_id=$whereId'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(utf8.decode(response.bodyBytes));
+      print("Place Info:");
+
+      // 장소 정보 출력, null 체크 추가
+      final placeInfo = data["place_info"];
+      if (placeInfo != null) {
+        print(
+            "Name: ${placeInfo['WHERE_NAME'] ?? 'Unknown'}, Location: ${placeInfo['WHERE_LOCATE'] ?? 'Unknown'}, Rate: ${placeInfo['WHERE_RATE'] ?? 'Unknown'}");
+      } else {
+        print("Place info is not available.");
+      }
+
+      // 리뷰 정보 그룹화
+      Map<int, Map<String, dynamic>> groupedReviews = {};
+
+      // Null safety 적용
+      if (data["reviews"] != null) {
+        for (var review in data["reviews"]) {
+          int? reviewId = review['REVIEW_ID'];
+
+          if (reviewId != null && !groupedReviews.containsKey(reviewId)) {
+            // 리뷰가 처음 등장한 경우, 리뷰 정보 추가
+            groupedReviews[reviewId] = {
+              "REVIEW_ID": reviewId,
+              "USER_ID": review['USER_ID'] ?? 'Unknown',
+              "REVIEW_CONTENT": review['REVIEW_CONTENT'] ?? 'No content',
+              "WHERE_RATE": review['WHERE_RATE'] ?? 0,
+              "IMAGES": <String>[]
+            };
+          }
+
+          // 리뷰 이미지가 있을 경우 리스트에 추가
+          if (review['REVIEW_IMAGE'] != null && reviewId != null) {
+            groupedReviews[reviewId]?["IMAGES"].add(review['REVIEW_IMAGE']);
+          }
+        }
+      } else {
+        print("No reviews found.");
+      }
+
+      // 그룹화된 리뷰 출력
+      print("\nReviews:");
+      groupedReviews.forEach((id, review) {
+        print(
+            "Review ID: ${review['REVIEW_ID']}, User: ${review['USER_ID']}, Content: ${review['REVIEW_CONTENT']}, Rate: ${review['WHERE_RATE']}");
+        print("Review Images: ${review['IMAGES']}");
+      });
+    } else {
+      print(
+          "Failed to fetch place info: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+    }
+  } catch (e) {
+    print("An error occurred: $e");
+  }
+}
+
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -217,6 +302,5 @@ void main() async {
   await testLoginFailureNonexistentUser();
 */
 
-  await testJournalMain();
-
+  await testGetPlaceInfo(1);
 }
