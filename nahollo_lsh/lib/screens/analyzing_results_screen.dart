@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/screens/type_result_screens/red_pandas_screen.dart';
+import 'package:nahollo/screens/type_result_screens/red_panda_screen.dart';
 
 class AnalyzingResultsScreen extends StatefulWidget {
-  const AnalyzingResultsScreen({super.key});
+  final String character;
+
+  const AnalyzingResultsScreen({super.key, required this.character});
 
   @override
   State<AnalyzingResultsScreen> createState() => _AnalyzingResultsScreenState();
@@ -30,7 +32,10 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
         // 애니메이션이 완료되면 새로운 화면으로 전환
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const RedPandasScreen()),
+          MaterialPageRoute(
+              builder: (context) => RedPandaScreen(
+                    character: widget.character,
+                  )),
         );
       }
     });
