@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
-import 'package:nahollo/screens/type_result_screens/red_panda_creating_screen.dart';
+import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
 import 'package:nahollo/screens/typetest_logo_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -151,7 +151,7 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RedPandaCreatingScreen(
+                              builder: (context) => CharacterCreatingScreen(
                                 character: character,
                               ),
                             ));

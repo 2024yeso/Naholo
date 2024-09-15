@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/screens/type_result_screens/red_panda_screen.dart';
+import 'package:nahollo/screens/type_result_screens/character_explain_screen.dart';
+import 'package:nahollo/util.dart';
 
 class AnalyzingResultsScreen extends StatefulWidget {
   final String character;
@@ -33,7 +34,7 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (context) => RedPandaScreen(
+              builder: (context) => CharacterExplainScreen(
                     character: widget.character,
                   )),
         );
@@ -78,6 +79,7 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
 
   @override
   Widget build(BuildContext context) {
+    var size = SizeUtil.getScreenSize(context);
     // 화면의 너비와 높이를 가져옵니다.
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -106,10 +108,10 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
               turns: _turn, // 회전 애니메이션 적용
               child: DecoratedBoxTransition(
                 decoration: _decoration, // 데코레이션 애니메이션 적용
-                child: const SizedBox(
-                  height: 300, // 상자의 높이
-                  width: 300, // 상자의 너비
-                  child: Center(
+                child: SizedBox(
+                  height: size.width * 0.6, // 상자의 높이
+                  width: size.width * 0.6, // 상자의 너비
+                  child: const Center(
                     child: Text(
                       "?",
                       style: TextStyle(

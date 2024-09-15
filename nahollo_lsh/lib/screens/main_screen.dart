@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
+import 'package:nahollo/util.dart';
 import 'package:o3d/o3d.dart';
 import 'package:provider/provider.dart';
 
@@ -150,6 +152,13 @@ class _MainScreenState extends State<MainScreen> {
                   child: Column(
                     children: [
                       GestureDetector(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (context) {
+                              return const NaholloWhereMainScreen();
+                            },
+                          ));
+                        },
                         // 검색 아이콘을 클릭할 수 있도록 GestureDetector 사용
                         child: Container(
                           decoration: BoxDecoration(
@@ -168,7 +177,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const Text(
                         "나홀로어디", // 아이콘 하단의 설명 텍스트
-                        style: TextStyle(color: Colors.white), // 텍스트 색상
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 10), // 텍스트 색상
                       )
                     ],
                   ),
@@ -197,7 +207,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const Text(
                         "나홀로일지", // 아이콘 하단의 설명 텍스트
-                        style: TextStyle(color: Colors.white), // 텍스트 색상
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 10), // 텍스트 색상
                       ),
                     ],
                   ),
@@ -226,7 +237,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const Text(
                         "홈", // 아이콘 하단의 설명 텍스트
-                        style: TextStyle(color: Colors.white), // 텍스트 색상
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 10), // 텍스트 색상
                       ),
                     ],
                   ),
@@ -255,7 +267,8 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const Text(
                         "커뮤니티", // 아이콘 하단의 설명 텍스트
-                        style: TextStyle(color: Colors.white), // 텍스트 색상
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 10), // 텍스트 색상
                       ),
                     ],
                   ),
@@ -283,13 +296,14 @@ class _MainScreenState extends State<MainScreen> {
                       ),
                       const Text(
                         "마이페이지", // 아이콘 하단의 설명 텍스트
-                        style: TextStyle(color: Colors.white), // 텍스트 색상
+                        style: TextStyle(
+                            color: Colors.white, fontSize: 10), // 텍스트 색상
                       ),
                     ],
                   ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

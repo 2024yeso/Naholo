@@ -6,16 +6,17 @@ import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/main_screen.dart';
 import 'package:provider/provider.dart';
 
-class RedPandaCreatingScreen extends StatefulWidget {
+class CharacterCreatingScreen extends StatefulWidget {
   String character;
 
-  RedPandaCreatingScreen({super.key, required this.character});
+  CharacterCreatingScreen({super.key, required this.character});
 
   @override
-  State<RedPandaCreatingScreen> createState() => _RedPandaCreatingScreenState();
+  State<CharacterCreatingScreen> createState() =>
+      _CharacterCreatingScreenState();
 }
 
-class _RedPandaCreatingScreenState extends State<RedPandaCreatingScreen>
+class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     duration: const Duration(seconds: 3),

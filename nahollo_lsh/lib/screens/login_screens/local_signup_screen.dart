@@ -55,7 +55,7 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQueryUtil.getScreenWidth(context);
+    final width = SizeUtil.getScreenWidth(context);
 
     return PopScope(
       canPop: false,

@@ -1,6 +1,11 @@
 // 팝업 다이얼로그 함수
 import 'package:flutter/material.dart';
+import 'package:nahollo/community_screen.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
+import 'package:nahollo/screens/main_screen.dart';
+import 'package:nahollo/screens/myPage_screen.dart';
+import 'package:nahollo/screens/nahollo_anji_screen.dart';
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 
 void showExitDialog(BuildContext context) {
   //회원가입 취소 팝업창
@@ -45,4 +50,113 @@ void showExitDialog(BuildContext context) {
       );
     },
   );
+}
+
+class SizeUtil {
+  // 화면 반환
+  static Size getScreenSize(BuildContext context) {
+    return MediaQuery.of(context).size;
+  }
+
+  // 화면 너비 반환
+  static double getScreenWidth(BuildContext context) {
+    return MediaQuery.of(context).size.width;
+  }
+
+  // 화면 높이 반환
+  static double getScreenHeight(BuildContext context) {
+    return MediaQuery.of(context).size.height;
+  }
+
+  // 특정 퍼센트의 화면 너비를 반환
+  static double getWidthPercentage(BuildContext context, double percentage) {
+    return MediaQuery.of(context).size.width * percentage;
+  }
+
+  // 특정 퍼센트의 화면 높이를 반환
+  static double getHeightPercentage(BuildContext context, double percentage) {
+    return MediaQuery.of(context).size.height * percentage;
+  }
+}
+
+class CustomBottomNavBar extends StatefulWidget {
+  final int selectedIndex;
+
+  const CustomBottomNavBar({
+    super.key,
+    required this.selectedIndex,
+  });
+
+  @override
+  _CustomBottomNavBarState createState() => _CustomBottomNavBarState();
+}
+
+class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
+  void _onItemTapped(int index) {
+    // 페이지 이동 로직을 추가
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const NaholloWhereMainScreen()),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const NaholloAnjiScreen()),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const CommunityScreen()),
+        );
+        break;
+      case 4:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MypageScreen()),
+        );
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: widget.selectedIndex, // 선택된 탭 유지
+      onTap: _onItemTapped, // 탭 선택 시 _onItemTapped 호출
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: '나홀로어디?',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.book),
+          label: '나홀로안지',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home),
+          label: '홈',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.chat),
+          label: '커뮤니티',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: '마이페이지',
+        ),
+      ],
+    );
+  }
 }

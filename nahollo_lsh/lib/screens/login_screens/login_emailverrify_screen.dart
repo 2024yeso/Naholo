@@ -121,7 +121,7 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var width = MediaQueryUtil.getScreenWidth(context);
+    var width = SizeUtil.getScreenWidth(context);
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {

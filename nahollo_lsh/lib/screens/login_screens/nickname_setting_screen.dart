@@ -277,7 +277,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
                       }
                     },
                     child: SizedBox(
-                      width: MediaQueryUtil.getScreenWidth(context) * 0.4,
+                      width: SizeUtil.getScreenWidth(context) * 0.4,
                       child: const Center(
                         child: Text('회원가입 완료'),
                       ),

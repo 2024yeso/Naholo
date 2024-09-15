@@ -4,6 +4,7 @@ import 'package:nahollo/colors.dart';
 import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_welcome_screen.dart';
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class LoginFinishScreen extends StatefulWidget {
@@ -55,8 +56,8 @@ class _LoginFinishScreenState extends State<LoginFinishScreen> {
             ),
             SvgPicture.asset(
               'assets/images/nahollo_logo_purple.svg', // 로컬에 저장된 SVG 파일 경로
-              width: MediaQueryUtil.getScreenWidth(context) * 0.5,
-              height: MediaQueryUtil.getScreenWidth(context) * 0.5,
+              width: SizeUtil.getScreenWidth(context) * 0.5,
+              height: SizeUtil.getScreenWidth(context) * 0.5,
             ),
             SizedBox(
               height: size.height * 0.1,
@@ -75,8 +76,8 @@ class _LoginFinishScreenState extends State<LoginFinishScreen> {
                 foregroundColor: darkpurpleColor,
               ),
               child: SizedBox(
-                width: MediaQueryUtil.getScreenWidth(context) * 0.5,
-                child: const Center(  
+                width: SizeUtil.getScreenWidth(context) * 0.5,
+                child: const Center(
                   child: Text(
                     "계속하기",
                   ),

@@ -2,19 +2,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/screens/type_result_screens/red_panda_creating_screen.dart';
+import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
 import 'package:o3d/o3d.dart';
 
-class RedPandaScreen extends StatefulWidget {
+class CharacterExplainScreen extends StatefulWidget {
   String character;
 
-  RedPandaScreen({super.key, required this.character});
+  CharacterExplainScreen({super.key, required this.character});
 
   @override
-  State<RedPandaScreen> createState() => _RedPandaScreenState();
+  State<CharacterExplainScreen> createState() => _CharacterExplainScreenState();
 }
 
-class _RedPandaScreenState extends State<RedPandaScreen> {
+class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
   String showcharacter() {
@@ -147,7 +147,7 @@ class _RedPandaScreenState extends State<RedPandaScreen> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => RedPandaCreatingScreen(
+                                builder: (context) => CharacterCreatingScreen(
                                     character: widget.character),
                               ),
                             );
