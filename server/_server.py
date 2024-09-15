@@ -447,7 +447,7 @@ def get_journal(db=Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 일지 댓글
-@app.get("/journal/post_comment")
+@app.get("/journal/comment")
 def get_journal_comments(post_id: int):
     try:
         # 데이터베이스 연결
@@ -477,7 +477,30 @@ def get_journal_comments(post_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+@app.post("/journal/add_comment")
+def add_comment(comment: JournalComment, db=Depends(get_db)):
+    try:
+        cursor = db.cursor()
 
+        # 댓글 삽입 쿼리
+        insert_comment_query = """
+        INSERT INTO Journal_comment (POST_ID, USER_ID, COMMENT_CONTENT)
+        VALUES (%s, %s, %s)
+        """
+        cursor.execute(insert_comment_query, (comment.POST_ID, comment.USER_ID, comment.COMMENT_CONTENT))
+
+        # 데이터베이스 커밋
+        db.commit()
+        cursor.close()
+
+        return {"message": "Comment added successfully"}
+
+    except mysql.connector.Error as err:
+        db.rollback()  # 데이터베이스 오류 발생 시 롤백
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
     
 if __name__ == "__main__":
     import uvicorn

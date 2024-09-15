@@ -200,7 +200,7 @@ Future<void> testJournalMain() async {
 // /journal/post_comment 엔드포인트 테스트 함수
 Future<void> testGetJournalComments(int postId) async {
   final response = await http.get(
-    Uri.parse('$baseUrl/journal/post_comment?post_id=$postId'),
+    Uri.parse('$baseUrl/journal/comment?post_id=$postId'),
   );
 
   if (response.statusCode == 200) {
@@ -282,6 +282,33 @@ Future<void> testGetPlaceInfo(int whereId) async {
   }
 }
 
+Future<void> testAddComment() async {
+  // 클라이언트로부터 보낼 댓글 데이터
+  final commentData = {
+    "POST_ID": 1,
+    "USER_ID": "user123",
+    "COMMENT_CONTENT": "This is a test comment!"
+  };
+
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/journal/add_comment'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(commentData),
+    );
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(utf8.decode(response.bodyBytes));
+      print("Add Comment Response: ${responseData['message']}");
+    } else {
+      print(
+          "Failed to add comment: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+    }
+  } catch (e) {
+    print("An error occurred: $e");
+  }
+}
+
 void main() async {
 /*
   print("=== Testing ID Check ===");
@@ -302,5 +329,6 @@ void main() async {
   await testLoginFailureNonexistentUser();
 */
 
-  await testGetPlaceInfo(1);
+  await testAddComment();
+  await testGetJournalComments(1);
 }
