@@ -6,6 +6,8 @@ class DiaryPostList {
   final String content; // 일지 내용
   final int hot; // 일지 좋아요 수
   final bool subscribe; // 유저의 일지 구독 여부
+  final bool hotted; // 유저의 일지 좋아요 여부
+  final bool ghosted; // 유저의 작성자 차단 여부
 
   DiaryPostList({
     required this.author,
@@ -14,6 +16,8 @@ class DiaryPostList {
     required this.content,
     required this.hot,
     required this.subscribe,
+    this.hotted = false,
+    this.ghosted = false,
   });
 
   String getContentPreview(int length) {

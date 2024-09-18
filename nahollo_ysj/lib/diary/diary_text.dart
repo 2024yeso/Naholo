@@ -148,7 +148,6 @@ class DiaryText extends StatelessWidget {
                         fontSize: SizeScaler.scaleSize(context, 7, 14),
                         fontWeight: FontWeight.w300),
                   ),
-                  
                 ],
               ),
             ),
@@ -276,3 +275,6 @@ class DiaryText extends StatelessWidget {
     return DateFormat(' yyyy.MM.dd. HH:mm').format(dateTime);
   }
 }
+
+// 좋아요 기능 추가
+// 좋아요로 서버와 소통

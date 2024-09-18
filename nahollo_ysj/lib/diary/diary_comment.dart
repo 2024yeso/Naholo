@@ -9,22 +9,19 @@ class DiaryComment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 샘플 댓글 및 답글 데이터
-    final List<Map<String, dynamic>> comments = [
+    // 샘플 댓글 데이터
+    final List<Map<String, String>> comments = [
       {
         'author': 'JohnDoe',
         'content': 'Great post!',
-        'isReply': false,
       },
       {
         'author': 'JaneSmith',
         'content': 'Very informative.',
-        'isReply': true,
       },
       {
         'author': 'User123',
         'content': 'I found this really helpful.',
-        'isReply': false,
       },
     ];
 
@@ -36,7 +33,9 @@ class DiaryComment extends StatelessWidget {
             backgroundColor: Colors.white,
             toolbarHeight: SizeScaler.scaleSize(context, 25, 50),
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20)),
+              icon: Icon(Icons.arrow_back,
+                  color: Colors.black,
+                  size: SizeScaler.scaleSize(context, 10, 20)),
               onPressed: () {
                 Navigator.pop(context);
               },
@@ -51,7 +50,9 @@ class DiaryComment extends StatelessWidget {
                 ),
               ),
             ),
-            actions: [SizedBox(width: SizeScaler.scaleSize(context, 20, 40))], // 화면 중앙 맞추기 위한 여백 추가
+            actions: [
+              SizedBox(width: SizeScaler.scaleSize(context, 20, 40))
+            ], // 화면 중앙 맞추기 위한 여백 추가
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -79,19 +80,19 @@ class DiaryComment extends StatelessWidget {
                       ),
                     ),
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 5, 10)), // 댓글수와 첫 댓글 사이의 여백
+                  SizedBox(
+                      height: SizeScaler.scaleSize(
+                          context, 5, 10)), // 댓글수와 첫 댓글 사이의 여백
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: comments.length,
                     itemBuilder: (context, index) {
-                      final bool isReply = comments[index]['isReply'];
                       return Padding(
-                        padding: EdgeInsets.only(
-                          top: SizeScaler.scaleSize(context, 3, 6),
-                          bottom: SizeScaler.scaleSize(context, 3, 6),
-                          left: isReply ? SizeScaler.scaleSize(context, 17, 34) : SizeScaler.scaleSize(context, 11, 22), // 답글은 6만큼 더 들여쓰기
-                          right: SizeScaler.scaleSize(context, 11, 22), // 우측 여백
+                        padding: EdgeInsets.symmetric(
+                          vertical: SizeScaler.scaleSize(context, 3, 6),
+                          horizontal:
+                              SizeScaler.scaleSize(context, 11, 22), // 좌우 여백 추가
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,17 +103,20 @@ class DiaryComment extends StatelessWidget {
                                   radius: SizeScaler.scaleSize(context, 6, 12),
                                   backgroundColor: Colors.grey,
                                 ),
-                                SizedBox(width: SizeScaler.scaleSize(context, 3, 6)),
+                                SizedBox(
+                                    width: SizeScaler.scaleSize(context, 3, 6)),
                                 Text(
                                   comments[index]['author']!,
                                   style: TextStyle(
-                                    fontSize: SizeScaler.scaleSize(context, 6, 12),
+                                    fontSize:
+                                        SizeScaler.scaleSize(context, 6, 12),
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: SizeScaler.scaleSize(context, 4, 8)),
+                            SizedBox(
+                                height: SizeScaler.scaleSize(context, 4, 8)),
                             Text(
                               comments[index]['content']!,
                               style: TextStyle(
@@ -121,11 +125,14 @@ class DiaryComment extends StatelessWidget {
                                 color: const Color(0xFF353535),
                               ),
                             ),
-                            SizedBox(height: SizeScaler.scaleSize(context, 1, 2)),
+                            SizedBox(
+                                height: SizeScaler.scaleSize(context, 1, 2)),
                             Row(
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.reply, size: SizeScaler.scaleSize(context, 10, 20)),
+                                  icon: Icon(Icons.reply,
+                                      size: SizeScaler.scaleSize(
+                                          context, 10, 20)),
                                   onPressed: () {
                                     // 답글쓰기 기능 추가
                                   },
@@ -133,7 +140,8 @@ class DiaryComment extends StatelessWidget {
                                 Text(
                                   '답글쓰기',
                                   style: TextStyle(
-                                    fontSize: SizeScaler.scaleSize(context, 5, 10),
+                                    fontSize:
+                                        SizeScaler.scaleSize(context, 5, 10),
                                     fontWeight: FontWeight.w500,
                                     color: const Color(0xFF7E7E7E),
                                   ),
@@ -149,26 +157,47 @@ class DiaryComment extends StatelessWidget {
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16, 32)),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: '댓글을 작성해주세요',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(width: SizeScaler.scaleSize(context, 8, 16)),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    // 댓글 전송 처리 로직
-                  },
+          Container(
+            width: double.infinity, // 화면 넓이
+            padding:
+                EdgeInsets.only(bottom: SizeScaler.scaleSize(context, 20, 40)),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  spreadRadius: 0,
+                  blurRadius: 5,
+                  offset: Offset(0, 2), // 상단에만 그림자
                 ),
               ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 7, 14)),
+              child: Container(
+                padding: EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9D9D9),
+                  border: Border.all(
+                    color: Colors.black,
+                    width: SizeScaler.scaleSize(context, 0.2, 0.4), // 테두리 두께 설정
+                  ),
+                  borderRadius: BorderRadius.circular(
+                      SizeScaler.scaleSize(context, 27, 54)), // 모서리 둥글게
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: '댓글을 남겨주세요',
+                    hintStyle: TextStyle(
+                        color: const Color(0xFF7C7C7C),
+                        fontSize: SizeScaler.scaleSize(context, 7, 14),
+                        fontWeight: FontWeight.w200),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.only(
+                        left: SizeScaler.scaleSize(context, 10, 20)),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
