@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
 import 'package:nahollo/providers/user_provider.dart';

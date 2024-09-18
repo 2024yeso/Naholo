@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/util.dart';
+import 'package:nahollo/widgets/swippingcard_widget.dart';
 
 class NaholloWhereMainScreen extends StatefulWidget {
   const NaholloWhereMainScreen({super.key});
@@ -39,52 +41,60 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                   },
                 ),
               ),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
+                child: Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(20, 10),
+                      ),
+                      child: const Text("전체"),
                     ),
-                    child: const Text("전체"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(20, 10),
+                      ),
+                      child: const Text("혼놀"),
                     ),
-                    child: const Text("혼놀"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(20, 10),
+                      ),
+                      child: const Text("혼밥"),
                     ),
-                    child: const Text("혼밥"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(20, 10),
+                      ),
+                      child: const Text("혼박"),
                     ),
-                    child: const Text("혼박"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(20, 10),
+                      ),
+                      child: const Text("혼술"),
                     ),
-                    child: const Text("혼술"),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const Row(
                 children: [],
               ),
               const Text("전국 핫플 혼놀 장소"),
-              const Row(
-                children: [],
-              ),
+              ElevatedButton(
+                  onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const NaholloWhereRegisterScreen(),
+                      )),
+                  child: const Text("글쓰기")),
               CustomBottomNavBar(selectedIndex: _selectedIndex)
             ],
           ),

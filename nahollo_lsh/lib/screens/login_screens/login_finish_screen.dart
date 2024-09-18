@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_welcome_screen.dart';
 import 'package:nahollo/util.dart';

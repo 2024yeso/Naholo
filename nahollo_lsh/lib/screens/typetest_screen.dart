@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
-import 'package:nahollo/screens/analyzing_results_screen.dart';
+import 'package:nahollo/screens/type_result_screens/analyzing_results_screen.dart';
 
 class TypetestScreen extends StatefulWidget {
   const TypetestScreen({super.key});
@@ -87,10 +87,8 @@ class _TypetestScreenState extends State<TypetestScreen> {
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => AnalyzingResultsScreen(
-              character: character,
-            ),
-          ));
+              builder: (context) =>
+                  AnalyzingResultsScreen(character: character)));
     }
   }
 
