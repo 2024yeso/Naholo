@@ -12,6 +12,9 @@ class _DiaryWritingState extends State<DiaryWriting> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
 
+  // subjList 상태 관리
+  List<bool> subjList = [false, false, false, false, false, false, false];
+
   @override
   void dispose() {
     _titleController.dispose();
@@ -110,8 +113,9 @@ class _DiaryWritingState extends State<DiaryWriting> {
             ),
             // 주제 선택란
             Padding(
-              padding:
-                  EdgeInsets.all(SizeScaler.scaleSize(context, 11, 22), ),
+              padding: EdgeInsets.all(
+                SizeScaler.scaleSize(context, 11, 22),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -138,10 +142,15 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       '# 혼박',
                       '# 혼술',
                       '# 기타'
-                    ].map((topic) {
+                    ].asMap().entries.map((entry) {
+                      int index = entry.key;
+                      String topic = entry.value;
                       return ElevatedButton(
                         onPressed: () {
-                          // 버튼 클릭 시 동작
+                          setState(() {
+                            // subjList의 인덱스에 해당하는 값을 반전시킴
+                            subjList[index] = !subjList[index];
+                          });
                         },
                         child: Text(
                           topic,
@@ -150,8 +159,12 @@ class _DiaryWritingState extends State<DiaryWriting> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white, // 버튼 배경색
-                          foregroundColor: Color(0xFF646464), // 버튼 텍스트 색
+                          elevation: 0,
+                          backgroundColor: subjList[index]
+                              ? Color(0xFFD8CBFF) // 선택된 경우 연보라색
+                              : Colors.white, // 선택되지 않은 경우 흰색
+                          foregroundColor:
+                              Color(0xFF646464), // 선택되지 않은 경우 회색 텍스트
                           padding: EdgeInsets.zero, // 내부 패딩 제거
                           minimumSize: Size(
                             SizeScaler.scaleSize(context, 40, 80), // 버튼 크기
@@ -161,10 +174,16 @@ class _DiaryWritingState extends State<DiaryWriting> {
                             borderRadius: BorderRadius.circular(
                               SizeScaler.scaleSize(context, 33, 66), // 둥글기 정도
                             ),
-                            side: BorderSide(
-                              color: Color(0xFF646464), // 윤곽선 색상
-                              width: SizeScaler.scaleSize(context, 0.3, 0.6), // 윤곽선 두께
-                            ),
+                            side: subjList[index]
+                                ? BorderSide(
+                                    color: Color(0xFF794FFF), // 윤곽선 색상
+                                    width: SizeScaler.scaleSize(
+                                        context, 0.3, 0.6)) // 윤곽선 두께
+                                : BorderSide(
+                                    color: Color(0xFF646464), // 윤곽선 색상
+                                    width: SizeScaler.scaleSize(
+                                        context, 0.3, 0.6), // 윤곽선 두께
+                                  ),
                           ),
                         ),
                       );
@@ -202,3 +221,5 @@ class _DiaryWritingState extends State<DiaryWriting> {
     );
   }
 }
+
+// 카메라 버튼 구현 필요
