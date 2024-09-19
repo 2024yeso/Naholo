@@ -6,7 +6,7 @@ import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
 
 String userName = "시금치"; // 현재 유저의 닉네임
 
-class DiaryText extends StatelessWidget {
+class DiaryText extends StatefulWidget {
   final String postTitle;
   final String postContent;
   final String author; // 작성자 이름
@@ -19,6 +19,14 @@ class DiaryText extends StatelessWidget {
     required this.author,
     required this.createdAt,
   });
+
+  @override
+  _DiaryTextState createState() => _DiaryTextState();
+}
+
+class _DiaryTextState extends State<DiaryText> {
+  bool isLiked = false; // 좋아요 상태
+  int likeCount = 10; // 좋아요 수 (예시)
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +60,6 @@ class DiaryText extends StatelessWidget {
                       icon: Icon(Icons.share, size: SizeScaler.scaleSize(context, 10, 20)),
                       onPressed: () {
                         // 공유 기능 추가
-                        // 이곳에 공유 기능 관련 코드를 추가해야 합니다.
                       },
                     ),
                     SizedBox(
@@ -84,13 +91,13 @@ class DiaryText extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              author, // 작성자 이름
+                              widget.author, // 작성자 이름
                               style: TextStyle(
                                   fontSize: SizeScaler.scaleSize(context, 8, 16),
                                   fontWeight: FontWeight.w600),
                             ),
                             Text(
-                              _formatDateTimeRelative(createdAt), // 작성 시간 (상대적)
+                              _formatDateTimeRelative(widget.createdAt), // 작성 시간 (상대적)
                               style: TextStyle(
                                   fontSize: SizeScaler.scaleSize(context, 6, 12),
                                   fontWeight: FontWeight.w300,
@@ -114,14 +121,14 @@ class DiaryText extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        postTitle, // 글 제목
+                        widget.postTitle, // 글 제목
                         style: TextStyle(
                             fontSize: SizeScaler.scaleSize(context, 10, 20),
                             fontWeight: FontWeight.w400),
                       ),
                       SizedBox(height: SizeScaler.scaleSize(context, 2, 4)),
                       Text(
-                        _formatDateTimeAbsolute(createdAt), // 작성 시간 (yyyy.MM.dd. HH:mm 형식)
+                        _formatDateTimeAbsolute(widget.createdAt), // 작성 시간 (yyyy.MM.dd. HH:mm 형식)
                         style: TextStyle(
                             fontSize: SizeScaler.scaleSize(context, 5, 10),
                             fontWeight: FontWeight.w300,
@@ -143,7 +150,7 @@ class DiaryText extends StatelessWidget {
                   SizedBox(height: SizeScaler.scaleSize(context, 20, 40)),
                   // 글 내용 표시
                   Text(
-                    postContent,
+                    widget.postContent,
                     style: TextStyle(
                         fontSize: SizeScaler.scaleSize(context, 7, 14),
                         fontWeight: FontWeight.w300),
@@ -151,7 +158,7 @@ class DiaryText extends StatelessWidget {
                 ],
               ),
             ),
-            // 공감, 댓글 버튼들 (완전 미완성, 피그마에 없음)
+            // 공감, 댓글 버튼들
             Padding(
               padding: EdgeInsets.all(SizeScaler.scaleSize(context, 5, 10)),
               child: Row(
@@ -160,22 +167,27 @@ class DiaryText extends StatelessWidget {
                   IconButton(
                     iconSize: SizeScaler.scaleSize(context, 10, 20),
                     padding: EdgeInsets.zero,
-                    icon: Icon(Icons.favorite_border, size: SizeScaler.scaleSize(context, 10, 20),),
+                    icon: Icon(
+                      isLiked ? Icons.favorite : Icons.favorite_border, 
+                      color: isLiked ? Colors.red : Colors.black, 
+                      size: SizeScaler.scaleSize(context, 10, 20),
+                    ),
                     onPressed: () {
-                      // 좋아요 기능
+                      setState(() {
+                        if (isLiked) {
+                          likeCount--;
+                        } else {
+                          likeCount++;
+                        }
+                        isLiked = !isLiked;
+                      });
                     },
                   ),
                   Text(
-                    '10', // 좋아요 수 (예시)
+                    '$likeCount', // 좋아요 수
                     style: TextStyle(
                         fontSize: SizeScaler.scaleSize(context, 5, 10),
                         fontWeight: FontWeight.w300),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.more_horiz, size: SizeScaler.scaleSize(context, 10, 20)),
-                    onPressed: () {
-                      // 옵션 버튼 기능
-                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.comment, size: SizeScaler.scaleSize(context, 10, 20)),
@@ -183,7 +195,7 @@ class DiaryText extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DiaryComment(postTitle: postTitle),
+                          builder: (context) => DiaryComment(postTitle: widget.postTitle),
                         ),
                       );
                     },
@@ -209,7 +221,7 @@ class DiaryText extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return Wrap(
-          children: userName == author
+          children: userName == widget.author
               ? [
                   ListTile(
                     leading: Icon(Icons.edit),
@@ -266,15 +278,13 @@ class DiaryText extends StatelessWidget {
       // 1분 이상 경과 시 몇 분 전으로 표시
       return '${difference.inMinutes}분 전';
     } else {
+      // 1분 미만일 경우 방금 전으로 표시
       return '방금 전';
     }
   }
 
-  // 절대적 시간 포맷팅 함수 (yyyy.MM.dd. HH:mm 형식)
+  // 절대적 시간 포맷팅 함수
   String _formatDateTimeAbsolute(DateTime dateTime) {
-    return DateFormat(' yyyy.MM.dd. HH:mm').format(dateTime);
+    return DateFormat('yyyy.MM.dd. HH:mm').format(dateTime);
   }
 }
-
-// 좋아요 기능 추가
-// 좋아요로 서버와 소통

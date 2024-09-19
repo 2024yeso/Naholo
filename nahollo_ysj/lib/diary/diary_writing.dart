@@ -22,11 +22,13 @@ class _DiaryWritingState extends State<DiaryWriting> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // 페이지 배경색을 하얀색으로 설정
       appBar: AppBar(
         backgroundColor: Colors.white,
         toolbarHeight: SizeScaler.scaleSize(context, 25, 50),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20)),
+          icon: Icon(Icons.arrow_back,
+              color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -43,7 +45,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
         ),
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: SizeScaler.scaleSize(context, 8, 16)),
+            padding:
+                EdgeInsets.only(right: SizeScaler.scaleSize(context, 8, 16)),
             child: Center(
               child: GestureDetector(
                 onTap: () {
@@ -80,24 +83,117 @@ class _DiaryWritingState extends State<DiaryWriting> {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16, 32)),
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
+            Padding(
+              padding: EdgeInsets.only(
+                  left: SizeScaler.scaleSize(context, 11, 22),
+                  top: SizeScaler.scaleSize(context, 3, 6),
+                  bottom: SizeScaler.scaleSize(context, 3, 6)),
+              child: TextField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  hintText: '제목을 입력하세요.',
+                  hintStyle: TextStyle(
+                      color: const Color(0xFFABABAB),
+                      fontSize: SizeScaler.scaleSize(context, 11, 22),
+                      fontWeight: FontWeight.w400),
+                  border: InputBorder.none,
+                ),
               ),
             ),
-            SizedBox(height: SizeScaler.scaleSize(context, 10, 20)),
-            TextField(
-              controller: _contentController,
-              maxLines: 5,
-              decoration: InputDecoration(
-                labelText: 'Content',
-                border: OutlineInputBorder(),
+            // 제목 입력창 아래의 구분선
+            Container(
+              color: const Color(0xFFBABABA), // 구분선 색상
+              height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+            ),
+            // 주제 선택란
+            Padding(
+              padding:
+                  EdgeInsets.all(SizeScaler.scaleSize(context, 11, 22), ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '주제를 선택하세요!',
+                      style: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 5, 10),
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: SizeScaler.scaleSize(context, 8, 16)),
+                  Wrap(
+                    spacing: SizeScaler.scaleSize(context, 5, 10), // 버튼 사이 간격
+                    runSpacing: SizeScaler.scaleSize(context, 5, 10), // 줄 간격
+                    children: [
+                      '# 혼캎',
+                      '# 혼영',
+                      '# 혼놀',
+                      '# 혼밥',
+                      '# 혼박',
+                      '# 혼술',
+                      '# 기타'
+                    ].map((topic) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          // 버튼 클릭 시 동작
+                        },
+                        child: Text(
+                          topic,
+                          style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 7, 14),
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white, // 버튼 배경색
+                          foregroundColor: Color(0xFF646464), // 버튼 텍스트 색
+                          padding: EdgeInsets.zero, // 내부 패딩 제거
+                          minimumSize: Size(
+                            SizeScaler.scaleSize(context, 40, 80), // 버튼 크기
+                            SizeScaler.scaleSize(context, 18, 36),
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              SizeScaler.scaleSize(context, 33, 66), // 둥글기 정도
+                            ),
+                            side: BorderSide(
+                              color: Color(0xFF646464), // 윤곽선 색상
+                              width: SizeScaler.scaleSize(context, 0.3, 0.6), // 윤곽선 두께
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            ),
+
+            // 주제 선택란 아래의 구분선
+            Container(
+              color: const Color(0xFFBABABA), // 구분선 색상
+              height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+            ),
+            // 내용 입력 부분
+            Padding(
+              padding:
+                  EdgeInsets.only(left: SizeScaler.scaleSize(context, 11, 22)),
+              child: TextField(
+                controller: _contentController,
+                maxLines: null, // 제한 없는 줄 수
+                decoration: InputDecoration(
+                  hintText: '내용을 입력하세요.',
+                  hintStyle: TextStyle(
+                      color: const Color(0xFFABABAB),
+                      fontSize: SizeScaler.scaleSize(context, 7, 14),
+                      fontWeight: FontWeight.w400),
+                  border: InputBorder.none,
+                ),
               ),
             ),
           ],

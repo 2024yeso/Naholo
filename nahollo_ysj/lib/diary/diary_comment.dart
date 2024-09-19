@@ -205,3 +205,6 @@ class DiaryComment extends StatelessWidget {
     );
   }
 }
+
+// 답글 기능 구현
+// 글쓴이 표시 구현
