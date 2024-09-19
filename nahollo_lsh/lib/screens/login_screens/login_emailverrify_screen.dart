@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
-import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_finish_screen.dart';

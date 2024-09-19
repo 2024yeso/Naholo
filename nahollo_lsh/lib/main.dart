@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:nahollo/firebase_options.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
@@ -12,6 +13,11 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Firebase 초기화
   );
+  await NaverMapSdk.instance.initialize(
+      clientId: "ftbujosikx",
+      onAuthFailed: (ex) {
+        print("********* 네이버맵 인증오류 : $ex *********");
+      });
   runApp(const MyApp()); // 앱 실행
 }
 

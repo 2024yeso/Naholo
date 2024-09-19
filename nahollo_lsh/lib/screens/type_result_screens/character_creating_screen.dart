@@ -30,11 +30,11 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
               Provider.of<UserProvider>(context, listen: false);
           userProvider.updateUserCharacter(widget.character);
           // reverse 애니메이션이 끝난 후 다음 화면으로 이동
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => const MainScreen(),
-            ),
+                builder: (context) => const MainScreen()), // 이동할 새로운 화면
+            (Route<dynamic> route) => false, // 모든 이전 라우트를 삭제
           );
         }
       },

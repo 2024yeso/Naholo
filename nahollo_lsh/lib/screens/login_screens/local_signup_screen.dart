@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:nahollo/mediaqueryutil.dart';
 import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
