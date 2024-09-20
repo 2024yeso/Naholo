@@ -37,9 +37,9 @@ class _DiaryTextState extends State<DiaryText> {
           children: [
             AppBar(
               backgroundColor: Colors.white,
-              toolbarHeight: SizeScaler.scaleSize(context, 25, 50), 
+              toolbarHeight: SizeScaler.scaleSize(context, 25), 
               leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20),),
+                icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10),),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -47,7 +47,7 @@ class _DiaryTextState extends State<DiaryText> {
               title: Center(
                 child: Text('일지 상세 보기',
                     style: TextStyle(
-                      fontSize: SizeScaler.scaleSize(context, 8, 16),
+                      fontSize: SizeScaler.scaleSize(context, 8),
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     )),
@@ -57,23 +57,23 @@ class _DiaryTextState extends State<DiaryText> {
                   children: [
                     // 공유 버튼
                     IconButton(
-                      icon: Icon(Icons.share, size: SizeScaler.scaleSize(context, 10, 20)),
+                      icon: Icon(Icons.share, size: SizeScaler.scaleSize(context, 10)),
                       onPressed: () {
                         // 공유 기능 추가
                       },
                     ),
                     SizedBox(
-                        width: SizeScaler.scaleSize(context, 2, 4)), // 버튼 사이의 여백
+                        width: SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
                   ],
                 ),
               ],
             ),
             Container(
               color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-              height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+              height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
             ),
             Padding(
-              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16, 32)),
+              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -81,7 +81,7 @@ class _DiaryTextState extends State<DiaryText> {
                   Row(
                     children: [
                       CircleAvatar(
-                        radius: SizeScaler.scaleSize(context, 10, 20),
+                        radius: SizeScaler.scaleSize(context, 10),
                         backgroundColor: Colors.grey,
                         child: Icon(Icons.person, color: Colors.white),
                       ),
@@ -93,13 +93,13 @@ class _DiaryTextState extends State<DiaryText> {
                             Text(
                               widget.author, // 작성자 이름
                               style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 8, 16),
+                                  fontSize: SizeScaler.scaleSize(context, 8),
                                   fontWeight: FontWeight.w600),
                             ),
                             Text(
                               _formatDateTimeRelative(widget.createdAt), // 작성 시간 (상대적)
                               style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 6, 12),
+                                  fontSize: SizeScaler.scaleSize(context, 6),
                                   fontWeight: FontWeight.w300,
                                   color: const Color(0xFF7E7E7E)),
                             ),
@@ -108,7 +108,7 @@ class _DiaryTextState extends State<DiaryText> {
                       ),
                       // 옵션 버튼 추가
                       IconButton(
-                        icon: Icon(Icons.more_vert, size: SizeScaler.scaleSize(context, 10, 20)),
+                        icon: Icon(Icons.more_vert, size: SizeScaler.scaleSize(context, 10)),
                         onPressed: () {
                           // 옵션 버튼을 눌렀을 때 나타날 기능을 여기 추가합니다.
                           _showOptions(context);
@@ -116,43 +116,43 @@ class _DiaryTextState extends State<DiaryText> {
                       ),
                     ],
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 12, 24)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 12)),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         widget.postTitle, // 글 제목
                         style: TextStyle(
-                            fontSize: SizeScaler.scaleSize(context, 10, 20),
+                            fontSize: SizeScaler.scaleSize(context, 10),
                             fontWeight: FontWeight.w400),
                       ),
-                      SizedBox(height: SizeScaler.scaleSize(context, 2, 4)),
+                      SizedBox(height: SizeScaler.scaleSize(context, 2)),
                       Text(
                         _formatDateTimeAbsolute(widget.createdAt), // 작성 시간 (yyyy.MM.dd. HH:mm 형식)
                         style: TextStyle(
-                            fontSize: SizeScaler.scaleSize(context, 5, 10),
+                            fontSize: SizeScaler.scaleSize(context, 5),
                             fontWeight: FontWeight.w300,
                             color: const Color(0xFF7E7E7E)),
                       ),
                     ],
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 10, 20)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 10)),
                   Row(
                     children: [
                       Expanded(
                         child: Container(
                            color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-                           height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+                           height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 20, 40)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 20)),
                   // 글 내용 표시
                   Text(
                     widget.postContent,
                     style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 7, 14),
+                        fontSize: SizeScaler.scaleSize(context, 7),
                         fontWeight: FontWeight.w300),
                   ),
                 ],
@@ -160,17 +160,17 @@ class _DiaryTextState extends State<DiaryText> {
             ),
             // 공감, 댓글 버튼들
             Padding(
-              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 5, 10)),
+              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 5)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   IconButton(
-                    iconSize: SizeScaler.scaleSize(context, 10, 20),
+                    iconSize: SizeScaler.scaleSize(context, 10),
                     padding: EdgeInsets.zero,
                     icon: Icon(
                       isLiked ? Icons.favorite : Icons.favorite_border, 
                       color: isLiked ? Colors.red : Colors.black, 
-                      size: SizeScaler.scaleSize(context, 10, 20),
+                      size: SizeScaler.scaleSize(context, 10),
                     ),
                     onPressed: () {
                       setState(() {
@@ -186,11 +186,11 @@ class _DiaryTextState extends State<DiaryText> {
                   Text(
                     '$likeCount', // 좋아요 수
                     style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5, 10),
+                        fontSize: SizeScaler.scaleSize(context, 5),
                         fontWeight: FontWeight.w300),
                   ),
                   IconButton(
-                    icon: Icon(Icons.comment, size: SizeScaler.scaleSize(context, 10, 20)),
+                    icon: Icon(Icons.comment, size: SizeScaler.scaleSize(context, 10)),
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -203,7 +203,7 @@ class _DiaryTextState extends State<DiaryText> {
                   Text(
                     '5', // 댓글 개수 (제대로 구현 안 됨)
                     style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5, 10),
+                        fontSize: SizeScaler.scaleSize(context, 5),
                         fontWeight: FontWeight.w300),
                   ),
                 ],

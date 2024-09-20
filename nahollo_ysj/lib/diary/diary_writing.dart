@@ -28,10 +28,10 @@ class _DiaryWritingState extends State<DiaryWriting> {
       backgroundColor: Colors.white, // 페이지 배경색을 하얀색으로 설정
       appBar: AppBar(
         backgroundColor: Colors.white,
-        toolbarHeight: SizeScaler.scaleSize(context, 25, 50),
+        toolbarHeight: SizeScaler.scaleSize(context, 25),
         leading: IconButton(
           icon: Icon(Icons.arrow_back,
-              color: Colors.black, size: SizeScaler.scaleSize(context, 10, 20)),
+              color: Colors.black, size: SizeScaler.scaleSize(context, 10)),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -40,7 +40,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
           child: Text(
             '일지 작성',
             style: TextStyle(
-              fontSize: SizeScaler.scaleSize(context, 8, 16),
+              fontSize: SizeScaler.scaleSize(context, 8),
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),
@@ -49,7 +49,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
         actions: [
           Padding(
             padding:
-                EdgeInsets.only(right: SizeScaler.scaleSize(context, 8, 16)),
+                EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
             child: Center(
               child: GestureDetector(
                 onTap: () {
@@ -69,7 +69,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                 child: Text(
                   '작성',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8, 16),
+                    fontSize: SizeScaler.scaleSize(context, 8),
                     fontWeight: FontWeight.w500,
                     color: Colors.black,
                   ),
@@ -79,10 +79,10 @@ class _DiaryWritingState extends State<DiaryWriting> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(SizeScaler.scaleSize(context, 0.5, 1)),
+          preferredSize: Size.fromHeight(SizeScaler.scaleSize(context, 0.5)),
           child: Container(
             color: const Color(0xFFBABABA), // 구분선 색상
-            height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
           ),
         ),
       ),
@@ -91,16 +91,16 @@ class _DiaryWritingState extends State<DiaryWriting> {
           children: [
             Padding(
               padding: EdgeInsets.only(
-                  left: SizeScaler.scaleSize(context, 11, 22),
-                  top: SizeScaler.scaleSize(context, 3, 6),
-                  bottom: SizeScaler.scaleSize(context, 3, 6)),
+                  left: SizeScaler.scaleSize(context, 11),
+                  top: SizeScaler.scaleSize(context, 3),
+                  bottom: SizeScaler.scaleSize(context, 3)),
               child: TextField(
                 controller: _titleController,
                 decoration: InputDecoration(
                   hintText: '제목을 입력하세요.',
                   hintStyle: TextStyle(
                       color: const Color(0xFFABABAB),
-                      fontSize: SizeScaler.scaleSize(context, 11, 22),
+                      fontSize: SizeScaler.scaleSize(context, 11),
                       fontWeight: FontWeight.w400),
                   border: InputBorder.none,
                 ),
@@ -109,12 +109,12 @@ class _DiaryWritingState extends State<DiaryWriting> {
             // 제목 입력창 아래의 구분선
             Container(
               color: const Color(0xFFBABABA), // 구분선 색상
-              height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+              height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
             ),
             // 주제 선택란
             Padding(
               padding: EdgeInsets.all(
-                SizeScaler.scaleSize(context, 11, 22),
+                SizeScaler.scaleSize(context, 11),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,16 +124,16 @@ class _DiaryWritingState extends State<DiaryWriting> {
                     child: Text(
                       '주제를 선택하세요!',
                       style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5, 10),
+                        fontSize: SizeScaler.scaleSize(context, 5),
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
                     ),
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 8, 16)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 8)),
                   Wrap(
-                    spacing: SizeScaler.scaleSize(context, 5, 10), // 버튼 사이 간격
-                    runSpacing: SizeScaler.scaleSize(context, 5, 10), // 줄 간격
+                    spacing: SizeScaler.scaleSize(context, 5), // 버튼 사이 간격
+                    runSpacing: SizeScaler.scaleSize(context, 5), // 줄 간격
                     children: [
                       '# 혼캎',
                       '# 혼영',
@@ -155,7 +155,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                         child: Text(
                           topic,
                           style: TextStyle(
-                            fontSize: SizeScaler.scaleSize(context, 7, 14),
+                            fontSize: SizeScaler.scaleSize(context, 7),
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -167,22 +167,22 @@ class _DiaryWritingState extends State<DiaryWriting> {
                               Color(0xFF646464), // 선택되지 않은 경우 회색 텍스트
                           padding: EdgeInsets.zero, // 내부 패딩 제거
                           minimumSize: Size(
-                            SizeScaler.scaleSize(context, 40, 80), // 버튼 크기
-                            SizeScaler.scaleSize(context, 18, 36),
+                            SizeScaler.scaleSize(context, 40), // 버튼 크기
+                            SizeScaler.scaleSize(context, 18),
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
-                              SizeScaler.scaleSize(context, 33, 66), // 둥글기 정도
+                              SizeScaler.scaleSize(context, 33), // 둥글기 정도
                             ),
                             side: subjList[index]
                                 ? BorderSide(
                                     color: Color(0xFF794FFF), // 윤곽선 색상
                                     width: SizeScaler.scaleSize(
-                                        context, 0.3, 0.6)) // 윤곽선 두께
+                                        context, 0.3)) // 윤곽선 두께
                                 : BorderSide(
                                     color: Color(0xFF646464), // 윤곽선 색상
                                     width: SizeScaler.scaleSize(
-                                        context, 0.3, 0.6), // 윤곽선 두께
+                                        context, 0.3), // 윤곽선 두께
                                   ),
                           ),
                         ),
@@ -196,12 +196,12 @@ class _DiaryWritingState extends State<DiaryWriting> {
             // 주제 선택란 아래의 구분선
             Container(
               color: const Color(0xFFBABABA), // 구분선 색상
-              height: SizeScaler.scaleSize(context, 0.5, 1), // 구분선 두께
+              height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
             ),
             // 내용 입력 부분
             Padding(
               padding:
-                  EdgeInsets.only(left: SizeScaler.scaleSize(context, 11, 22)),
+                  EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
               child: TextField(
                 controller: _contentController,
                 maxLines: null, // 제한 없는 줄 수
@@ -209,7 +209,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                   hintText: '내용을 입력하세요.',
                   hintStyle: TextStyle(
                       color: const Color(0xFFABABAB),
-                      fontSize: SizeScaler.scaleSize(context, 7, 14),
+                      fontSize: SizeScaler.scaleSize(context, 7),
                       fontWeight: FontWeight.w400),
                   border: InputBorder.none,
                 ),
