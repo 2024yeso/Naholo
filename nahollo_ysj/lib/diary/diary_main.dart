@@ -37,10 +37,10 @@ class _DiaryMainState extends State<DiaryMain> {
       hotted: true,
     ),
     DiaryPostList(
-      author: '최은서',
+      author: '바나나',
       createdAt: DateTime.now().subtract(Duration(days: 3)),
-      title: '권위적인 입맛',
-      content: '얼그레이 말차 캬라멜 피스타치오 크림 오트 맛있어요!',
+      title: 'Banana',
+      content: 'Bananananananananananananananana\nBanananananananananananananananana\nBananananananananananananananananana',
       hot: 10,
       subscribe: true,
       hotted: true,
