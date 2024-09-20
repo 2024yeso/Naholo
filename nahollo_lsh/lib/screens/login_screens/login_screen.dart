@@ -17,6 +17,7 @@ import 'package:nahollo/screens/main_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/test_info.dart';
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -149,207 +150,219 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
 
-    return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-              image: AssetImage('assets/images/light_purple_bg.png'),
-              fit: BoxFit.cover),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/images/nahollo_logo_human_white.svg',
-                  width: size.width * 0.4,
-                  height: size.width * 0.4,
-                ),
-                SvgPicture.asset(
-                  'assets/images/nahollo_logo_name_white.svg',
-                  width: size.width * 0.3,
-                  height: size.width * 0.1,
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                const Text(
-                  'SNS로 빠른 회원가입',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: darkpurpleColor,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        //didPop == true , 뒤로가기 제스쳐가 감지되면 호출 된다.
+        if (didPop) {
+          print('didPop호출');
+          return;
+        }
+        showAppExitDialog(context);
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+                image: AssetImage('assets/images/light_purple_bg.png'),
+                fit: BoxFit.cover),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/nahollo_logo_human_white.svg',
+                    width: size.width * 0.4,
+                    height: size.width * 0.4,
                   ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        signInWithGoogle();
-                        if (isLoginSuccess) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const MainScreen()));
-                        }
-                      },
-                      child: Container(
-                        child: SvgPicture.asset(
-                          'assets/images/google_icon.svg',
-                          width: size.width * 0.15,
-                          height: size.width * 0.15,
-                        ),
-                      ),
+                  SvgPicture.asset(
+                    'assets/images/nahollo_logo_name_white.svg',
+                    width: size.width * 0.3,
+                    height: size.width * 0.1,
+                  ),
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  const Text(
+                    'SNS로 빠른 회원가입',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: darkpurpleColor,
                     ),
-                  ],
-                ),
-                SizedBox(
-                  height: size.height * 0.01,
-                ),
-                const Text(
-                  'OR',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.white,
                   ),
-                ),
-                SizedBox(
-                  height: size.height * 0.02,
-                ),
-                /* GestureDetector(
-                      onTap: () {
-                        disconnect();
-                      },
-                      child: Container(
-                        child: const Text(
-                          "로그아웃",
-                          style: TextStyle(
-                            color: lightpurpleColor,
-                            fontSize: 20,
+                  SizedBox(
+                    height: size.height * 0.02,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          signInWithGoogle();
+                          if (isLoginSuccess) {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const MainScreen()));
+                          }
+                        },
+                        child: Container(
+                          child: SvgPicture.asset(
+                            'assets/images/google_icon.svg',
+                            width: size.width * 0.15,
+                            height: size.width * 0.15,
                           ),
                         ),
                       ),
-                    ), */
-                // 아이디 입력창
-                Container(
-                  width: size.width * 0.8,
-                  height: size.width * 0.15,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(30),
+                    ],
                   ),
-                  child: TextField(
-                    textAlign: TextAlign.start,
-                    controller: _idController,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.person, color: Colors.white),
-                      hintText: '아이디 입력',
-                      hintStyle: TextStyle(color: Colors.white, fontSize: 10),
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                    ),
-                    style: const TextStyle(color: Colors.white),
+                  SizedBox(
+                    height: size.height * 0.01,
                   ),
-                ),
-                SizedBox(height: size.width * 0.05),
-
-                // 비밀번호 입력창
-                Container(
-                  width: size.width * 0.8,
-                  height: size.width * 0.15,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(30),
+                  const Text(
+                    'OR',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                    ),
                   ),
-                  child: TextField(
-                    textAlign: TextAlign.start,
-                    controller: _pwController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(
-                        Icons.lock,
-                        color: Colors.white,
-                      ),
-                      hintText: '비밀번호 입력',
-                      hintStyle: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                    ),
-                    style: const TextStyle(color: Colors.white),
+                  SizedBox(
+                    height: size.height * 0.02,
                   ),
-                ),
-                const SizedBox(height: 10),
-
-                // 아이디 찾기, 비밀번호 찾기, 회원가입
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("    "),
-                    const Text(
-                      '아이디 찾기',
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                    const Text(
-                      "|",
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                    const Text(
-                      '비밀번호 찾기',
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                    const Text(
-                      "|",
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LocalSignupScreen()),
-                        );
-                      },
-                      child: const Text(
-                        '회원가입',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                    ),
-                    const Text("    "),
-                  ],
-                ),
-                SizedBox(height: size.width * 0.15),
-
-                // 로그인 버튼
-                ElevatedButton(
-                  onPressed: () {
-                    login(
-                      _idController.text.trim(),
-                      _pwController.text.trim(),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white, // 버튼 색
-                    shape: RoundedRectangleBorder(
+                  /* GestureDetector(
+                        onTap: () {
+                          disconnect();
+                        },
+                        child: Container(
+                          child: const Text(
+                            "로그아웃",
+                            style: TextStyle(
+                              color: lightpurpleColor,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                      ), */
+                  // 아이디 입력창
+                  Container(
+                    width: size.width * 0.8,
+                    height: size.width * 0.15,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 10, horizontal: 70),
+                    child: TextField(
+                      textAlign: TextAlign.start,
+                      controller: _idController,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.person, color: Colors.white),
+                        hintText: '아이디 입력',
+                        hintStyle: TextStyle(color: Colors.white, fontSize: 10),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                  child: const Text(
-                    '로그인',
-                    style: TextStyle(color: darkpurpleColor),
+                  SizedBox(height: size.width * 0.05),
+
+                  // 비밀번호 입력창
+                  Container(
+                    width: size.width * 0.8,
+                    height: size.width * 0.15,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: TextField(
+                      textAlign: TextAlign.start,
+                      controller: _pwController,
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(
+                          Icons.lock,
+                          color: Colors.white,
+                        ),
+                        hintText: '비밀번호 입력',
+                        hintStyle: TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding:
+                            EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+
+                  // 아이디 찾기, 비밀번호 찾기, 회원가입
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("    "),
+                      const Text(
+                        '아이디 찾기',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      const Text(
+                        "|",
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      const Text(
+                        '비밀번호 찾기',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      const Text(
+                        "|",
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const LocalSignupScreen()),
+                          );
+                        },
+                        child: const Text(
+                          '회원가입',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ),
+                      const Text("    "),
+                    ],
+                  ),
+                  SizedBox(height: size.width * 0.15),
+
+                  // 로그인 버튼
+                  ElevatedButton(
+                    onPressed: () {
+                      login(
+                        _idController.text.trim(),
+                        _pwController.text.trim(),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white, // 버튼 색
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 70),
+                    ),
+                    child: const Text(
+                      '로그인',
+                      style: TextStyle(color: darkpurpleColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

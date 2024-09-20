@@ -6,9 +6,9 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
-import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_search_screen.dart';
-import 'package:nahollo/util.dart';
+
 import 'package:http/http.dart' as http;
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class NaholloWhereRegisterScreen extends StatefulWidget {

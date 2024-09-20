@@ -3,9 +3,12 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/api/api.dart';
+import 'package:nahollo/colors.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/util.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class NaholloWhereMainScreen extends StatefulWidget {
   const NaholloWhereMainScreen({super.key});
@@ -41,6 +44,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var userProvider = context.read<UserProvider>();
+    var user = userProvider.user;
+
     var size = SizeUtil.getScreenSize(context);
 
     return Scaffold(
@@ -51,7 +57,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
             child: Column(
               children: [
                 SizedBox(
-                  width: size.width * 0.8,
+                  width: size.width * 0.9,
                   height: size.width * 0.15,
                   child: TextField(
                     decoration: InputDecoration(
@@ -79,6 +85,15 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(20, 10),
+                          backgroundColor: _selectedType == "overall"
+                              ? const Color(0xFF8A2EC1)
+                              : Colors.white,
+                          foregroundColor: _selectedType == "overall"
+                              ? Colors.white
+                              : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                          side: BorderSide(
+                            color: Colors.grey.shade300, // 테두리 색상 설정
+                          ),
                         ),
                         child: const Text("전체"),
                       ),
@@ -90,6 +105,15 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(20, 10),
+                          backgroundColor: _selectedType == "play"
+                              ? const Color(0xFF8A2EC1)
+                              : Colors.white,
+                          foregroundColor: _selectedType == "play"
+                              ? Colors.white
+                              : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                          side: BorderSide(
+                            color: Colors.grey.shade300, // 테두리 색상 설정
+                          ),
                         ),
                         child: const Text("혼놀"),
                       ),
@@ -101,6 +125,15 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(20, 10),
+                          backgroundColor: _selectedType == "eat"
+                              ? const Color(0xFF8A2EC1)
+                              : Colors.white,
+                          foregroundColor: _selectedType == "eat"
+                              ? Colors.white
+                              : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                          side: BorderSide(
+                            color: Colors.grey.shade300, // 테두리 색상 설정
+                          ),
                         ),
                         child: const Text("혼밥"),
                       ),
@@ -112,6 +145,15 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(20, 10),
+                          backgroundColor: _selectedType == "sleep"
+                              ? const Color(0xFF8A2EC1)
+                              : Colors.white,
+                          foregroundColor: _selectedType == "sleep"
+                              ? Colors.white
+                              : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                          side: BorderSide(
+                            color: Colors.grey.shade300, // 테두리 색상 설정
+                          ),
                         ),
                         child: const Text("혼박"),
                       ),
@@ -123,14 +165,52 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         },
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(20, 10),
+                          backgroundColor: _selectedType == "drink"
+                              ? const Color(0xFF8A2EC1)
+                              : Colors.white,
+                          foregroundColor: _selectedType == "drink"
+                              ? Colors.white
+                              : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                          side: BorderSide(
+                            color: Colors.grey.shade300, // 테두리 색상 설정
+                          ),
                         ),
                         child: const Text("혼술"),
                       ),
                     ],
                   ),
                 ),
-                const Text("전국 핫플 혼놀 장소"),
-                results.isEmpty
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${user!.nickName}를 위한\n장소를 추천해줄께-!",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: darkpurpleColor,
+                      ),
+                    ),
+                    Image.asset(
+                      "assets/images/${user.userCharacter}.png",
+                      width: size.width * 0.3,
+                      height: size.width * 0.3,
+                    )
+                  ],
+                ),
+                const Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      "전국 핫플 혼놀 장소",
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+                /*         results.isEmpty
                     ? const CircularProgressIndicator() // 데이터를 불러오는 동안 로딩 표시
                     : SizedBox(
                         height: 300,
@@ -142,7 +222,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                     const NeverScrollableScrollPhysics(), // 내부 스크롤 방지
                                 children: buildTypeSection(_selectedType),
                               ),
-                      ),
+                      ),  */
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [

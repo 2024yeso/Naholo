@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/analyzing_results_screen.dart';
+import 'package:nahollo/util.dart';
 
 class TypetestScreen extends StatefulWidget {
   const TypetestScreen({super.key});
@@ -124,64 +125,77 @@ class _TypetestScreenState extends State<TypetestScreen> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      backgroundColor: lightpurpleColor, // 배경색 설정
-      body: Center(
-        child: Container(
-          width: screenWidth * 0.9,
-          height: screenHeight * 0.8,
-          decoration: BoxDecoration(
-            color: Colors.white, // 컨테이너 배경색
-            borderRadius: BorderRadius.circular(25), // 둥근 모서리 설정
-          ),
-          child: Column(
-            children: [
-              SizedBox(
-                height: screenHeight * 0.01, // 위쪽 여백
-              ),
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // 좌우 끝에 배치
-                  children: [
-                    Text(
-                      "Q$count", // 현재 질문 번호 표시
-                      style: const TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        //didPop == true , 뒤로가기 제스쳐가 감지되면 호출 된다.
+        if (didPop) {
+          print('didPop호출');
+          return;
+        }
+        showAppExitDialog(context);
+      },
+      child: Scaffold(
+        backgroundColor: lightpurpleColor, // 배경색 설정
+        body: Center(
+          child: Container(
+            width: screenWidth * 0.9,
+            height: screenHeight * 0.8,
+            decoration: BoxDecoration(
+              color: Colors.white, // 컨테이너 배경색
+              borderRadius: BorderRadius.circular(25), // 둥근 모서리 설정
+            ),
+            child: Column(
+              children: [
+                SizedBox(
+                  height: screenHeight * 0.01, // 위쪽 여백
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween, // 좌우 끝에 배치
+                    children: [
+                      Text(
+                        "Q$count", // 현재 질문 번호 표시
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
-                    ),
-                    Image.asset(
-                      'assets/images/test_roket_logo.png', // 로켓 이미지
-                      scale: 0.5,
-                    ),
-                  ],
+                      Image.asset(
+                        'assets/images/test_roket_logo.png', // 로켓 이미지
+                        scale: 0.5,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: LinearProgressIndicator(
-                  value: progress, // 진행률을 설정 (0.0에서 1.0 사이)
-                  backgroundColor: Colors.grey[300], // 진행 바의 배경색
-                  color: darkpurpleColor, // 진행 바의 색상
-                  minHeight: 20, // 진행 바의 높이
-                  borderRadius: BorderRadius.circular(20), // 진행 바의 모서리 둥글게 설정
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: LinearProgressIndicator(
+                    value: progress, // 진행률을 설정 (0.0에서 1.0 사이)
+                    backgroundColor: Colors.grey[300], // 진행 바의 배경색
+                    color: darkpurpleColor, // 진행 바의 색상
+                    minHeight: 20, // 진행 바의 높이
+                    borderRadius: BorderRadius.circular(20), // 진행 바의 모서리 둥글게 설정
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: screenHeight * 0.08, // 질문과 답변 사이의 여백
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController, // 페이지 전환을 위한 컨트롤러
-                  physics: const NeverScrollableScrollPhysics(), // 페이지 스크롤 비활성화
-                  itemCount: _questions.length, // 질문 개수
-                  itemBuilder: (context, index) {
-                    return _buildQuestionPage(index); // 각 질문 페이지 빌드
-                  },
+                SizedBox(
+                  height: screenHeight * 0.08, // 질문과 답변 사이의 여백
                 ),
-              ),
-            ],
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController, // 페이지 전환을 위한 컨트롤러
+                    physics:
+                        const NeverScrollableScrollPhysics(), // 페이지 스크롤 비활성화
+                    itemCount: _questions.length, // 질문 개수
+                    itemBuilder: (context, index) {
+                      return _buildQuestionPage(index); // 각 질문 페이지 빌드
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

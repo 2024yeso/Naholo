@@ -19,7 +19,7 @@ class UserModel {
     this.birth = "birth",
     this.gender = "gender",
     this.nickName = "nickName",
-    this.userCharacter = "userCharacter",
+    this.userCharacter = "hedgehog",
     this.lv = 0,
     this.introduce = "introduce",
     this.image = 1,

@@ -4,13 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
-import 'package:nahollo/colors.dart';
+
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_emailverrify_screen.dart';
 import 'package:nahollo/screens/login_screens/login_finish_screen.dart';
-import 'package:nahollo/screens/login_screens/login_screen.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:nahollo/test_info.dart';
@@ -29,8 +28,6 @@ class NicknameSettingScreen extends StatefulWidget {
 class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
   bool _isNicknameGood = false;
   var _isLoginSuccess = false;
-  var _isInfoSend = false;
-  var _isEmailSend = false;
   final TextEditingController _nicknameController = TextEditingController();
   String? _errorText;
 
@@ -79,54 +76,6 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
     }
   }
 
-  // 파이어베이스에 정보 저장 회원가입 함수
-  Future<void> _register() async {
-    try {
-      // 이메일과 비밀번호로 회원가입 요청
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: widget.info.userId,
-        password: widget.info.userPw,
-      );
-
-      // 이메일 인증 요청
-      if (userCredential.user != null && !userCredential.user!.emailVerified) {
-        await userCredential.user!.sendEmailVerification(); // 이메일 인증 메일 전송
-        setState(() {
-          _errorMessage = "이메일에서 이메일 인증을 확인해주세요.";
-        });
-        _isEmailSend = true;
-      }
-    } on FirebaseAuthException catch (e) {
-      // FirebaseAuthException에 따른 오류 처리
-      if (e.code == 'weak-password') {
-        setState(() {
-          _errorMessage = '비밀번호가 너무 약합니다.';
-        });
-      } else if (e.code == 'email-already-in-use') {
-        setState(() {
-          _errorMessage = '이미 사용 중인 이메일입니다.';
-        });
-      } else if (e.code == 'invalid-email') {
-        setState(() {
-          _errorMessage = '이메일 형식이 잘못되었습니다.';
-        });
-      } else {
-        setState(() {
-          _errorMessage = '회원가입 실패: ${e.message}';
-        });
-      }
-    } catch (e) {
-      // 기타 예외 처리
-      setState(() {
-        _errorMessage = '회원가입 중 오류가 발생했습니다: $e';
-      });
-    }
-
-    print(_errorMessage);
-    Fluttertoast.showToast(msg: _errorMessage!);
-  }
-
   Future<void> addUser() async {
     //my sql DB에 정보 저장  회원가입
     final response = await http.post(
@@ -149,7 +98,6 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
 
     if (response.statusCode == 200) {
       print("Add User Response: ${utf8.decode(response.bodyBytes)}");
-      _isInfoSend = true;
     } else {
       print(
           "Add User Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
@@ -162,6 +110,8 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
         _errorText = '닉네임을 입력해주세요';
       } else if (_nicknameController.text.length > 8) {
         _errorText = '닉네임은 최대 8자리까지 가능합니다';
+      } else if (_nicknameController.text.length < 2) {
+        _errorText = '닉네임은 최소 2자리부터 가능합니다';
       } else {
         _errorText = null;
         _isNicknameGood = true;
@@ -248,29 +198,16 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
                     onPressed: () async {
                       _submitNickname();
                       if (_isNicknameGood) {
-                        if (EmailVerifyStatic.needEmailVerify) {
-                          await _register();
+                        await addUser();
+                        await login();
+                        if (_isLoginSuccess) {
                           if (context.mounted) {
-                            Navigator.push(
+                            Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => LoginEmailverrifyScreen(
-                                    info: widget.info,
-                                  ),
+                                  builder: (context) =>
+                                      const LoginFinishScreen(),
                                 ));
-                          }
-                        } else {
-                          await addUser();
-                          await login();
-                          if (_isLoginSuccess) {
-                            if (context.mounted) {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const LoginFinishScreen(),
-                                  ));
-                            }
                           }
                         }
                       }

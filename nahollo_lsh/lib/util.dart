@@ -1,5 +1,6 @@
 // 팝업 다이얼로그 함수
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:nahollo/community_screen.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
@@ -40,6 +41,45 @@ void showExitDialog(BuildContext context) {
                   builder: (context) => const LoginScreen(),
                 ),
               );
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: const Color(0xFF8A2EC1), // 나가기 버튼 배경색
+            ),
+            child: const Text('나가기', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void showAppExitDialog(BuildContext context) {
+  //앱 나가기 팝업창
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15), // 모서리 둥글게
+        ),
+        title: const Text(
+          '앱을 나가시겠습니까?',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // 취소 버튼: 팝업 닫기
+            },
+            style: TextButton.styleFrom(
+              backgroundColor: Colors.grey.shade200, // 버튼 배경 색
+            ),
+            child: const Text('취소', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // 나가기 버튼: 팝업 닫고 추가 동작 가능
+              SystemNavigator.pop(); // 안드로이드에서 앱 종료
             },
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF8A2EC1), // 나가기 버튼 배경색

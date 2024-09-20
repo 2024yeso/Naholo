@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
-import 'package:nahollo/screens/typetest_logo_screen.dart';
+import 'package:nahollo/screens/type_result_screens/typetest_logo_screen.dart';
+import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
 class LoginWelcomeScreen extends StatefulWidget {
@@ -72,105 +73,117 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
     final user = Provider.of<UserProvider>(context).user;
 
     final size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  _colorAnimation1.value!,
-                  _colorAnimation2.value!,
-                ],
-              ),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          "${user?.nickName} 님",
-                          style: const TextStyle(
-                            color: darkpurpleColor,
-                            fontSize: 30,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: size.height * 0.02),
-                    const Text(
-                      '나홀로 행성 가입을 축하합니다! 멋있는 이름이네요',
-                      style: TextStyle(
-                        color: Color(0xff16377e),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(
-                      height: size.height * 0.1,
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff9372ff),
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const TypetestLogoScreen(), // 버튼을 누르면 TypetestlogoScreen으로 이동
-                            ));
-                      },
-                      child: SizedBox(
-                        width: size.width * 0.45,
-                        child: const Center(
-                          child: Text(
-                            "나만의 캐릭터 만들기",
-                            style: TextStyle(color: Colors.white, fontSize: 13),
-                          ),
-                        ),
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: darkpurpleColor,
-                      ),
-                      onPressed: () {
-                        var character = assignRandomCharacter();
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CharacterCreatingScreen(
-                                character: character,
-                              ),
-                            ));
-                      },
-                      child: SizedBox(
-                        width: size.width * 0.45,
-                        child: const Center(
-                          child: Text(
-                            "바로 시작하기",
-                          ),
-                        ),
-                      ),
-                    ),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        //didPop == true , 뒤로가기 제스쳐가 감지되면 호출 된다.
+        if (didPop) {
+          print('didPop호출');
+          return;
+        }
+        showAppExitDialog(context);
+      },
+      child: Scaffold(
+        body: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    _colorAnimation1.value!,
+                    _colorAnimation2.value!,
                   ],
                 ),
               ),
-            ),
-          );
-        },
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            "${user?.nickName} 님",
+                            style: const TextStyle(
+                              color: darkpurpleColor,
+                              fontSize: 30,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      const Text(
+                        '나홀로 행성 가입을 축하합니다! 멋있는 이름이네요',
+                        style: TextStyle(
+                          color: Color(0xff16377e),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(
+                        height: size.height * 0.1,
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xff9372ff),
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const TypetestLogoScreen(), // 버튼을 누르면 TypetestlogoScreen으로 이동
+                              ));
+                        },
+                        child: SizedBox(
+                          width: size.width * 0.45,
+                          child: const Center(
+                            child: Text(
+                              "나만의 캐릭터 만들기",
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 13),
+                            ),
+                          ),
+                        ),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: darkpurpleColor,
+                        ),
+                        onPressed: () {
+                          var character = assignRandomCharacter();
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => CharacterCreatingScreen(
+                                  character: character,
+                                ),
+                              ));
+                        },
+                        child: SizedBox(
+                          width: size.width * 0.45,
+                          child: const Center(
+                            child: Text(
+                              "바로 시작하기",
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:nahollo/screens/login_screens/login_emailverrify_screen.dart';
 import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
@@ -20,6 +22,9 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
   var infoSignup = Info();
   final _formKey = GlobalKey<FormState>();
   var isIdExist = false;
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String? _errorMessage;
 
   bool? _isMale; // null 상태에서 남자는 true, 여자는 false로 설정
 
@@ -50,6 +55,53 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
     } catch (e) {
       print("Error: $e");
     }
+  }
+
+  // 파이어베이스에 정보 저장 회원가입 함수
+  Future<void> _register() async {
+    try {
+      // 이메일과 비밀번호로 회원가입 요청
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: infoSignup.userId,
+        password: infoSignup.userPw,
+      );
+
+      // 이메일 인증 요청
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification(); // 이메일 인증 메일 전송
+        setState(() {
+          _errorMessage = "이메일에서 이메일 인증을 확인해주세요.";
+        });
+      }
+    } on FirebaseAuthException catch (e) {
+      // FirebaseAuthException에 따른 오류 처리
+      if (e.code == 'weak-password') {
+        setState(() {
+          _errorMessage = '비밀번호가 너무 약합니다.';
+        });
+      } else if (e.code == 'email-already-in-use') {
+        setState(() {
+          _errorMessage = '이미 사용 중인 이메일입니다.';
+        });
+      } else if (e.code == 'invalid-email') {
+        setState(() {
+          _errorMessage = '이메일 형식이 잘못되었습니다.';
+        });
+      } else {
+        setState(() {
+          _errorMessage = '회원가입 실패: ${e.message}';
+        });
+      }
+    } catch (e) {
+      // 기타 예외 처리
+      setState(() {
+        _errorMessage = '회원가입 중 오류가 발생했습니다: $e';
+      });
+    }
+
+    print(_errorMessage);
+    Fluttertoast.showToast(msg: _errorMessage!);
   }
 
   @override
@@ -248,8 +300,8 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                           FloatingLabelBehavior.always, // 라벨이 항상 위에 표시되도록 설정
                     ),
                     validator: (value) {
-                      if (value!.isEmpty) {
-                        return '이름을 입력하세요.';
+                      if (value!.length != 8) {
+                        return "8자리를 입력해주세요.";
                       }
                       return null;
                     },
@@ -310,7 +362,7 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
 
                   // 회원가입 버튼
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
                         infoSignup.userId = _userIdController.text.trim();
                         infoSignup.userPw = _userPasswordController.text.trim();
@@ -318,11 +370,14 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                         infoSignup.birth = _userBrithController.text.trim();
                         infoSignup.gender = _isMale;
                         // 회원가입 로직
+                        await _register();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) =>
-                                  NicknameSettingScreen(info: infoSignup)),
+                            builder: (context) => LoginEmailverrifyScreen(
+                              info: infoSignup,
+                            ),
+                          ),
                         );
                       }
                     },
