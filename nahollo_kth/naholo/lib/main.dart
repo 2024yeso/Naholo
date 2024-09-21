@@ -1,31 +1,40 @@
 // lib/main.dart
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'sizescaler.dart'; // SizeScaler 임포트
-import '/where_alone_page.dart';
-import '/home_page.dart';
-import '/alone_diary_page.dart';
-import '/profile_scaffold.dart';
+import 'where_alone_page.dart';
+import 'home_page.dart';
+import 'alone_diary_page.dart';
+import 'profile_scaffold.dart'; // 수정된 경로
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  // 만약 로그인한 사용자 정보를 관리하는 Provider나 상태 관리 시스템이 있다면 여기에 추가할 수 있습니다.
+
   @override
   Widget build(BuildContext context) {
+    // 로그인된 사용자 ID를 가져옵니다.
+    final String loggedInUserId = 'user1'; // 실제로는 로그인 로직을 통해 가져와야 합니다.
+
     return MaterialApp(
       title: 'My Page UI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
-      home: MainScaffold(),
+      home: MainScaffold(loggedInUserId: loggedInUserId),
     );
   }
 }
 
 class MainScaffold extends StatefulWidget {
+  final String loggedInUserId;
+
+  MainScaffold({required this.loggedInUserId});
+
   @override
   _MainScaffoldState createState() => _MainScaffoldState();
 }
@@ -33,13 +42,19 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0; // 현재 선택된 페이지 인덱스
 
-  // 페이지 목록
-  final List<Widget> _pages = [
-    WhereAlonePage(),
-    HomePage(),
-    AloneDiaryPage(),
-    ProfileScaffold(),
-  ];
+  late List<Widget> _pages; // 페이지 목록을 늦은 초기화로 변경
+
+  @override
+  void initState() {
+    super.initState();
+    // 페이지 목록 초기화
+    _pages = [
+      WhereAlonePage(),
+      HomePage(),
+      AloneDiaryPage(),
+      ProfileScaffold(userId: widget.loggedInUserId), // 사용자 ID 전달
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

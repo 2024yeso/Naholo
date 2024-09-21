@@ -1,11 +1,25 @@
-from fastapi import FastAPI, HTTPException, status, Depends
+# server.py
+
+from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import mysql.connector
 from mysql.connector.errors import IntegrityError
-from typing import Optional
-from collections import defaultdict
+from typing import Optional, List
+import os
+from uuid import uuid4
 
 app = FastAPI()
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 필요한 도메인으로 제한하는 것이 좋습니다.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # MySQL 연결 설정
 db_config = {
@@ -15,6 +29,21 @@ db_config = {
     'database': 'naholo_db',
     'port': 3306
 }
+
+# 서버의 호스트와 포트 설정
+HOST = "0.0.0.0"      # 모든 인터페이스에서 수신
+PORT = 8000           # 서버가 실행되는 포트 번호
+IMAGE_HOST = "10.0.2.2"  # 에뮬레이터에서 호스트 머신을 가리키는 IP
+
+# 이미지 업로드 디렉토리 설정
+UPLOAD_DIRECTORY = "uploaded_images"
+
+# 업로드 디렉토리가 존재하지 않으면 생성
+if not os.path.exists(UPLOAD_DIRECTORY):
+    os.makedirs(UPLOAD_DIRECTORY)
+
+# 정적 파일 라우팅 설정 (이미지 제공)
+app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
 
 # Pydantic 모델 정의
 class User(BaseModel):
@@ -28,7 +57,7 @@ class User(BaseModel):
     USER_CHARACTER: Optional[str] = None
     LV: Optional[int] = 0
     INTRODUCE: Optional[str] = "input"
-    IMAGE: Optional[int] = None
+    IMAGE: Optional[str] = None  # 이미지 경로를 문자열로 저장
 
 class Follow(BaseModel):
     USER_ID: str
@@ -42,8 +71,6 @@ class UsersImage(BaseModel):
     USER_ID: str
     IMAGE: str
 
-
-
 class JournalComment(BaseModel):
     POST_ID: int
     COMMENT_CONTENT: str
@@ -52,12 +79,14 @@ class JournalComment(BaseModel):
 class ReviewImage(BaseModel):
     REVIEW_ID: int
     IMAGE: str
-    
+
 class Where(BaseModel):
     WHERE_NAME: str
     WHERE_LOCATE: str
     WHERE_RATE: float
     WHERE_TYPE: str
+    LATITUDE: Optional[float] = None
+    LONGITUDE: Optional[float] = None
 
 class WhereReview(BaseModel):
     USER_ID: str
@@ -77,7 +106,7 @@ class WhereReview(BaseModel):
     REASON_QUITE: bool
     REASON_PHOTO: bool
     REASON_WATCH: bool
-    IMAGES: list[str]  # 리뷰 이미지 리스트
+    IMAGES: List[str]  # 리뷰 이미지 리스트
 
 class WhereImage(BaseModel):
     WHERE_ID: int
@@ -170,7 +199,7 @@ def login(user_id: str, user_pw: str):
                 "USER_CHARACTER": db_user['USER_CHARACTER'],
                 "LV": db_user['LV'],
                 "INTRODUCE": db_user['INTRODUCE']}
-
+    
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
@@ -181,10 +210,12 @@ def login(user_id: str, user_pw: str):
 def call_review(user_id):
     query = """
     SELECT 
-        w.WHERE_NAME,
-        w.WHERE_LOCATE,
-        wr.REVIEW_CONTENT,
-        wr.WHERE_RATE,
+        w.WHERE_NAME AS WHERE_NAME,
+        w.WHERE_LOCATE AS WHERE_LOCATE,
+        w.LATITUDE AS LATITUDE,
+        w.LONGITUDE AS LONGITUDE,
+        wr.REVIEW_CONTENT AS REVIEW_CONTENT,
+        wr.WHERE_RATE AS WHERE_RATE,
         ri.IMAGE AS REVIEW_IMAGE
     FROM 
         WHERE_REVIEW wr
@@ -203,15 +234,22 @@ def call_review(user_id):
     review_conn.close()
     conn.close()
     
+    # 이미지 경로를 URL로 변환
+    for review in review_list:
+        if review['REVIEW_IMAGE']:
+            # REVIEW_IMAGE가 전체 URL인지 확인
+            if not review['REVIEW_IMAGE'].startswith('http'):
+                review['REVIEW_IMAGE'] = f"http://{IMAGE_HOST}:{PORT}/images/{review['REVIEW_IMAGE']}"
+                
     return review_list
         
 # 좋아요 호출 함수
 def call_wanted(user_id):
     query = """
     SELECT 
-        w.WHERE_NAME,
-        w.WHERE_LOCATE,
-        w.WHERE_RATE,
+        w.WHERE_NAME AS WHERE_NAME,
+        w.WHERE_LOCATE AS WHERE_LOCATE,
+        w.WHERE_RATE AS WHERE_RATE,
         wi.IMAGE AS PLACE_IMAGE
     FROM 
         LIKES l
@@ -229,6 +267,11 @@ def call_wanted(user_id):
     where_wanted = wanted_conn.fetchall()
     wanted_conn.close()
     conn.close()
+    
+    # 이미지 경로를 URL로 변환
+    for wanted in where_wanted:
+        if wanted['PLACE_IMAGE']:
+            wanted['PLACE_IMAGE'] = f"http://{IMAGE_HOST}:{PORT}/images/{wanted['PLACE_IMAGE']}"
     
     return where_wanted
 
@@ -358,6 +401,26 @@ def get_place_info(where_id: int, db=Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+    
+# 이미지 업로드 엔드포인트
+@app.post("/upload_image/")
+async def upload_image(file: UploadFile = File(...)):
+    try:
+        # 고유한 파일 이름 생성
+        filename = f"{uuid4()}_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIRECTORY, filename)
+
+        # 파일을 서버에 저장
+        with open(file_path, "wb") as image_file:
+            content = await file.read()
+            image_file.write(content)
+
+        # 이미지에 접근할 수 있는 URL 생성
+        image_url = f"http://{IMAGE_HOST}:{PORT}/images/{filename}"
+
+        return {"message": "Image uploaded successfully", "image_url": image_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload image: {e}")
 
     
 @app.post("/add_review/")
@@ -388,8 +451,9 @@ def add_review(review: WhereReview, db=Depends(get_db)):
         insert_image_query = """
         INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
         """
-        for image in review.IMAGES:
-            cursor.execute(insert_image_query, (review_id, image))
+        for filename in review.IMAGES:
+            # 파일 이름을 저장
+            cursor.execute(insert_image_query, (review_id, filename))
 
         db.commit()
         cursor.close()
@@ -402,8 +466,6 @@ def add_review(review: WhereReview, db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-
 
 # 일지 메인페이지
 @app.get("/journal/main")
@@ -501,7 +563,58 @@ def add_comment(comment: JournalComment, db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-    
+
+# 사용자 프로필 정보를 제공하는 엔드포인트 추가
+@app.get("/get_user_profile/")
+def get_user_profile(user_id: str):
+    try:
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+
+        # 사용자 프로필 정보 가져오기
+        cursor.execute("SELECT NICKNAME, LV, INTRODUCE FROM Users WHERE USER_ID = %s", (user_id,))
+        user_data = cursor.fetchone()
+        if not user_data:
+            cursor.close()
+            conn.close()
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # 사용자 이미지 가져오기
+        cursor.execute("SELECT IMAGE FROM Users_Image WHERE USER_ID = %s", (user_id,))
+        image_data = cursor.fetchone()
+        if image_data and image_data['IMAGE']:
+            image_url = f"http://{IMAGE_HOST}:{PORT}/images/{image_data['IMAGE']}"
+        else:
+            image_url = None
+
+        # 팔로워 수 가져오기
+        cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
+        follower_data = cursor.fetchone()
+        follower_count = follower_data['follower_count'] if follower_data else 0
+
+        # 팔로잉 수 가져오기
+        cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
+        following_data = cursor.fetchone()
+        following_count = following_data['following_count'] if following_data else 0
+
+        cursor.close()
+        conn.close()
+
+        return {
+            "nickname": user_data['NICKNAME'],
+            "level": user_data['LV'],
+            "introduce": user_data['INTRODUCE'],
+            "imageUrl": image_url,
+            "followerCount": follower_count,
+            "followingCount": following_count
+        }
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=HOST, port=PORT)
