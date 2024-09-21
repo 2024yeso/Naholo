@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:nahollo/firebase_options.dart';
+import 'package:nahollo/map_test.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/start_logo_screen.dart';

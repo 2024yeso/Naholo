@@ -8,6 +8,7 @@ import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_search_screen.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
@@ -133,6 +134,12 @@ class _NaholloWhereRegisterScreenState
             TextButton(
               onPressed: () {
                 // 장소 선택 로직 추가
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          const NaholloWhereRegisterSearchScreen()),
+                );
               },
               child: const Text(
                 '장소를 검색해주세요',
