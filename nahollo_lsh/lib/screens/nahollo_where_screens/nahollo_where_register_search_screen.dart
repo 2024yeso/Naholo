@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 class NaholloWhereRegisterSearchScreen extends StatefulWidget {
   const NaholloWhereRegisterSearchScreen({super.key});
@@ -13,58 +15,32 @@ class NaholloWhereRegisterSearchScreen extends StatefulWidget {
 
 class _NaholloWhereRegisterSearchScreenState
     extends State<NaholloWhereRegisterSearchScreen> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>(); // Google Map 컨트롤러 관리
+  final TextEditingController _searchController = TextEditingController();
+  GoogleMapController? _mapController;
+  static const String _apiKey =
+      'AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE'; // API 키 설정
+  final LatLng _initialPosition =
+      const LatLng(37.5665, 126.9780); // 서울의 초기 위치 설정
 
-  LocationData? _currentPosition;
-  final Location _location = Location();
+  // 장소 검색 함수
+  Future<void> _searchPlace(String query) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/textsearch/json?query=$query&key=$_apiKey';
+    final response = await http.get(Uri.parse(url));
+    final data = json.decode(response.body);
 
-  @override
-  void initState() {
-    super.initState();
-    _locationPermission();
-  }
+    if (data['results'] != null && data['results'].isNotEmpty) {
+      final place = data['results'][0];
+      final lat = place['geometry']['location']['lat'];
+      final lng = place['geometry']['location']['lng'];
 
-  // 위치 권한을 요청하고 현재 위치를 가져오는 메서드
-  Future<void> _locationPermission() async {
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
-
-    // 위치 서비스 활성화 확인
-    serviceEnabled = await _location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
-
-    // 위치 권한 확인
-    permissionGranted = await _location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    // 현재 위치 가져오기
-    _currentPosition = await _location.getLocation();
-    setState(() {});
-  }
-
-  // 현재 위치로 이동하는 메서드
-  void _currentLocation() async {
-    if (_currentPosition != null) {
-      final GoogleMapController controller = await _controller.future;
-      controller.animateCamera(
-        CameraUpdate.newCameraPosition(
-          CameraPosition(
-            target: LatLng(
-                _currentPosition!.latitude!, _currentPosition!.longitude!),
-            zoom: 18.0,
-          ),
-        ),
+      _mapController?.animateCamera(CameraUpdate.newLatLngZoom(
+        LatLng(lat, lng),
+        18.0,
+      ));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('장소를 찾을 수 없습니다.')),
       );
     }
   }
@@ -72,24 +48,35 @@ class _NaholloWhereRegisterSearchScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(
-            _currentPosition?.latitude ?? 37.50508097213444,
-            _currentPosition?.longitude ?? 126.95493073306663,
-          ),
-          zoom: 18,
-        ),
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller); // 맵이 생성되면 컨트롤러를 완료합니다.
-        },
-        myLocationEnabled: true, // 현재 위치 표시 활성화
-        myLocationButtonEnabled: true, // 현재 위치로 이동하는 버튼 활성화
+      appBar: AppBar(
+        title: const Text('가게 검색하기'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _currentLocation, // 현재 위치로 이동하는 버튼
-        child: const Icon(Icons.my_location),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: '가게 이름을 입력하세요...',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    _searchPlace(_searchController.text.trim());
+                  },
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GoogleMap(
+              initialCameraPosition:
+                  CameraPosition(target: _initialPosition, zoom: 14.0),
+              onMapCreated: (controller) => _mapController = controller,
+              mapType: MapType.normal,
+            ),
+          ),
+        ],
       ),
     );
   }
