@@ -9,7 +9,8 @@
         android:label="nahollo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true"> <!-- 이 속성을 추가 -->
 
         <meta-data android:name="com.google.android.geo.API_KEY" 
                        android:value="AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE"/> <!-- 실제 API 키로 변경 -->

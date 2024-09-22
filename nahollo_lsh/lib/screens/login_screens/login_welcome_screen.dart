@@ -23,7 +23,14 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
 
   String assignRandomCharacter() {
     // 6개의 캐릭터 리스트
-    List<String> characters = ['고슴도치', '고양이', '래서판다', '오징어', '올빼미', '코알라'];
+    List<String> characters = [
+      'hedgehog',
+      'cat',
+      'red_panda',
+      'squid',
+      'owl',
+      'koala',
+    ];
 
     // 랜덤 인덱스 생성 (0부터 5까지의 값)
     int randomIndex = Random().nextInt(characters.length);

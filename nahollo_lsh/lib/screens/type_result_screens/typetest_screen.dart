@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/analyzing_results_screen.dart';
 import 'package:nahollo/util.dart';
@@ -159,13 +160,14 @@ class _TypetestScreenState extends State<TypetestScreen> {
                       Text(
                         "Q$count", // 현재 질문 번호 표시
                         style: const TextStyle(
-                          fontSize: 30,
+                          fontSize: 20,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      Image.asset(
-                        'assets/images/test_roket_logo.png', // 로켓 이미지
-                        scale: 0.5,
+                      SvgPicture.asset(
+                        'assets/images/type_test_logo.svg', // 로컬에 저장된 SVG 파일 경로
+                        width: screenWidth * 0.1,
+                        height: screenWidth * 0.1,
                       ),
                     ],
                   ),

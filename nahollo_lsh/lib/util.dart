@@ -172,13 +172,19 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
+      selectedLabelStyle: TextStyle(
+        fontSize: MediaQuery.of(context).size.width * 0.04, // 화면 너비의 4%
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontSize: MediaQuery.of(context).size.width * 0.035, // 화면 너비의 3.5%
+      ),
       type: BottomNavigationBarType.fixed,
       currentIndex: widget.selectedIndex, // 선택된 탭 유지
       onTap: _onItemTapped, // 탭 선택 시 _onItemTapped 호출
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.search),
-          label: '나홀로어디?',
+          label: "나홀로어디",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.book),

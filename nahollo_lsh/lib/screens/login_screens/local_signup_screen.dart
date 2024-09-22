@@ -22,6 +22,7 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
   var infoSignup = Info();
   final _formKey = GlobalKey<FormState>();
   var isIdExist = false;
+  var isIdCheckClick = false;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _errorMessage;
@@ -176,6 +177,7 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                             if (isIdExist) {
                               Fluttertoast.showToast(msg: "이미 존재하는 아이디입니다!");
                             } else {
+                              isIdCheckClick = true;
                               Fluttertoast.showToast(msg: "사용 가능한 아이디입니다!");
                             }
                           },
@@ -363,22 +365,27 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                   // 회원가입 버튼
                   ElevatedButton(
                     onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        infoSignup.userId = _userIdController.text.trim();
-                        infoSignup.userPw = _userPasswordController.text.trim();
-                        infoSignup.userName = _userNameController.text.trim();
-                        infoSignup.birth = _userBrithController.text.trim();
-                        infoSignup.gender = _isMale;
-                        // 회원가입 로직
-                        await _register();
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginEmailverrifyScreen(
-                              info: infoSignup,
+                      if (isIdCheckClick) {
+                        if (_formKey.currentState!.validate()) {
+                          infoSignup.userId = _userIdController.text.trim();
+                          infoSignup.userPw =
+                              _userPasswordController.text.trim();
+                          infoSignup.userName = _userNameController.text.trim();
+                          infoSignup.birth = _userBrithController.text.trim();
+                          infoSignup.gender = _isMale;
+                          // 회원가입 로직
+                          await _register();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginEmailverrifyScreen(
+                                info: infoSignup,
+                              ),
                             ),
-                          ),
-                        );
+                          );
+                        }
+                      } else {
+                        Fluttertoast.showToast(msg: "중복확인 버튼을 눌러주세요.");
                       }
                     },
                     child: const Text('계속하기'),

@@ -89,10 +89,10 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
         "BIRTH": widget.info.birth,
         "GENDER": widget.info.gender,
         "NICKNAME": widget.info.nickName,
-        "USER_CHARACTER": "Hero",
+        "USER_CHARACTER": "red_panda",
         "LV": 1,
         "INTRODUCE": "Hello, I am a test user!",
-        "IMAGE": 1
+        "IMAGE": "defaultimage.png" // 문자열로 수정
       }),
     );
 

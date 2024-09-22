@@ -26,6 +26,11 @@ class _NaholloWhereRegisterScreenState
   final ImagePicker _picker = ImagePicker();
   List<File> _selectedImages = [];
   double _rating = 0;
+  String _selectedType = "play";
+  Map<String, String> _result = {
+    'name': "장소를 입력해주세요",
+    'address': "",
+  };
 
   final Map<String, bool> _reasons = {
     "1인 메뉴가 좋아요": false,
@@ -41,6 +46,20 @@ class _NaholloWhereRegisterScreenState
     "사진 찍기 좋아요": false,
     "구경할 거 있어요": false,
   };
+
+  // 새로운 화면을 호출할 때 데이터를 기다리는 코드
+  Future<void> _navigateAndGetLocation(BuildContext context) async {
+    _result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const NaholloWhereRegisterSearchScreen(),
+      ),
+    );
+    setState(() {});
+    // 결과를 받아와서 사용하는 부분
+    print("받은 데이터: $_result"); // locationData가 출력됩니다.
+    // 받은 데이터를 원하는 방식으로 처리합니다.
+  }
 
   Future<void> testAddReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -92,9 +111,15 @@ class _NaholloWhereRegisterScreenState
 
   @override
   Widget build(BuildContext context) {
+    var size = SizeUtil.getScreenSize(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('나홀로 어디? 등록'),
+        centerTitle: true,
+        title: const Text(
+          '나홀로 어디? 등록',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -109,7 +134,10 @@ class _NaholloWhereRegisterScreenState
           children: [
             const Text(
               '나홀로 어디? 사진 0/20',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 5,
             ),
             GestureDetector(
               onTap: _pickImages,
@@ -129,34 +157,177 @@ class _NaholloWhereRegisterScreenState
             const SizedBox(height: 16),
             const Text(
               '다녀온 나홀로 어디?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            TextButton(
-              onPressed: () {
+            const SizedBox(
+              height: 5,
+            ),
+            GestureDetector(
+              onTap: () {
                 // 장소 선택 로직 추가
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          const NaholloWhereRegisterSearchScreen()),
-                );
+                _navigateAndGetLocation(context);
               },
-              child: const Text(
-                '장소를 검색해주세요',
-                style: TextStyle(color: Colors.blue),
+              child: Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(5),
+                    border: Border.all(color: const Color(0xff7a4fff))),
+                width: size.width * 0.9,
+                height: size.width * 0.15,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 7),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _result["name"]!,
+                        style: const TextStyle(
+                          color: Color(0xff7a4fff),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_outlined,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            const Text(
+              '혼자 뭐하러?',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
+              child: Row(
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedType = "play"; // 혼놀 보기
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(20, 10),
+                      backgroundColor: _selectedType == "play"
+                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                          : Colors.white,
+                      foregroundColor: _selectedType == "play"
+                          ? Colors.white
+                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                      side: BorderSide(
+                        color: _selectedType == "play"
+                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                            : Colors.white, // 테두리 색상 설정
+                      ),
+                    ),
+                    child: const Text("혼놀"),
+                  ),
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedType = "eat"; // 혼밥 보기
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(20, 10),
+                      backgroundColor: _selectedType == "eat"
+                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                          : Colors.white,
+                      foregroundColor: _selectedType == "eat"
+                          ? Colors.white
+                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                      side: BorderSide(
+                        color: _selectedType == "eat"
+                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                            : Colors.white, // 테두리 색상 설정
+                      ),
+                    ),
+                    child: const Text("혼밥"),
+                  ),
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedType = "sleep"; // 혼박 보기
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(20, 10),
+                      backgroundColor: _selectedType == "sleep"
+                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                          : Colors.white,
+                      foregroundColor: _selectedType == "sleep"
+                          ? Colors.white
+                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                      side: BorderSide(
+                        color: _selectedType == "sleep"
+                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                            : Colors.white, // 테두리 색상 설정
+                      ),
+                    ),
+                    child: const Text("혼박"),
+                  ),
+                  const SizedBox(
+                    width: 6,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedType = "drink"; // 혼술 보기
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(20, 10),
+                      backgroundColor: _selectedType == "drink"
+                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                          : Colors.white,
+                      foregroundColor: _selectedType == "drink"
+                          ? Colors.white
+                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
+                      side: BorderSide(
+                        color: _selectedType == "drink"
+                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
+                            : Colors.white, // 테두리 색상 설정
+                      ),
+                    ),
+                    child: const Text("혼술"),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
             const Text(
               '나홀로 가기 좋은 이유',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 10,
             ),
             Wrap(
-              spacing: 8.0,
-              runSpacing: 4.0,
+              spacing: 3.0,
+              runSpacing: 1.0,
               children: _reasons.keys.map((reason) {
                 return FilterChip(
-                  label: Text(reason),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0), // 버튼에 모서리 둥글게 적용
+                  ),
+                  labelPadding: const EdgeInsets.symmetric(
+                    horizontal: 2,
+                  ),
+                  label: Text(
+                    reason,
+                    style: const TextStyle(fontSize: 10),
+                  ),
                   selected: _reasons[reason]!,
                   onSelected: (bool selected) {
                     setState(() {
@@ -169,29 +340,62 @@ class _NaholloWhereRegisterScreenState
             const SizedBox(height: 16),
             const Text(
               '별점 리뷰',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            RatingBar.builder(
-              initialRating: 0,
-              minRating: 1,
-              direction: Axis.horizontal,
-              allowHalfRating: true,
-              itemCount: 5,
-              itemBuilder: (context, _) => const Icon(
-                Icons.star,
-                color: Colors.amber,
-              ),
-              onRatingUpdate: (rating) {
-                setState(() {
-                  _rating = rating;
-                });
-              },
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Container(
+                  width: size.width * 0.5,
+                  height: size.width * 0.1,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          offset: const Offset(2, 2),
+                          blurRadius: 2,
+                          spreadRadius: 2,
+                        )
+                      ]),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2.0),
+                    child: RatingBar.builder(
+                      itemSize: 25,
+                      initialRating: 0,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemBuilder: (context, _) => const Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      onRatingUpdate: (rating) {
+                        setState(() {
+                          _rating = rating;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                Text('$_rating'),
+                const SizedBox(height: 16),
+              ],
             ),
-            Text('$_rating'),
-            const SizedBox(height: 16),
+            const SizedBox(
+              height: 30,
+            ),
             const Text(
               '나홀로 메모',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(
+              height: 10,
             ),
             TextField(
               controller: _memoController,
@@ -199,6 +403,9 @@ class _NaholloWhereRegisterScreenState
               decoration: InputDecoration(
                 hintText:
                     '취향에 맞는 장소였나요? 장점의 묘미, 즐길 거리 등 혼자 방문하기 좋은 이유를 기록해보세요.',
+                hintStyle: const TextStyle(
+                  fontSize: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -208,9 +415,11 @@ class _NaholloWhereRegisterScreenState
             ElevatedButton(
               onPressed: _submitReview,
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                foregroundColor: Colors.white,
+                backgroundColor: const Color(0xff7a4fff),
+                minimumSize: const Size(double.infinity, 40),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
               child: const Text('나홀로 어디? 등록'),

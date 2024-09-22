@@ -17,27 +17,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
-  String showcharacter(String character) {
-    if (character == "래서판다") {
-      return ('assets/glbs/red_panda.glb');
-    }
-    if (character == "오징어") {
-      return ('assets/glbs/squid.glb');
-    }
-    if (character == "고양이") {
-      return ('assets/glbs/cat.glb');
-    }
-    if (character == "코알라") {
-      return ('assets/glbs/koala.glb');
-    }
-    if (character == "올빼미") {
-      return ('assets/glbs/owl.glb');
-    } else {
-      //고슴도치
-      return ('assets/glbs/hedgehog.glb');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = context.read<UserProvider>().user;
@@ -96,7 +75,7 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               SizedBox(
-                height: 0.02 * screenHeight, // 알림과 텍스트 사이의 여백
+                height: 0.015 * screenHeight, // 알림과 텍스트 사이의 여백
               ),
               const Text(
                 "오늘은 혼술 어때?", // 메인 텍스트
@@ -107,15 +86,20 @@ class _MainScreenState extends State<MainScreen> {
               ),
               TextButton(
                 onPressed: () {}, // 텍스트 버튼 클릭 시 동작 (현재 비어 있음)
-                child: const Text(
+                child: Text(
                   '요즘 뜨는 술집 보러가기', // 버튼 텍스트
-                  style: TextStyle(color: Colors.white), // 텍스트 색상
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.5),
+                    fontSize: 10,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.white.withOpacity(0.5),
+                  ), // 텍스트 색상
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(4), // 3D 모델 주변 패딩 설정
-                width: screenHeight * 0.3,
-                height: screenHeight * 0.3,
+                padding: const EdgeInsets.all(2), // 3D 모델 주변 패딩 설정
+                width: screenHeight * 0.35,
+                height: screenHeight * 0.35,
                 child: Card(
                   color: Colors.transparent, // 카드 배경 투명
                   elevation: 0, // 그림자 효과 제거
@@ -124,34 +108,48 @@ class _MainScreenState extends State<MainScreen> {
                     disableZoom: true, // 줌 동작 비활성화
                     controller: controller, // 3D 모델 컨트롤러 사용
                     autoPlay: true, // 자동 재생 설정
-                    src: showcharacter(userCharacter), // 3D 모델 파일 경로
+                    src: 'assets/glbs/$userCharacter.glb', // 3D 모델 파일 경로
                   ),
                 ),
               ),
               const Text(
                 '오늘은 혼자 무엇을 할까?', // 서브 텍스트
-                style: TextStyle(color: Colors.white), // 텍스트 색상
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                ), // 텍스트 색상
               ),
               Text(
                 user!.nickName, // 캐릭터 이름
                 style: const TextStyle(
                   color: Colors.white, // 텍스트 색상
                   fontSize: 20, // 텍스트 크기
-                  fontWeight: FontWeight.w600, // 텍스트 두께
+                  fontWeight: FontWeight.w800, // 텍스트 두께
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(10.0), // 진행 바 주변 패딩
-                child: SizedBox(
-                  width: 0.5 * screenWidth,
-                  height: 0.025 * screenHeight,
-                  child: const LinearProgressIndicator(
-                    color: Color(0xFFf9747d), // 진행 바 색상
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(20)), // 모서리 둥글게 설정
-                    value: 0.7, // 진행률 (0.0에서 1.0 사이)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Lv.${user.lv}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.all(10.0), // 진행 바 주변 패딩
+                    child: SizedBox(
+                      width: 0.5 * screenWidth,
+                      height: 0.025 * screenHeight,
+                      child: const LinearProgressIndicator(
+                        color: Color(0xFFf9747d), // 진행 바 색상
+                        borderRadius:
+                            BorderRadius.all(Radius.circular(20)), // 모서리 둥글게 설정
+                        value: 0.7, // 진행률 (0.0에서 1.0 사이)
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(
                 height: screenHeight * 0.1, // 하단 아이콘 그룹과의 여백
@@ -167,10 +165,6 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            //임시 코드
-                            context
-                                .read<UserProvider>()
-                                .updateUserCharacter("hedgehog");
                             Navigator.push(context, MaterialPageRoute(
                               builder: (context) {
                                 return const NaholloWhereMainScreen();
@@ -183,7 +177,7 @@ class _MainScreenState extends State<MainScreen> {
                               color: Colors.black
                                   .withOpacity(0.3), // 배경을 검정색 투명도로 설정
                               borderRadius:
-                                  BorderRadius.circular(15), // 모서리 둥글게 설정
+                                  BorderRadius.circular(10), // 모서리 둥글게 설정
                             ),
                             height: screenWidth * 0.13,
                             width: screenWidth * 0.13,
@@ -213,7 +207,7 @@ class _MainScreenState extends State<MainScreen> {
                               color: Colors.black
                                   .withOpacity(0.3), // 배경을 검정색 투명도로 설정
                               borderRadius:
-                                  BorderRadius.circular(15), // 모서리 둥글게 설정
+                                  BorderRadius.circular(10), // 모서리 둥글게 설정
                             ),
                             height: screenWidth * 0.13,
                             width: screenWidth * 0.13,
@@ -243,7 +237,7 @@ class _MainScreenState extends State<MainScreen> {
                               color: Colors.black
                                   .withOpacity(0.3), // 배경을 검정색 투명도로 설정
                               borderRadius:
-                                  BorderRadius.circular(15), // 모서리 둥글게 설정
+                                  BorderRadius.circular(10), // 모서리 둥글게 설정
                             ),
                             height: screenWidth * 0.13,
                             width: screenWidth * 0.13,
@@ -273,7 +267,7 @@ class _MainScreenState extends State<MainScreen> {
                               color: Colors.black
                                   .withOpacity(0.3), // 배경을 검정색 투명도로 설정
                               borderRadius:
-                                  BorderRadius.circular(15), // 모서리 둥글게 설정
+                                  BorderRadius.circular(10), // 모서리 둥글게 설정
                             ),
                             height: screenWidth * 0.13,
                             width: screenWidth * 0.13,
@@ -303,7 +297,7 @@ class _MainScreenState extends State<MainScreen> {
                               color: Colors.black
                                   .withOpacity(0.3), // 배경을 검정색 투명도로 설정
                               borderRadius:
-                                  BorderRadius.circular(15), // 모서리 둥글게 설정
+                                  BorderRadius.circular(10), // 모서리 둥글게 설정
                             ),
                             height: screenWidth * 0.13,
                             width: screenWidth * 0.13,

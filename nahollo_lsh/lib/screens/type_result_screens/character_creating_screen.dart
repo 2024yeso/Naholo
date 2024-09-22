@@ -127,7 +127,7 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
                   ),
                 ),
                 SizedBox(
-                  height: screenHeight * 0.05,
+                  height: screenHeight * 0.04,
                 ),
                 AnimatedBuilder(
                   animation: _animation,
