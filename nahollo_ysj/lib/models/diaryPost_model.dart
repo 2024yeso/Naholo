@@ -7,6 +7,8 @@ class diaryPost_model {
   final String content; // 일지 내용
   final int likes; // 일지 좋아요 수
   final bool liked; // 유저의 일지 좋아요 여부
+  final List<bool> subjList;
+// '# 혼캎', '# 혼영', '# 혼놀', '# 혼밥', '# 혼박', '# 혼술', '# 기타'
 
   diaryPost_model({
     required this.author,
@@ -16,6 +18,7 @@ class diaryPost_model {
     required this.content,
     required this.likes,
     required this.liked,
+    required this.subjList,
   });
 
   String getContentPreview(int length) {

@@ -13,7 +13,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
   final _contentController = TextEditingController();
 
   // subjList 상태 관리
-  List<bool> subjList = [false, false, false, false, false, false, false];
+  List<bool> _subjList = [false, false, false, false, false, false, false];
 
   @override
   void dispose() {
@@ -62,6 +62,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                         postContent: _contentController.text,
                         author: '작성자', // 작성자를 고정값으로 설정
                         createdAt: DateTime.now(), // 현재 시간을 작성 시간으로 설정
+                        subjList: _subjList,
                       ),
                     ),
                   );
@@ -149,22 +150,16 @@ class _DiaryWritingState extends State<DiaryWriting> {
                         onPressed: () {
                           setState(() {
                             // subjList의 인덱스에 해당하는 값을 반전시킴
-                            subjList[index] = !subjList[index];
+                            _subjList[index] = !_subjList[index];
                           });
                         },
-                        child: Text(
-                          topic,
-                          style: TextStyle(
-                            fontSize: SizeScaler.scaleSize(context, 7),
-                          ),
-                        ),
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
-                          backgroundColor: subjList[index]
-                              ? Color(0xFFD8CBFF) // 선택된 경우 연보라색
+                          backgroundColor: _subjList[index]
+                              ? const Color(0xFFD8CBFF) // 선택된 경우 연보라색
                               : Colors.white, // 선택되지 않은 경우 흰색
                           foregroundColor:
-                              Color(0xFF646464), // 선택되지 않은 경우 회색 텍스트
+                              const Color(0xFF646464), // 선택되지 않은 경우 회색 텍스트
                           padding: EdgeInsets.zero, // 내부 패딩 제거
                           minimumSize: Size(
                             SizeScaler.scaleSize(context, 40), // 버튼 크기
@@ -174,16 +169,22 @@ class _DiaryWritingState extends State<DiaryWriting> {
                             borderRadius: BorderRadius.circular(
                               SizeScaler.scaleSize(context, 33), // 둥글기 정도
                             ),
-                            side: subjList[index]
+                            side: _subjList[index]
                                 ? BorderSide(
-                                    color: Color(0xFF794FFF), // 윤곽선 색상
+                                    color: const Color(0xFF794FFF), // 윤곽선 색상
                                     width: SizeScaler.scaleSize(
                                         context, 0.3)) // 윤곽선 두께
                                 : BorderSide(
-                                    color: Color(0xFF646464), // 윤곽선 색상
+                                    color: const Color(0xFF646464), // 윤곽선 색상
                                     width: SizeScaler.scaleSize(
                                         context, 0.3), // 윤곽선 두께
                                   ),
+                          ),
+                        ),
+                        child: Text(
+                          topic,
+                          style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 7),
                           ),
                         ),
                       );

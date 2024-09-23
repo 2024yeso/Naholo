@@ -2,22 +2,34 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷
 import 'diary_comment.dart'; // 나홀로일지 댓글
+import 'diary_writing.dart';
+import 'diary_user.dart';
 import 'package:flutter_application_1/sizeScaler.dart'; // 크기 조절
 
 String userName = "시금치"; // 현재 유저의 닉네임
+final List<String> subjects = [
+  '# 혼캎',
+  '# 혼영',
+  '# 혼놀',
+  '# 혼밥',
+  '# 혼박',
+  '# 혼술',
+  '# 기타'
+];
 
 class DiaryText extends StatefulWidget {
   final String postTitle;
   final String postContent;
   final String author; // 작성자 이름
   final DateTime createdAt; // 작성 시간
+  final List<bool> subjList;
 
-  // 생성자에서 글 제목, 내용, 작성자 이름, 작성 시간을 전달받습니다.
   DiaryText({
     required this.postTitle,
     required this.postContent,
     required this.author,
     required this.createdAt,
+    required this.subjList,
   });
 
   @override
@@ -32,14 +44,18 @@ class _DiaryTextState extends State<DiaryText> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView( // 스크롤이 가능하도록
+      body: SingleChildScrollView(
         child: Column(
           children: [
             AppBar(
               backgroundColor: Colors.white,
-              toolbarHeight: SizeScaler.scaleSize(context, 25), 
+              toolbarHeight: SizeScaler.scaleSize(context, 25),
               leading: IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.black, size: SizeScaler.scaleSize(context, 10),),
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: SizeScaler.scaleSize(context, 10),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -55,80 +71,89 @@ class _DiaryTextState extends State<DiaryText> {
               actions: [
                 Row(
                   children: [
-                    // 공유 버튼
                     IconButton(
-                      icon: Icon(Icons.share, size: SizeScaler.scaleSize(context, 10)),
+                      icon: Icon(Icons.share,
+                          size: SizeScaler.scaleSize(context, 10)),
                       onPressed: () {
                         // 공유 기능 추가
                       },
                     ),
-                    SizedBox(
-                        width: SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
+                    SizedBox(width: SizeScaler.scaleSize(context, 2)),
                   ],
                 ),
               ],
             ),
             Container(
-              color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-              height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+              color: const Color(0xFFBABABA),
+              height: SizeScaler.scaleSize(context, 0.5),
             ),
             Padding(
               padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 작성자 프로필 사진, 이름, 작성 시간 표시
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: SizeScaler.scaleSize(context, 10),
-                        backgroundColor: Colors.grey,
-                        child: Icon(Icons.person, color: Colors.white),
-                      ),
-                      SizedBox(width: 8.0),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.author, // 작성자 이름
-                              style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 8),
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            Text(
-                              _formatDateTimeRelative(widget.createdAt), // 작성 시간 (상대적)
-                              style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 6),
-                                  fontWeight: FontWeight.w300,
-                                  color: const Color(0xFF7E7E7E)),
-                            ),
-                          ],
+                  GestureDetector(
+                    onTap: () {
+                      // 유저 프로필 페이지로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              DiaryUser(author: widget.author), // DiaryUser로 이동
                         ),
-                      ),
-                      // 옵션 버튼 추가
-                      IconButton(
-                        icon: Icon(Icons.more_vert, size: SizeScaler.scaleSize(context, 10)),
-                        onPressed: () {
-                          // 옵션 버튼을 눌렀을 때 나타날 기능을 여기 추가합니다.
-                          _showOptions(context);
-                        },
-                      ),
-                    ],
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: SizeScaler.scaleSize(context, 10),
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, color: Colors.white),
+                        ),
+                        SizedBox(width: SizeScaler.scaleSize(context, 4)), // 글쓴이 프로필의 사진과 이름 간격
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.author,
+                                style: TextStyle(
+                                    fontSize: SizeScaler.scaleSize(context, 8),
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              Text(
+                                _formatDateTimeRelative(widget.createdAt),
+                                style: TextStyle(
+                                    fontSize: SizeScaler.scaleSize(context, 6),
+                                    fontWeight: FontWeight.w300,
+                                    color: const Color(0xFF7E7E7E)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.more_vert,
+                              size: SizeScaler.scaleSize(context, 10)),
+                          onPressed: () {
+                            _showOptions(context);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: SizeScaler.scaleSize(context, 12)),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.postTitle, // 글 제목
+                        widget.postTitle,
                         style: TextStyle(
                             fontSize: SizeScaler.scaleSize(context, 10),
                             fontWeight: FontWeight.w400),
                       ),
                       SizedBox(height: SizeScaler.scaleSize(context, 2)),
                       Text(
-                        _formatDateTimeAbsolute(widget.createdAt), // 작성 시간 (yyyy.MM.dd. HH:mm 형식)
+                        _formatDateTimeAbsolute(widget.createdAt),
                         style: TextStyle(
                             fontSize: SizeScaler.scaleSize(context, 5),
                             fontWeight: FontWeight.w300,
@@ -141,70 +166,182 @@ class _DiaryTextState extends State<DiaryText> {
                     children: [
                       Expanded(
                         child: Container(
-                           color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-                           height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+                          color: const Color(0xFFBABABA),
+                          height: SizeScaler.scaleSize(context, 0.5),
                         ),
                       ),
                     ],
                   ),
+                  SizedBox(height: SizeScaler.scaleSize(context, 13)),
+
+                  // 그라데이션 버튼 추가
+                  Center(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                DiaryWriting(), // DiaryWriting 페이지로 이동
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: SizeScaler.scaleSize(context, 160),
+                        height: SizeScaler.scaleSize(context, 24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFFCA75FA),
+                              Color(0xFF9B9FF1),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                              SizeScaler.scaleSize(context, 7)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  left: SizeScaler.scaleSize(context, 10)),
+                              child: Text(
+                                "일지쓰고 캐릭터 성장시키자!",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeScaler.scaleSize(context, 6),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  right: SizeScaler.scaleSize(context, 10)),
+                              child: Text(
+                                "오늘 하루 기록하러 가기 >",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: SizeScaler.scaleSize(context, 4),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   SizedBox(height: SizeScaler.scaleSize(context, 20)),
-                  // 글 내용 표시
-                  Text(
-                    widget.postContent,
-                    style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 7),
-                        fontWeight: FontWeight.w300),
+                  Container(
+                    margin: EdgeInsets.symmetric(
+                        horizontal:
+                            SizeScaler.scaleSize(context, 10)), // 박스와 동일한 여백 적용
+                    child: Text(
+                      widget.postContent,
+                      style: TextStyle(
+                          fontSize: SizeScaler.scaleSize(context, 7),
+                          fontWeight: FontWeight.w300),
+                    ),
                   ),
                 ],
               ),
             ),
-            // 공감, 댓글 버튼들
             Padding(
               padding: EdgeInsets.all(SizeScaler.scaleSize(context, 5)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+              child: Column(
                 children: [
-                  IconButton(
-                    iconSize: SizeScaler.scaleSize(context, 10),
-                    padding: EdgeInsets.zero,
-                    icon: Icon(
-                      isLiked ? Icons.favorite : Icons.favorite_border, 
-                      color: isLiked ? Colors.red : Colors.black, 
-                      size: SizeScaler.scaleSize(context, 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                          left: SizeScaler.scaleSize(context, 5)),
+                      child: Wrap(
+                        spacing:
+                            SizeScaler.scaleSize(context, -5), // 태그 간의 가로 간격
+                        runSpacing:
+                            SizeScaler.scaleSize(context, 2), // 태그 간의 세로 간격
+                        children: widget.subjList
+                            .asMap()
+                            .entries
+                            .where((entry) => entry.value) // `true`인 인덱스만 필터링
+                            .map((entry) => Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal:
+                                          SizeScaler.scaleSize(context, 4)),
+                                  child: Text(
+                                    subjects[entry.key], // 해당 인덱스의 태그 출력
+                                    style: TextStyle(
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 7),
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFFA3A3A3)),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        if (isLiked) {
-                          likeCount--;
-                        } else {
-                          likeCount++;
-                        }
-                        isLiked = !isLiked;
-                      });
-                    },
                   ),
-                  Text(
-                    '$likeCount', // 좋아요 수
-                    style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5),
-                        fontWeight: FontWeight.w300),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.comment, size: SizeScaler.scaleSize(context, 10)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DiaryComment(postTitle: widget.postTitle),
+                  SizedBox(height: SizeScaler.scaleSize(context, 5)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left: SizeScaler.scaleSize(context, 2)),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              iconSize: SizeScaler.scaleSize(context, 10),
+                              padding: EdgeInsets.zero,
+                              icon: Icon(
+                                isLiked
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: isLiked ? Colors.red : Colors.black,
+                                size: SizeScaler.scaleSize(context, 10),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  if (isLiked) {
+                                    likeCount--;
+                                  } else {
+                                    likeCount++;
+                                  }
+                                  isLiked = !isLiked;
+                                });
+                              },
+                            ),
+                            Text(
+                              '$likeCount',
+                              style: TextStyle(
+                                  fontSize: SizeScaler.scaleSize(context, 5),
+                                  fontWeight: FontWeight.w300),
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.comment,
+                                  size: SizeScaler.scaleSize(context, 10)),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => DiaryComment(
+                                        postTitle: widget.postTitle),
+                                  ),
+                                );
+                              },
+                            ),
+                            Text(
+                              '5', // 댓글 개수 (제대로 구현 안 됨)
+                              style: TextStyle(
+                                  fontSize: SizeScaler.scaleSize(context, 5),
+                                  fontWeight: FontWeight.w300),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                  Text(
-                    '5', // 댓글 개수 (제대로 구현 안 됨)
-                    style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5),
-                        fontWeight: FontWeight.w300),
+                      ),
+                    ],
                   ),
                 ],
               ),
