@@ -1,6 +1,6 @@
 // diary_user.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
+import 'package:flutter_application_1/sizeScaler.dart'; // 크기 조절
 
 class DiaryUser extends StatelessWidget {
   final String author;

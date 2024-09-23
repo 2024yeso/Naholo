@@ -1,7 +1,7 @@
 // diary_writing.dart
 import 'package:flutter/material.dart';
 import 'diary_text.dart'; // 나홀로일지 글 상세보기
-import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
+import 'package:flutter_application_1/sizeScaler.dart'; // 크기 조절
 
 class DiaryWriting extends StatefulWidget {
   @override

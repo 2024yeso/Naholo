@@ -6,7 +6,7 @@ import 'diary_writing.dart'; // 나홀로일지 글쓰기
 import 'diary_user.dart'; // 유저 프로필
 import '../models/diaryPost_model.dart'; // 포스트 모델
 import 'package:intl/intl.dart'; // 날짜 포맷
-import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
+import 'package:flutter_application_1/sizeScaler.dart'; // 크기 조절
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

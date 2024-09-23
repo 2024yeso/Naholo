@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷
 import 'diary_comment.dart'; // 나홀로일지 댓글
-import 'package:flutter_application_1/size_scaler.dart'; // 크기 조절
+import 'package:flutter_application_1/sizeScaler.dart'; // 크기 조절
 
 String userName = "시금치"; // 현재 유저의 닉네임
 
