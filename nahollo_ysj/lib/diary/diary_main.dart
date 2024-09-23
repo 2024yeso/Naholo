@@ -56,7 +56,7 @@ class _DiaryMainState extends State<DiaryMain> {
                   title: post['POST_NAME'],
                   content: post['POST_CONTENT'],
                   likes: post['POST_LIKE'],
-                  liked: post['POST_LIKED'],
+                  liked: false, // post['POST_LIKED'],
                 ))
             .toList();
       } else if (_selectedIndex == 2) {
@@ -68,7 +68,7 @@ class _DiaryMainState extends State<DiaryMain> {
                   title: post['POST_NAME'],
                   content: post['POST_CONTENT'],
                   likes: post['POST_LIKE'],
-                  liked: post['POST_LIKED'], // 수정 : 유저가 좋아요 눌렀는 지 여부 필요함
+                  liked: false, // post['POST_LIKED'], // 수정 : 유저가 좋아요 눌렀는 지 여부 필요함
                 ))
             .toList();
       }
