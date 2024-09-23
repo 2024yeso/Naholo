@@ -1,10 +1,12 @@
 import 'dart:convert';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_detail_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/test_data.dart';
 import 'package:nahollo/util.dart';
@@ -26,6 +28,25 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   final _overall = overall;
   final PageController _pageController =
       PageController(viewportFraction: 0.5, initialPage: 4);
+  String _searchQuery = '';
+  List<Map<String, dynamic>> _searchResults = [];
+  final TextEditingController _searchController = TextEditingController();
+  void _updateSearchResults(String query) {
+    setState(() {
+      _searchQuery = query;
+      if (_searchQuery.isEmpty) {
+        _searchResults = List<Map<String, dynamic>>.from(byType["play"]);
+      } else {
+        _searchResults = byType["play"]
+            .where((item) => item["WHERE_NAME"]
+                .toString()
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()))
+            .toList()
+            .cast<Map<String, dynamic>>();
+      }
+    });
+  }
 
   Future<void> getNaholloWhereTopRated() async {
     try {
@@ -45,6 +66,12 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   void initState() {
     super.initState();
     getNaholloWhereTopRated(); // 화면 초기화 시 데이터 불러오기
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose(); // 메모리 누수를 방지하기 위해 컨트롤러를 dispose합니다.
+    super.dispose();
   }
 
   @override
@@ -72,6 +99,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       width: size.width * 0.9,
                       height: size.width * 0.15,
                       child: TextField(
+                        controller: _searchController,
                         decoration: InputDecoration(
                           hintText: '장소를 검색해 보세요',
                           hintStyle: const TextStyle(color: Color(0xff5357df)),
@@ -89,137 +117,83 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                 color: Color(0xff5357df)), // 비활성 상태의 테두리 색상
                           ),
                         ),
-                        onChanged: (value) {
-                          // Handle search query
-                          print(value);
+                        onChanged: (value) {},
+                        onSubmitted: (value) {
+                          _searchQuery = value;
+                          _updateSearchResults(_searchQuery);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => NaholloWhereDetailScreen(
+                                  item: _searchResults[0]),
+                            ),
+                          );
                         },
                       ),
+                    ),
+                    const SizedBox(
+                      height: 10,
                     ),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
                       child: Row(
                         children: [
-                          ElevatedButton(
+                          GradientElevatedButton(
+                            label: "전체",
+                            isSelected: _selectedType == "overall",
                             onPressed: () {
                               setState(() {
                                 _selectedType = "overall"; // 전체 보기
                               });
                             },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 10),
-                              backgroundColor: _selectedType == "overall"
-                                  ? const Color(0xFF8A2EC1)
-                                  : Colors.white,
-                              foregroundColor: _selectedType == "overall"
-                                  ? Colors.white
-                                  : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                              side: BorderSide(
-                                color: _selectedType == "overall"
-                                    ? const Color(0xFF8A2EC1)
-                                    : Colors.white, // 테두리 색상 설정
-                              ),
-                            ),
-                            child: const Text("전체"),
                           ),
                           const SizedBox(
                             width: 6,
                           ),
-                          ElevatedButton(
+                          GradientElevatedButton(
+                            label: "혼놀",
+                            isSelected: _selectedType == "play",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "play"; // 혼놀 보기
+                                _selectedType = "play"; // 전체 보기
                               });
                             },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 10),
-                              backgroundColor: _selectedType == "play"
-                                  ? const Color(0xFF8A2EC1)
-                                  : Colors.white,
-                              foregroundColor: _selectedType == "play"
-                                  ? Colors.white
-                                  : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                              side: BorderSide(
-                                color: _selectedType == "play"
-                                    ? const Color(0xFF8A2EC1)
-                                    : Colors.white, // 테두리 색상 설정
-                              ),
-                            ),
-                            child: const Text("혼놀"),
                           ),
                           const SizedBox(
                             width: 6,
                           ),
-                          ElevatedButton(
+                          GradientElevatedButton(
+                            label: "혼밥",
+                            isSelected: _selectedType == "eat",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "eat"; // 혼밥 보기
+                                _selectedType = "eat"; // 전체 보기
                               });
                             },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 10),
-                              backgroundColor: _selectedType == "eat"
-                                  ? const Color(0xFF8A2EC1)
-                                  : Colors.white,
-                              foregroundColor: _selectedType == "eat"
-                                  ? Colors.white
-                                  : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                              side: BorderSide(
-                                color: _selectedType == "eat"
-                                    ? const Color(0xFF8A2EC1)
-                                    : Colors.white, // 테두리 색상 설정
-                              ),
-                            ),
-                            child: const Text("혼밥"),
                           ),
                           const SizedBox(
                             width: 6,
                           ),
-                          ElevatedButton(
+                          GradientElevatedButton(
+                            label: "혼박",
+                            isSelected: _selectedType == "sleep",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "sleep"; // 혼박 보기
+                                _selectedType = "sleep"; // 전체 보기
                               });
                             },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 10),
-                              backgroundColor: _selectedType == "sleep"
-                                  ? const Color(0xFF8A2EC1)
-                                  : Colors.white,
-                              foregroundColor: _selectedType == "sleep"
-                                  ? Colors.white
-                                  : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                              side: BorderSide(
-                                color: _selectedType == "sleep"
-                                    ? const Color(0xFF8A2EC1)
-                                    : Colors.white, // 테두리 색상 설정
-                              ),
-                            ),
-                            child: const Text("혼박"),
                           ),
                           const SizedBox(
                             width: 6,
                           ),
-                          ElevatedButton(
+                          GradientElevatedButton(
+                            label: "혼술",
+                            isSelected: _selectedType == "drink",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "drink"; // 혼술 보기
+                                _selectedType = "drink"; // 전체 보기
                               });
                             },
-                            style: ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 10),
-                              backgroundColor: _selectedType == "drink"
-                                  ? const Color(0xFF8A2EC1)
-                                  : Colors.white,
-                              foregroundColor: _selectedType == "drink"
-                                  ? Colors.white
-                                  : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                              side: BorderSide(
-                                color: _selectedType == "drink"
-                                    ? const Color(0xFF8A2EC1)
-                                    : Colors.white, // 테두리 색상 설정
-                              ),
-                            ),
-                            child: const Text("혼술"),
                           ),
                         ],
                       ),
@@ -350,54 +324,72 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        return Card(
-          elevation: 0,
-          color: const Color(0xfff0f1ff),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 이미지를 보여주는 부분
-              ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: item["IMAGE"] != null
-                    ? Image.network(
-                        item["IMAGE"],
-                        width: size.width * 0.4,
-                        height: size.width * 0.45,
-                        fit: BoxFit.cover,
-                      )
-                    : const Icon(Icons.image_not_supported, size: 50),
+        final shotAdress = item["WHERE_LOCATE"].split(' ')[0]; //+
+        // item["WHERE_LOCATE"].split(' ')[2]; 주소 길어지면 활성화
+        return GestureDetector(
+          onTap: () {
+            // 카드 클릭 시 세부 정보 화면으로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    NaholloWhereDetailScreen(item: item), // 아이템 정보 전달
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item["WHERE_NAME"] ?? "Unknown",
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const Icon(
-                        Icons.location_on_sharp,
-                        size: 13,
-                      ),
-                      Text(
-                        '${item["WHERE_LOCATE"] ?? "N/A"}',
-                        style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.black,
-                            fontWeight: FontWeight.w200),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
+            );
+          },
+          child: Card(
+            elevation: 0,
+            color: const Color(0xfff0f1ff),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 이미지를 보여주는 부분
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: item["IMAGE"] != null
+                      ? Image.network(
+                          item["IMAGE"],
+                          width: size.width * 0.4,
+                          height: size.width * 0.45,
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(Icons.image_not_supported, size: 50),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AutoSizeText(
+                      item["WHERE_NAME"] ?? "Unknown",
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      minFontSize: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.location_on_sharp,
+                          size: 13,
+                        ),
+                        AutoSizeText(
+                          '${shotAdress ?? "N/A"}',
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w200),
+                          maxLines: 1, // 최대 라인 수
+                          minFontSize: 8, // 최소 글자 크기
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -512,6 +504,60 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class GradientElevatedButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onPressed;
+  final bool isSelected;
+
+  const GradientElevatedButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    required this.isSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final size = SizeUtil.getScreenSize(context);
+    return Container(
+      width: size.width * 0.25,
+      height: size.width * 0.1,
+      decoration: BoxDecoration(
+        gradient: isSelected
+            ? const LinearGradient(
+                colors: [Color(0xFF8A2EC1), Color(0xFFDCA1E7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null, // 선택되지 않은 경우 그라데이션 없이
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size(10, 5),
+          backgroundColor: Colors.transparent, // 배경 투명
+          foregroundColor: isSelected ? Colors.white : Colors.black,
+          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 6),
+          shadowColor: Colors.transparent, // 그림자 제거
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(
+              color: isSelected ? Colors.transparent : Colors.grey,
+            ),
+          ),
+        ),
+        child: AutoSizeText(
+          label,
+          style: const TextStyle(fontSize: 12),
+          maxLines: 1,
+          minFontSize: 5,
+        ),
+      ),
     );
   }
 }

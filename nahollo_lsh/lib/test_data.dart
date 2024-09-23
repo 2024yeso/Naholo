@@ -64,14 +64,14 @@ Map<String, dynamic> byType = {
   "play": [
     {
       "WHERE_ID": 1,
-      "WHERE_NAME": "혼놀",
+      "WHERE_NAME": "맘스터치",
       "WHERE_LOCATE": "서울",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/tV71llG.jpeg"
     },
     {
       "WHERE_ID": 2,
-      "WHERE_NAME": "롯데리아",
+      "WHERE_NAME": "푸라닭",
       "WHERE_LOCATE": "부산",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/4LxTzs6.jpeg"
@@ -85,35 +85,35 @@ Map<String, dynamic> byType = {
     },
     {
       "WHERE_ID": 2,
-      "WHERE_NAME": "롯데리아",
+      "WHERE_NAME": "BHC",
       "WHERE_LOCATE": "부산",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/dG4sD5E.jpeg"
     },
     {
       "WHERE_ID": 1,
-      "WHERE_NAME": "맥도날드",
+      "WHERE_NAME": "홍콩반점",
       "WHERE_LOCATE": "서울",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/FjVI1Bl.jpeg"
     },
     {
       "WHERE_ID": 2,
-      "WHERE_NAME": "롯데리아",
+      "WHERE_NAME": "와플대학",
       "WHERE_LOCATE": "부산",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/qH4D4eX.jpeg"
     },
     {
       "WHERE_ID": 1,
-      "WHERE_NAME": "맥도날드",
+      "WHERE_NAME": "울집물회",
       "WHERE_LOCATE": "서울",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/sWqYC6j.png"
     },
     {
       "WHERE_ID": 2,
-      "WHERE_NAME": "롯데리아",
+      "WHERE_NAME": "정신나갈거같아",
       "WHERE_LOCATE": "부산",
       "WHERE_RATE": 4.8,
       "IMAGE": "https://i.imgur.com/Di8bHfk.jpeg"

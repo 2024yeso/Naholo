@@ -9,6 +9,7 @@ import 'package:nahollo/providers/user_provider.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_search_screen.dart';
+import 'package:nahollo/test_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
@@ -62,6 +63,7 @@ class _NaholloWhereRegisterScreenState
   }
 
   Future<void> testAddReview() async {
+    //나중에
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.user;
 
@@ -106,7 +108,34 @@ class _NaholloWhereRegisterScreenState
   }
 
   Future<void> _submitReview() async {
-    await testAddReview();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+
+    // 데이터 추가 시 null 체크 및 기본값 제공
+    byType[_selectedType]?.add({
+      "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
+      "WHERE_ID": 1,
+      "REVIEW_CONTENT": _memoController.text.trim(),
+      "WHERE_LIKE": 10,
+      "WHERE_RATE": _rating ?? 0.0, // null 방지
+      "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
+      "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
+      "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
+      "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
+      "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
+      "REASON_PARK": _reasons["주차 가능해요"] ?? false,
+      "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
+      "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
+      "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
+      "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
+      "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
+      "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
+      "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
+      "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
+      "IMAGE": "https://i.imgur.com/tV71llG.jpeg"
+    });
+
+    Navigator.pop(context);
   }
 
   @override
