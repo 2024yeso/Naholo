@@ -1,6 +1,6 @@
 // lib/screens/where_alone_page.dart
 import 'package:flutter/material.dart';
-import '../sizescaler.dart'; // SizeScaler 임포트
+import '../widgets/sizescaler.dart';
 import 'package:flutter/services.dart'; // SystemUiOverlayStyle
 
 class WhereAlonePage extends StatelessWidget {

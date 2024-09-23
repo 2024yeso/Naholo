@@ -1,7 +1,42 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The INTERNET permission is required for development. Specifically,
-         the Flutter tool needs it to communicate with the running application
-         to allow setting breakpoints, to provide hot reload, etc.
-    -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.yourapp">
+
+    <!-- 앱에서 사용하는 권한을 선언 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <application
+        android:label="Your App Name"
+        android:icon="@mipmap/ic_launcher">
+        
+        <!-- Android 12 (API 31) 이상에서 권한 사용을 명시적으로 선언 -->
+        <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"
+            android:required="false"/>
+        <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+            android:required="false"/>
+
+        <!-- 다른 필요한 권한들 추가 -->
+        
+        <!-- FlutterActivity 정의 및 설정 -->
+        <activity
+            android:name=".MainActivity"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|screenLayout|locale|layoutDirection|fontScale|screenDensity|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            
+            <!-- Android 12 이상 버전의 Back Callback 사용을 위해 설정 추가 -->
+            <meta-data 
+                android:name="android:enableOnBackInvokedCallback" 
+                android:value="true"/>
+                
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
 </manifest>

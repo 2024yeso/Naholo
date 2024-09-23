@@ -1,15 +1,15 @@
-// lib/screens/profile_edit_page.dart
+// lib/screens/following_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // SystemUiOverlayStyle 사용을 위한 임포트
-import '../sizescaler.dart'; // SizeScaler 임포트
+import '../widgets/sizescaler.dart'; // SizeScaler 임포트
 
-class ProfileEditPage extends StatelessWidget {
+class FollowingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '프로필 수정',
+          '팔로잉',
           style: TextStyle(
             color: Colors.black,
             fontSize: SizeScaler.scaleSize(context, 20),
@@ -25,7 +25,7 @@ class ProfileEditPage extends StatelessWidget {
       ),
       body: Center(
         child: Text(
-          '프로필 수정 기능을 여기에 구현합니다.',
+          '팔로잉 목록을 여기에 표시합니다.',
           style: TextStyle(
             fontSize: SizeScaler.scaleSize(context, 14),
             color: Colors.grey[700],
