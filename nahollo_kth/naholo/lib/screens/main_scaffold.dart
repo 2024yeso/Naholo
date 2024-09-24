@@ -10,6 +10,8 @@ import 'alone_diary_page.dart';
 import 'profile_scaffold.dart';
 
 class MainScaffold extends StatefulWidget {
+  const MainScaffold({super.key});
+
   @override
   _MainScaffoldState createState() => _MainScaffoldState();
 }
@@ -26,7 +28,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       WhereAlonePage(),
       HomePage(),
       AloneDiaryPage(),
-      ProfileScaffold(),
+      const ProfileScaffold(),
     ];
   }
 
@@ -38,9 +40,10 @@ class _MainScaffoldState extends State<MainScaffold> {
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.purple,
-        unselectedItemColor: Colors.grey,
+        unselectedItemColor: const Color.fromARGB(255, 0, 0, 0),
         currentIndex: _selectedIndex,
         onTap: (int index) {
           setState(() {
@@ -49,19 +52,31 @@ class _MainScaffoldState extends State<MainScaffold> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: SizeScaler.scaleSize(context, 24)),
+            icon: Icon(
+              Icons.search,
+              size: SizeScaler.scaleSize(context, 15),
+            ),
             label: '나홀로 어디',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: SizeScaler.scaleSize(context, 24)),
+            icon: Icon(
+              Icons.home_outlined,
+              size: SizeScaler.scaleSize(context, 15),
+            ),
             label: '홈',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book, size: SizeScaler.scaleSize(context, 24)),
+            icon: Icon(
+              Icons.menu_book_outlined,
+              size: SizeScaler.scaleSize(context, 15),
+            ),
             label: '나홀로 일지',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_circle, size: SizeScaler.scaleSize(context, 24)),
+            icon: Icon(
+              Icons.person,
+              size: SizeScaler.scaleSize(context, 15),
+            ),
             label: '마이페이지',
           ),
         ],

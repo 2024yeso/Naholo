@@ -8,34 +8,36 @@ import '../services/network_service.dart';
 import 'package:flutter/services.dart';
 
 class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     final userIdController = TextEditingController();
     final passwordController = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: Text('로그인')),
+      appBar: AppBar(title: const Text('로그인')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: userIdController,
-              decoration: InputDecoration(labelText: '아이디'),
+              decoration: const InputDecoration(labelText: '아이디'),
             ),
             TextField(
               controller: passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
+              decoration: const InputDecoration(labelText: '비밀번호'),
               obscureText: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 final userId = userIdController.text;
                 final password = passwordController.text;
                 await _login(context, userId, password);
               },
-              child: Text('로그인'),
+              child: const Text('로그인'),
             ),
           ],
         ),
@@ -43,7 +45,8 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Future<void> _login(BuildContext context, String userId, String password) async {
+  Future<void> _login(
+      BuildContext context, String userId, String password) async {
     try {
       final userProfile = await NetworkService.login(userId, password);
 
@@ -60,7 +63,7 @@ class LoginPage extends StatelessWidget {
     } catch (e) {
       print('로그인 에러: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
+        const SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
       );
     }
   }

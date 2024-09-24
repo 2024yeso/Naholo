@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   google_maps_flutter: ^2.9.0
   flutter_bloc: ^8.1.6
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +45,6 @@ dev_dependencies:
   http: ^0.13.5
   google_maps_flutter: ^2.2.2
   permission_handler: ^10.2.0
-  image_picker: ^0.8.4+8
   path: ^1.8.0
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

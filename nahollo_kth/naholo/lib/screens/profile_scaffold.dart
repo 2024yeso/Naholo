@@ -1,6 +1,7 @@
 // screens/profile_scaffold.dart
 
 import 'package:flutter/material.dart';
+import 'package:naholo/models/user_model.dart';
 import 'package:provider/provider.dart';
 import '../providers/user_provider.dart';
 import '../models/user_profile.dart';
@@ -13,12 +14,14 @@ import 'dart:async';
 import 'package:permission_handler/permission_handler.dart';
 import '../models/review.dart';
 import 'package:flutter/services.dart';
-import 'followers_page.dart';
+import 'follow_page.dart';
 import 'following_page.dart';
 import 'profile_edit_page.dart';
 import 'wishlist_page.dart';
 
 class ProfileScaffold extends StatefulWidget {
+  const ProfileScaffold({super.key});
+
   @override
   _ProfileScaffoldState createState() => _ProfileScaffoldState();
 }
@@ -27,11 +30,27 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   int _selectedTab = 0;
   List<Review> _reviews = [];
   bool _isLoading = true;
-  Completer<GoogleMapController> _mapController = Completer();
-  Set<Marker> _markers = {};
+  final Completer<GoogleMapController> _mapController = Completer();
+  final Set<Marker> _markers = {};
   UserProfile? _userProfile;
 
-  static final CameraPosition _initialPosition = CameraPosition(
+  final UserModel user = UserModel(
+    userId: "user123",
+    userPw: "password",
+    name: "홍길동",
+    phone: "010-1234-5678",
+    birth: "1990-01-01",
+    gender: "남",
+    nickName: "얼뚱이",
+    userCharacter: "오징어",
+    lv: 10,
+    introduce: "다이어트 실패하고 얼렁뚱땅 넘어간 사람 댓글에  누가 얼렁뚱땡이 이렇게 달아놨는데 그게 나임",
+    image: 1,
+  );
+
+  int follower = 10, following = 30;
+
+  static const CameraPosition _initialPosition = CameraPosition(
     target: LatLng(37.5665, 126.9780),
     zoom: 12,
   );
@@ -82,7 +101,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   void _addMarkers() {
     setState(() {
       _markers.clear();
-      _reviews.forEach((review) {
+      for (var review in _reviews) {
         if (review.latitude != null && review.longitude != null) {
           _markers.add(
             Marker(
@@ -95,7 +114,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             ),
           );
         }
-      });
+      }
     });
   }
 
@@ -106,6 +125,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         title: Text(
           '마이페이지',
           style: TextStyle(
+            fontWeight: FontWeight.bold,
             color: Colors.black,
             fontSize: SizeScaler.scaleSize(context, 12),
           ),
@@ -113,27 +133,36 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarIconBrightness: Brightness.dark,
           statusBarColor: Colors.transparent,
         ),
       ),
+      backgroundColor: Colors.white,
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.all(SizeScaler.scaleSize(context, 16)),
+                padding: EdgeInsets.all(SizeScaler.scaleSize(context, 10)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Divider(
+                      height: 0,
+                      thickness: 1, // 두께
+                      color: Colors.grey, // 선 색상
+                    ),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 10),
+                    ),
                     // 프로필 섹션
                     _buildProfileSection(),
-                    Divider(),
+                    const Divider(),
                     // 팔로워, 팔로잉, 프로필 수정 버튼
                     _buildProfileActions(context),
                     // 가고 싶어요 버튼
                     _buildWishlistButton(context),
-                    Divider(),
+                    const Divider(),
                     // 탭 전환 버튼 (일지/지도)
                     Row(
                       children: [
@@ -143,7 +172,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                     ),
                     SizedBox(height: SizeScaler.scaleSize(context, 8)),
                     _selectedTab == 0
-                        ? JournalContent(reviews: _reviews, userProfile: _userProfile)
+                        ? JournalContent(
+                            reviews: _reviews, userProfile: _userProfile)
                         : MapContent(
                             markers: _markers,
                             initialPosition: _initialPosition,
@@ -221,93 +251,74 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   // 팔로워, 팔로잉, 프로필 수정 버튼 빌드 메서드
   Widget _buildProfileActions(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: SizeScaler.scaleSize(context, 8)),
+      padding:
+          EdgeInsets.symmetric(horizontal: SizeScaler.scaleSize(context, 16)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // 좌측에 팔로워와 팔로잉 버튼
           Row(
             children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
+              GestureDetector(
+                onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => FollowersPage()),
-                  );
-                },
-                child: Column(
-                  children: [
-                    Text(
-                      '${0}',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 10),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      '팔로워',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 10),
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const FollowPage(selectedIndex: 0), // 팔로워 탭 선택(),
+                    )),
+                child: Text(
+                  '팔로워 $follower',
+                  style: TextStyle(
+                    fontSize: SizeScaler.scaleSize(context, 6),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
-              SizedBox(width: SizeScaler.scaleSize(context, 6)),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FollowingPage()),
-                  );
-                },
-                child: Column(
-                  children: [
-                    Text(
-                      '${0}',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 10),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      '팔로잉',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 10),
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
+              SizedBox(width: SizeScaler.scaleSize(context, 16)), // 간격
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FollowPage(selectedIndex: 1),
+                  ),
+                ),
+                child: Text(
+                  '팔로잉 $following',
+                  style: TextStyle(
+                    fontSize: SizeScaler.scaleSize(context, 6),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
           ),
-          // 우측에 프로필 수정 버튼
-          OutlinedButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ProfileEditPage()),
-              );
-            },
-            child: Text(
-              '프로필 수정',
-              style: TextStyle(
-                color: Colors.purple,
-                fontSize: SizeScaler.scaleSize(context, 10),
+          SizedBox(
+            width: SizeScaler.scaleSize(context, 42), // 버튼 너비
+            height: SizeScaler.scaleSize(context, 15), // 버튼 높이
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileEditPage(),
+                  ),
+                ); // 프로필 수정 버튼 클릭 시 동작
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF794FFF), // 버튼 색상
+                elevation: 0, // 그림자 제거
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      SizeScaler.scaleSize(context, 4)), // 모서리 둥글게
+                ),
+                padding: EdgeInsets.zero,
               ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.purple),
-              padding: EdgeInsets.symmetric(
-                horizontal: SizeScaler.scaleSize(context, 10),
-                vertical: SizeScaler.scaleSize(context, 4),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+              child: Text(
+                '프로필 수정',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: SizeScaler.scaleSize(context, 5),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -319,28 +330,45 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   // 가고 싶어요 버튼 빌드 메서드
   Widget _buildWishlistButton(BuildContext context) {
     return Center(
-      child: OutlinedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => WishlistPage()),
-          );
-        },
-        child: Text(
-          '가고 싶어요',
-          style: TextStyle(
-            color: Colors.purple,
-            fontSize: SizeScaler.scaleSize(context, 12),
-          ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: 15,
+          horizontal: 5,
         ),
-        style: OutlinedButton.styleFrom(
-          padding: EdgeInsets.symmetric(
-            horizontal: SizeScaler.scaleSize(context, 60),
-            vertical: SizeScaler.scaleSize(context, 6),
-          ),
-          side: BorderSide(color: Colors.purple),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+        child: SizedBox(
+          width: SizeScaler.scaleSize(context, 168), // 버튼 너비
+          height: SizeScaler.scaleSize(context, 23), // 버튼 높이
+          child: ElevatedButton(
+            onPressed: () {
+              // 버튼 클릭 시 동작
+            },
+            style: OutlinedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+
+              backgroundColor:
+                  const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
+              side:
+                  const BorderSide(color: Color(0xFF7320BC), width: 0.5), // 수정
+              elevation: 0,
+              padding: EdgeInsets.zero, // 패딩 제거
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center, // 텍스트 및 아이콘 중앙 정렬
+              children: [
+                Icon(Icons.flag, size: SizeScaler.scaleSize(context, 12)),
+                SizedBox(width: SizeScaler.scaleSize(context, 4)), // 간격
+                Text(
+                  '가고 싶어요',
+                  style: TextStyle(
+                    fontSize: SizeScaler.scaleSize(context, 6),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -362,13 +390,17 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             SizedBox(height: SizeScaler.scaleSize(context, 4)),
             Icon(
               icon,
-              size: SizeScaler.scaleSize(context, 18),
-              color: _selectedTab == tabIndex ? Colors.purple : Colors.grey,
+              size: SizeScaler.scaleSize(context, 12),
+              color: _selectedTab == tabIndex
+                  ? const Color.fromARGB(255, 0, 0, 0)
+                  : Colors.grey,
             ),
             SizedBox(height: SizeScaler.scaleSize(context, 4)),
             Container(
               height: 2,
-              color: _selectedTab == tabIndex ? Colors.purple : Colors.transparent,
+              color: _selectedTab == tabIndex
+                  ? const Color.fromARGB(255, 0, 0, 0)
+                  : Colors.transparent,
             ),
           ],
         ),
