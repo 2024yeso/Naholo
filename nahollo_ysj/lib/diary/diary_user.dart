@@ -133,7 +133,7 @@ class DiaryUser extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '팔로워: $follower',
+                      '팔로워 $follower',
                       style: TextStyle(
                         fontSize: SizeScaler.scaleSize(context, 6),
                         fontWeight: FontWeight.w500,
@@ -141,7 +141,7 @@ class DiaryUser extends StatelessWidget {
                     ),
                     SizedBox(width: SizeScaler.scaleSize(context, 16)), // 간격
                     Text(
-                      '팔로잉: $following',
+                      '팔로잉 $following',
                       style: TextStyle(
                         fontSize: SizeScaler.scaleSize(context, 6),
                         fontWeight: FontWeight.w500,
@@ -149,18 +149,29 @@ class DiaryUser extends StatelessWidget {
                     ),
                   ],
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // 프로필 수정 버튼 클릭 시 동작
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue, // 버튼 색상
-                  ),
-                  child: Text(
-                    '프로필 수정',
-                    style: TextStyle(
-                      fontSize: SizeScaler.scaleSize(context, 6),
-                      fontWeight: FontWeight.w500,
+                SizedBox(
+                  width: SizeScaler.scaleSize(context, 42), // 버튼 너비
+                  height: SizeScaler.scaleSize(context, 15), // 버튼 높이
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // 프로필 수정 버튼 클릭 시 동작
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF794FFF), // 버튼 색상
+                      elevation: 0, // 그림자 제거
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            SizeScaler.scaleSize(context, 4)), // 모서리 둥글게
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    child: Text(
+                      '프로필 수정',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: SizeScaler.scaleSize(context, 5),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -178,8 +189,9 @@ class DiaryUser extends StatelessWidget {
                   // 버튼 클릭 시 동작
                 },
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
-                  side: BorderSide(color: Colors.blue, width: 1), // 수정
+                  backgroundColor:
+                      const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
+                  side: BorderSide(color: Color(0xFF7320BC), width: 0.5), // 수정
                   elevation: 0,
                   padding: EdgeInsets.zero, // 패딩 제거
                 ),
