@@ -24,6 +24,7 @@ class NetworkService {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       final reviewsJson = data['reviews'] as List;
+      print(reviewsJson);
       return reviewsJson.map((json) => Review.fromJson(json)).toList();
     } else {
       throw Exception('리뷰 로드 실패');

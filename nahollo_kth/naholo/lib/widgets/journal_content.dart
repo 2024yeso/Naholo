@@ -29,13 +29,14 @@ class JournalContent extends StatelessWidget {
         final review = reviews[index];
         
         // 디버그 출력: 각 리뷰의 reason 값 출력
+        /*
         print('Review #$index: reasonMenu=${review.reasonMenu}, reasonMood=${review.reasonMood}, '
               'reasonSafe=${review.reasonSafe}, reasonSeat=${review.reasonSeat}, '
               'reasonTransport=${review.reasonTransport}, reasonPark=${review.reasonPark}, '
               'reasonLong=${review.reasonLong}, reasonView=${review.reasonView}, '
               'reasonInteraction=${review.reasonInteraction}, reasonQuite=${review.reasonQuiet}, '
               'reasonPhoto=${review.reasonPhoto}, reasonWatch=${review.reasonWatch}');
-
+*/
         return Card(
           margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Padding(
