@@ -1,14 +1,16 @@
-# server.py
-
-from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile
+from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 import mysql.connector
 from mysql.connector.errors import IntegrityError
 from typing import Optional, List
 import os
 from uuid import uuid4
+import base64  # Base64 인코딩을 위해 필요
+import logging
+
+
 
 app = FastAPI()
 
@@ -31,19 +33,9 @@ db_config = {
 }
 
 # 서버의 호스트와 포트 설정
-HOST = "0.0.0.0"      # 모든 인터페이스에서 수신
-PORT = 8000           # 서버가 실행되는 포트 번호
-IMAGE_HOST = "10.0.2.2"  # 에뮬레이터에서 호스트 머신을 가리키는 IP
-
-# 이미지 업로드 디렉토리 설정
-UPLOAD_DIRECTORY = "uploaded_images"
-
-# 업로드 디렉토리가 존재하지 않으면 생성
-if not os.path.exists(UPLOAD_DIRECTORY):
-    os.makedirs(UPLOAD_DIRECTORY)
-
-# 정적 파일 라우팅 설정 (이미지 제공)
-app.mount("/images", StaticFiles(directory=UPLOAD_DIRECTORY), name="images")
+HOST = "127.0.0.1"  # 모든 인터페이스에서 수신
+PORT = 8000  # 서버가 실행되는 포트 번호
+IMAGE_HOST = "127.0.0.1"  # 에뮬레이터에서 호스트 머신을 가리키는 IP
 
 # Pydantic 모델 정의
 class User(BaseModel):
@@ -89,24 +81,24 @@ class Where(BaseModel):
     LONGITUDE: Optional[float] = None
 
 class WhereReview(BaseModel):
-    USER_ID: str
-    WHERE_ID: int
-    REVIEW_CONTENT: str
-    WHERE_LIKE: int
-    WHERE_RATE: float
-    REASON_MENU: bool
-    REASON_MOOD: bool
-    REASON_SAFE: bool
-    REASON_SEAT: bool
-    REASON_TRANSPORT: bool
-    REASON_PARK: bool
-    REASON_LONG: bool
-    REASON_VIEW: bool
-    REASON_INTERACTION: bool
-    REASON_QUITE: bool
-    REASON_PHOTO: bool
-    REASON_WATCH: bool
-    IMAGES: List[str]  # 리뷰 이미지 리스트
+    user_id: str
+    where_id: int
+    review_content: str
+    where_like: int
+    where_rate: float
+    reason_menu: bool
+    reason_mood: bool
+    reason_safe: bool
+    reason_seat: bool
+    reason_transport: bool
+    reason_park: bool
+    reason_long: bool
+    reason_view: bool
+    reason_interaction: bool
+    reason_quite: bool
+    reason_photo: bool
+    reason_watch: bool
+    images: List[str]  # 리뷰 이미지 리스트
 
 class WhereImage(BaseModel):
     WHERE_ID: int
@@ -193,17 +185,74 @@ def login(user_id: str, user_pw: str):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="유저 정보가 없거나 비밀번호가 맞지 않습니다"
             )
-
-        return {"message": "로그인 성공", 
-                "NICKNAME": db_user['NICKNAME'],
-                "USER_CHARACTER": db_user['USER_CHARACTER'],
-                "LV": db_user['LV'],
-                "INTRODUCE": db_user['INTRODUCE']}
+        return {
+            "message": "로그인 성공",
+            "user_id": db_user['USER_ID'],
+            "nickname": db_user['NICKNAME'],
+            "lv": db_user['LV'],
+            "introduce": db_user['INTRODUCE'],
+            "image": db_user['IMAGE'], # 예시 이미지 URL
+            "userCharacter": db_user['USER_CHARACTER']
+        }
     
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
     except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+@app.post("/add_review/")   
+async def add_review(review: WhereReview, db=Depends(get_db)):
+    # 입력된 리뷰 데이터를 로그로 출력
+    print(f"Received review data: {review.dict()}")
+
+    try:
+        cursor = db.cursor()
+
+        # 리뷰 데이터 삽입
+        insert_review_query = """
+        INSERT INTO WHERE_REVIEW (
+            USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
+            REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
+            REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
+            REASON_PHOTO, REASON_WATCH
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_review_query, (
+            review.user_id, review.where_id, review.review_content, review.where_like, review.where_rate,
+            review.reason_menu, review.reason_mood, review.reason_safe, review.reason_seat, review.reason_transport,
+            review.reason_park, review.reason_long, review.reason_view, review.reason_interaction, review.reason_quite,
+            review.reason_photo, review.reason_watch
+        ))      
+
+        # 삽입된 리뷰의 ID 가져오기
+        review_id = cursor.lastrowid
+
+        # 리뷰 이미지 삽입
+        insert_image_query = """
+        INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
+        """
+        for base64_image in review.images:
+            # Base64 인코딩된 이미지 데이터 저장
+            cursor.execute(insert_image_query, (review_id, base64_image))
+
+        db.commit()
+        cursor.close()
+
+        logging.debug("Review and images added successfully")
+        return {"message": "Review and images added successfully"}
+    
+    except ValidationError as ve:
+        logging.error(f"Validation Error: {ve.json()}")
+        raise HTTPException(status_code=422, detail=ve.errors())
+    
+    except mysql.connector.Error as err:
+        db.rollback()  # 데이터베이스 오류 시 롤백
+        logging.error(f"Database error: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 리뷰 호출 함수
@@ -216,7 +265,19 @@ def call_review(user_id):
         w.LONGITUDE AS LONGITUDE,
         wr.REVIEW_CONTENT AS REVIEW_CONTENT,
         wr.WHERE_RATE AS WHERE_RATE,
-        ri.IMAGE AS REVIEW_IMAGE
+        ri.IMAGE AS REVIEW_IMAGE,
+        wr.REASON_MENU AS REASON_MENU,
+        wr.REASON_MOOD AS REASON_MOOD,
+        wr.REASON_SAFE AS REASON_SAFE,
+        wr.REASON_SEAT AS REASON_SEAT,
+        wr.REASON_TRANSPORT AS REASON_TRANSPORT,
+        wr.REASON_PARK AS REASON_PARK,
+        wr.REASON_LONG AS REASON_LONG,
+        wr.REASON_VIEW AS REASON_VIEW,
+        wr.REASON_INTERACTION AS REASON_INTERACTION,
+        wr.REASON_QUITE AS REASON_QUITE,
+        wr.REASON_PHOTO AS REASON_PHOTO,
+        wr.REASON_WATCH AS REASON_WATCH
     FROM 
         WHERE_REVIEW wr
     JOIN 
@@ -227,22 +288,53 @@ def call_review(user_id):
         wr.USER_ID = %s;
     """
     
-    conn = mysql.connector.connect(**db_config)
-    review_conn = conn.cursor(dictionary=True)
-    review_conn.execute(query, (user_id,))
-    review_list = review_conn.fetchall()
-    review_conn.close()
-    conn.close()
-    
-    # 이미지 경로를 URL로 변환
-    for review in review_list:
-        if review['REVIEW_IMAGE']:
-            # REVIEW_IMAGE가 전체 URL인지 확인
-            if not review['REVIEW_IMAGE'].startswith('http'):
-                review['REVIEW_IMAGE'] = f"http://{IMAGE_HOST}:{PORT}/images/{review['REVIEW_IMAGE']}"
-                
-    return review_list
+    try:
+        # 디버그: 데이터베이스 연결 시도
+        print("Connecting to the database...")
+        conn = mysql.connector.connect(**db_config)
+        review_conn = conn.cursor(dictionary=True)
+
+        # 디버그: 쿼리 실행 전 확인
+        print(f"Executing query for user_id: {user_id}")
+        review_conn.execute(query, (user_id,))
         
+        # 디버그: 쿼리 결과 확인
+        print("Fetching results...")
+        review_list = review_conn.fetchall()
+        
+        # 디버그: 쿼리 결과 출력
+        print(f"Number of reviews fetched: {len(review_list)}")
+        for review in review_list:
+            print(f"Review: {review}")
+        
+        # REVIEW_IMAGE가 없을 경우 None으로 설정
+        for review in review_list:
+            if not review['REVIEW_IMAGE']:
+                review['REVIEW_IMAGE'] = None  # 이미지가 없을 경우 None 설정
+
+        review_conn.close()
+        conn.close()
+        
+        return review_list
+    
+    except mysql.connector.Error as err:
+        # 디버그: 데이터베이스 오류 발생 시
+        print(f"Database error occurred: {err}")
+        return []
+    
+    except Exception as e:
+        # 디버그: 일반 오류 발생 시
+        print(f"An error occurred: {e}")
+        return []
+    
+    finally:
+        # 디버그: 커넥션과 커서가 올바르게 닫혔는지 확인
+        if review_conn:
+            review_conn.close()
+        if conn:
+            conn.close()
+
+
 # 좋아요 호출 함수
 def call_wanted(user_id):
     query = """
@@ -280,9 +372,8 @@ def call_wanted(user_id):
 def my_page(user_id: str):
     try:
         r_review = call_review(user_id)
-        r_wanted = call_wanted(user_id)
-
-        return {"reviews": r_review, "wanted": r_wanted}
+        print(r_review)
+        return {"reviews": r_review}
     
     except mysql.connector.Error as err:
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
@@ -355,7 +446,6 @@ def get_top_rated_places(db = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-
 # 장소 세부 정보를 불러오는 엔드포인트
 @app.get("/where/place-info")
 def get_place_info(where_id: int, db=Depends(get_db)):
@@ -400,72 +490,60 @@ def get_place_info(where_id: int, db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
     
-# 이미지 업로드 엔드포인트
-@app.post("/upload_image/")
-async def upload_image(file: UploadFile = File(...)):
+def encode_image_to_base64(file_content):
+    return base64.b64encode(file_content).decode('utf-8')
+
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
+@app.post("/upload_profile_image/")
+async def upload_profile_image(
+    user_id: str = Form(...),
+    file: UploadFile = File(...),
+    db=Depends(get_db)
+):
     try:
-        # 고유한 파일 이름 생성
-        filename = f"{uuid4()}_{file.filename}"
-        file_path = os.path.join(UPLOAD_DIRECTORY, filename)
+        # 파일 내용을 읽어서 Base64로 인코딩
+        file_content = await file.read()
+        encoded_image = encode_image_to_base64(file_content)
 
-        # 파일을 서버에 저장
-        with open(file_path, "wb") as image_file:
-            content = await file.read()
-            image_file.write(content)
-
-        # 이미지에 접근할 수 있는 URL 생성
-        image_url = f"http://{IMAGE_HOST}:{PORT}/images/{filename}"
-
-        return {"message": "Image uploaded successfully", "image_url": image_url}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to upload image: {e}")
-
-    
-@app.post("/add_review/")
-def add_review(review: WhereReview, db=Depends(get_db)):
-    try:
+        # 데이터베이스에 Base64 인코딩된 이미지 저장
         cursor = db.cursor()
 
-        # 리뷰 데이터 삽입
-        insert_review_query = """
-        INSERT INTO WHERE_REVIEW (
-            USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
-            REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
-            REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
-            REASON_PHOTO, REASON_WATCH
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_review_query, (
-            review.USER_ID, review.WHERE_ID, review.REVIEW_CONTENT, review.WHERE_LIKE, review.WHERE_RATE,
-            review.REASON_MENU, review.REASON_MOOD, review.REASON_SAFE, review.REASON_SEAT, review.REASON_TRANSPORT,
-            review.REASON_PARK, review.REASON_LONG, review.REASON_VIEW, review.REASON_INTERACTION, review.REASON_QUITE,
-            review.REASON_PHOTO, review.REASON_WATCH
-        ))      
+        # Users 테이블 업데이트
+        update_users_query = "UPDATE Users SET IMAGE = %s WHERE USER_ID = %s"
+        cursor.execute(update_users_query, (encoded_image, user_id))
 
-        # 삽입된 리뷰의 ID 가져오기
-        review_id = cursor.lastrowid
+        # Users_Image 테이블에 데이터가 존재하는지 확인
+        check_query = "SELECT * FROM Users_Image WHERE USER_ID = %s"
+        cursor.execute(check_query, (user_id,))
+        existing_image = cursor.fetchone()
 
-        # 리뷰 이미지 삽입
-        insert_image_query = """
-        INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
-        """
-        for filename in review.IMAGES:
-            # 파일 이름을 저장
-            cursor.execute(insert_image_query, (review_id, filename))
+        if existing_image:
+            # 이미 데이터가 있는 경우 업데이트
+            update_image_query = "UPDATE Users_Image SET IMAGE = %s WHERE USER_ID = %s"
+            cursor.execute(update_image_query, (encoded_image, user_id))
+        else:
+            # 데이터가 없는 경우 삽입
+            insert_image_query = "INSERT INTO Users_Image (USER_ID, IMAGE) VALUES (%s, %s)"
+            cursor.execute(insert_image_query, (user_id, encoded_image))
 
+        # 커밋하여 변경 사항을 저장
         db.commit()
         cursor.close()
 
-        return {"message": "Review and images added successfully"}
-    
-    except mysql.connector.Error as err:
-        db.rollback()  # 데이터베이스 오류 시 롤백
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+        logging.info(f"Profile image for {user_id} uploaded successfully")
+        return {"message": "Profile image uploaded successfully", "image_base64": encoded_image}
 
+    except mysql.connector.Error as err:
+        db.rollback()
+        logging.error(f"Database error: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+        logging.error(f"Failed to upload profile image: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to upload profile image: {e}")
 
 # 일지 메인페이지
 @app.get("/journal/main")
@@ -563,8 +641,7 @@ def add_comment(comment: JournalComment, db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-# 사용자 프로필 정보를 제공하는 엔드포인트 추가
+    
 @app.get("/get_user_profile/")
 def get_user_profile(user_id: str):
     try:
@@ -572,29 +649,34 @@ def get_user_profile(user_id: str):
         cursor = conn.cursor(dictionary=True)
 
         # 사용자 프로필 정보 가져오기
-        cursor.execute("SELECT NICKNAME, LV, INTRODUCE FROM Users WHERE USER_ID = %s", (user_id,))
+        cursor.execute("SELECT NICKNAME, LV, INTRODUCE, IMAGE FROM Users WHERE USER_ID = %s", (user_id,))
         user_data = cursor.fetchone()
+        
+        # 디버깅을 위한 로그 추가
         if not user_data:
             cursor.close()
             conn.close()
             raise HTTPException(status_code=404, detail="User not found")
 
-        # 사용자 이미지 가져오기
-        cursor.execute("SELECT IMAGE FROM Users_Image WHERE USER_ID = %s", (user_id,))
-        image_data = cursor.fetchone()
-        if image_data and image_data['IMAGE']:
-            image_url = f"http://{IMAGE_HOST}:{PORT}/images/{image_data['IMAGE']}"
-        else:
-            image_url = None
+        # 이미지 URL은 upload_profile_image에서 데이터베이스에 저장한 전체 URL을 가져옴
+        image = user_data['IMAGE'] if user_data['IMAGE'] else None
 
         # 팔로워 수 가져오기
         cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
         follower_data = cursor.fetchone()
+        
+        # 디버깅을 위한 로그 추가
+        print(f"follower_data: {follower_data}")
+
         follower_count = follower_data['follower_count'] if follower_data else 0
 
         # 팔로잉 수 가져오기
         cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
         following_data = cursor.fetchone()
+        
+        # 디버깅을 위한 로그 추가
+        print(f"following_data: {following_data}")
+
         following_count = following_data['following_count'] if following_data else 0
 
         cursor.close()
@@ -604,15 +686,17 @@ def get_user_profile(user_id: str):
             "nickname": user_data['NICKNAME'],
             "level": user_data['LV'],
             "introduce": user_data['INTRODUCE'],
-            "imageUrl": image_url,
+            "image": image,
             "followerCount": follower_count,
             "followingCount": following_count
         }
 
     except mysql.connector.Error as err:
+        print(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
     except Exception as e:
+        print(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 if __name__ == "__main__":

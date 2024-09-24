@@ -1,15 +1,15 @@
-// lib/screens/home_page.dart
+// lib/screens/wishlist_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // SystemUiOverlayStyle 사용을 위한 임포트
-import '../sizescaler.dart'; // SizeScaler 임포트
+import '../widgets/sizescaler.dart';
 
-class HomePage extends StatelessWidget {
+class WishlistPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '홈',
+          '가고 싶어요',
           style: TextStyle(
             color: Colors.black,
             fontSize: SizeScaler.scaleSize(context, 20),
@@ -23,13 +23,12 @@ class HomePage extends StatelessWidget {
           statusBarColor: Colors.transparent,
         ),
       ),
-      body: Container(
-        color: Colors.grey[100],
-        child: Center(
-          child: Icon(
-            Icons.home,
-            color: Colors.grey,
-            size: SizeScaler.scaleSize(context, 100),
+      body: Center(
+        child: Text(
+          '가고 싶어요 목록을 여기에 표시합니다.',
+          style: TextStyle(
+            fontSize: SizeScaler.scaleSize(context, 14),
+            color: Colors.grey[700],
           ),
         ),
       ),
