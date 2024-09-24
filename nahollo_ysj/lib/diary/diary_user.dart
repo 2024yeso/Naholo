@@ -188,12 +188,17 @@ class DiaryUser extends StatelessWidget {
                 onPressed: () {
                   // 버튼 클릭 시 동작
                 },
-                style: OutlinedButton.styleFrom(
+                style: ElevatedButton.styleFrom(
                   backgroundColor:
                       const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
-                  side: BorderSide(color: Color(0xFF7320BC), width: 0.5), // 수정
+                  side: BorderSide(
+                      color: Color(0xFF7320BC), width: SizeScaler.scaleSize(context, 0.5)), // 테두리 색상 및 두께
                   elevation: 0,
                   padding: EdgeInsets.zero, // 패딩 제거
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                        SizeScaler.scaleSize(context, 5)), // 둥근 모서리 설정
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -214,6 +219,7 @@ class DiaryUser extends StatelessWidget {
               ),
             ),
           ),
+
           SizedBox(height: SizeScaler.scaleSize(context, 11)), // 아래 여백
 
           // 구분선
