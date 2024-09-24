@@ -60,7 +60,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       builder: (context) => DiaryText(
                         postTitle: _titleController.text,
                         postContent: _contentController.text,
-                        author: '작성자', // 작성자를 고정값으로 설정
+                        author: '유저의 이름 가져오기',
+                        authorID: '유저의 ID 가져오기',
                         createdAt: DateTime.now(), // 현재 시간을 작성 시간으로 설정
                         subjList: _subjList,
                       ),

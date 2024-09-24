@@ -21,6 +21,7 @@ class DiaryText extends StatefulWidget {
   final String postTitle;
   final String postContent;
   final String author; // 작성자 이름
+  final String authorID;
   final DateTime createdAt; // 작성 시간
   final List<bool> subjList;
 
@@ -28,6 +29,7 @@ class DiaryText extends StatefulWidget {
     required this.postTitle,
     required this.postContent,
     required this.author,
+    required this.authorID,
     required this.createdAt,
     required this.subjList,
   });
@@ -99,7 +101,7 @@ class _DiaryTextState extends State<DiaryText> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              DiaryUser(author: widget.author), // DiaryUser로 이동
+                              DiaryUser(authorID: widget.authorID), // DiaryUser로 이동
                         ),
                       );
                     },
@@ -233,11 +235,11 @@ class _DiaryTextState extends State<DiaryText> {
                       ),
                     ),
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 20)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 25)),
                   Container(
                     margin: EdgeInsets.symmetric(
                         horizontal:
-                            SizeScaler.scaleSize(context, 10)), // 박스와 동일한 여백 적용
+                            SizeScaler.scaleSize(context, 7)), // 본문 좌우 여백
                     child: Text(
                       widget.postContent,
                       style: TextStyle(
@@ -362,7 +364,7 @@ class _DiaryTextState extends State<DiaryText> {
               ? [
                   ListTile(
                     leading: Icon(Icons.edit),
-                    title: Text('수정하기'),
+                    title: const Text('수정하기'),
                     onTap: () {
                       // 수정 기능
                       Navigator.pop(context);
@@ -370,7 +372,7 @@ class _DiaryTextState extends State<DiaryText> {
                   ),
                   ListTile(
                     leading: Icon(Icons.delete),
-                    title: Text('삭제하기'),
+                    title: const Text('삭제하기'),
                     onTap: () {
                       // 삭제 기능
                       Navigator.pop(context);
@@ -380,7 +382,7 @@ class _DiaryTextState extends State<DiaryText> {
               : [
                   ListTile(
                     leading: Icon(Icons.block),
-                    title: Text('차단하기'),
+                    title: const Text('차단하기'),
                     onTap: () {
                       // 차단 기능
                       Navigator.pop(context);
@@ -388,7 +390,7 @@ class _DiaryTextState extends State<DiaryText> {
                   ),
                   ListTile(
                     leading: Icon(Icons.report),
-                    title: Text('신고하기'),
+                    title: const Text('신고하기'),
                     onTap: () {
                       // 신고 기능
                       Navigator.pop(context);

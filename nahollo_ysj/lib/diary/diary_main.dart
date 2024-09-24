@@ -101,53 +101,84 @@ class _DiaryMainState extends State<DiaryMain> {
           AppBar(
             backgroundColor: Colors.white,
             toolbarHeight: SizeScaler.scaleSize(context, 25),
-            title: Center(
-              child: Text('나홀로일지',
-                  style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  )),
-            ),
-            actions: [
-              Row(
-                children: [
-                  // 검색 페이지로 이동하는 버튼
-                  IconButton(
-                    icon: Icon(Icons.search,
-                        size: SizeScaler.scaleSize(context, 14)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const DiarySearch()),
-                      );
-                    },
-                  ),
-                  // 유저 프로필 사진
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => DiaryUser(
-                              author: '유저이름'), // '유저이름'은 실제 유저 이름으로 변경해야 함
-                        ),
-                      );
-                    },
-                    child: CircleAvatar(
-                      radius: SizeScaler.scaleSize(context, 7.25),
-                      backgroundColor: Colors.grey,
-                      child: Icon(Icons.person,
-                          color: Colors.white,
-                          size: SizeScaler.scaleSize(context, 12.325)),
+            automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
+            title: Row(
+              children: [
+                // 좌측 영역: 커스텀 뒤로가기 아이콘
+                Expanded(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
+                        size: SizeScaler.scaleSize(context, 10),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
                     ),
                   ),
-                  SizedBox(
-                      width: SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
-                ],
-              ),
-            ],
+                ),
+                // 중앙 영역: 텍스트 (가운데 정렬)
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: Text(
+                      '나홀로일지',
+                      style: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 8),
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+                // 우측 영역: 검색 아이콘과 유저 프로필
+                Expanded(
+                  flex: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // 검색 아이콘
+                      IconButton(
+                        icon: Icon(Icons.search,
+                            size: SizeScaler.scaleSize(context, 14)),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const DiarySearch()),
+                          );
+                        },
+                      ),
+                      // 유저 프로필 사진
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DiaryUser(
+                                  authorID: '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
+                            ),
+                          );
+                        },
+                        child: CircleAvatar(
+                          radius: SizeScaler.scaleSize(context, 7.25),
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person,
+                              color: Colors.white,
+                              size: SizeScaler.scaleSize(context, 12.325)),
+                        ),
+                      ),
+                      SizedBox(
+                          width: SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
@@ -253,7 +284,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DiaryUser(
-                                        author: post.author), // DiaryUser로 이동
+                                        authorID: post.authorID), // DiaryUser로 이동
                                   ),
                                 );
                               },
@@ -306,6 +337,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                       postTitle: post.title,
                                       postContent: post.content,
                                       author: post.author,
+                                      authorID: post.authorID,
                                       createdAt: post.createdAt,
                                       subjList: post.subjList,
                                     ),
@@ -375,11 +407,16 @@ class _DiaryMainState extends State<DiaryMain> {
             );
           },
           backgroundColor: Colors.transparent,
+          elevation: 0,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(width: SizeScaler.scaleSize(context, 4)), // 간격
-              Text('글쓰기', style: TextStyle(fontSize: SizeScaler.scaleSize(context, 8), fontWeight: FontWeight.w600, color: Colors.white)), // 글쓰기 텍스트
+              Text('글쓰기',
+                  style: TextStyle(
+                      fontSize: SizeScaler.scaleSize(context, 8),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white)), // 글쓰기 텍스트
               SizedBox(width: SizeScaler.scaleSize(context, 4)),
               const Icon(Icons.edit, color: Colors.white), // 연필 모양 아이콘
             ],

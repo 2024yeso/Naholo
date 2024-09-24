@@ -17,3 +17,4 @@ class DiarySearch extends StatelessWidget {
     );
   }
 }
+  
