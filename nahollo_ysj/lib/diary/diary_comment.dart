@@ -180,30 +180,55 @@ class DiaryComment extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(SizeScaler.scaleSize(context, 7)),
               child: Container(
-                padding: EdgeInsets.all(SizeScaler.scaleSize(context, 2)),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFD9D9D9),
-                  border: Border.all(
-                    color: Colors.black,
-                    width: SizeScaler.scaleSize(context, 0.2),
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(SizeScaler.scaleSize(context, 27)),
-                ),
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: '댓글을 남겨주세요',
-                    hintStyle: TextStyle(
-                      color: const Color(0xFF7C7C7C),
-                      fontSize: SizeScaler.scaleSize(context, 7),
-                      fontWeight: FontWeight.w200,
+                  padding: EdgeInsets.all(SizeScaler.scaleSize(context, 2)),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD9D9D9),
+                    border: Border.all(
+                      color: Colors.black,
+                      width: SizeScaler.scaleSize(context, 0.2),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.only(
-                        left: SizeScaler.scaleSize(context, 10)),
+                    borderRadius: BorderRadius.circular(
+                        SizeScaler.scaleSize(context, 27)),
                   ),
-                ),
-              ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: '댓글을 남겨주세요',
+                            hintStyle: TextStyle(
+                              color: const Color(0xFF7C7C7C),
+                              fontSize: SizeScaler.scaleSize(context, 7),
+                              fontWeight: FontWeight.w200,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.only(
+                                left: SizeScaler.scaleSize(context, 10)),
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          // 게시 버튼을 눌렀을 때의 동작 추가
+                        },
+                        style: ButtonStyle(
+                          backgroundColor:
+                              WidgetStateProperty.all(Colors.transparent),
+                          minimumSize: WidgetStateProperty.all(Size(
+                              SizeScaler.scaleSize(context, 30),
+                              SizeScaler.scaleSize(context, 20))),
+                        ),
+                        child: Text(
+                          '게시',
+                          style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 7),
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF7C7C7C),
+                          ),
+                        ),
+                      )
+                    ],
+                  )),
             ),
           ),
         ],
