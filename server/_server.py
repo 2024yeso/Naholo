@@ -623,8 +623,8 @@ async def upload_profile_image(
 
 # 일지 메인페이지
 @app.get("/journal/main")
-def get_journal(db=Depends(get_db)):
-    results = {"latest_10": [], "top_10": []}
+def get_journal(user_id: str, db=Depends(get_db)):
+    results = {"latest_10": [], "top_10": [], "followers_latest": []}
 
     try:
         cursor = db.cursor(dictionary=True)
@@ -653,6 +653,23 @@ def get_journal(db=Depends(get_db)):
         top_10 = cursor.fetchall()
         results["top_10"] = top_10
 
+        # 팔로우한 사용자의 일지를 최신순으로 가져오는 쿼리
+        followers_query = """
+        SELECT jp.*, ui.IMAGE AS USER_IMAGE
+        FROM `Journal_post` jp
+        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        WHERE jp.USER_ID IN (
+            SELECT f.FOLLOWER
+            FROM `Follow` f
+            WHERE f.USER_ID = %s
+        )
+        ORDER BY jp.POST_UPDATE DESC
+        LIMIT 10;
+        """
+        cursor.execute(followers_query, (user_id,))
+        followers_latest = cursor.fetchall()
+        results["followers_latest"] = followers_latest
+        print(followers_latest)
         cursor.close()
         return {"data": results}
 
@@ -661,6 +678,7 @@ def get_journal(db=Depends(get_db)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 # 일지 댓글
 @app.get("/journal/comment")

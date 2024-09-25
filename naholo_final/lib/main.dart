@@ -14,21 +14,22 @@ void main() async {
   runApp(const MyApp()); // 앱 실행
 }
 
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        ChangeNotifierProvider<UserProvider>(
           create: (_) => UserProvider(),
-        ), // UserProvider 등록
+        ),
       ],
-      child: MaterialApp(
-        title: 'Nahollo',
-        theme: ThemeData(
+      child: Builder(
+        builder: (context) => MaterialApp(
+          title: 'Nahollo',
+          theme: ThemeData(
           // This is the theme of your application.
           //
           // TRY THIS: Try running your application with "flutter run". You'll see
@@ -46,8 +47,9 @@ class MyApp extends StatelessWidget {
           // tested with just a hot reload.
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          ),
+          home: const StartLogoScreen(),
         ),
-        home: const StartLogoScreen(),
       ),
     );
   }

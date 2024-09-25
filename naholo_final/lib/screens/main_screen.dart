@@ -25,6 +25,10 @@ class _MainScreenState extends State<MainScreen> {
     final user = context.read<UserProvider>().user;
     final userCharacter =
         Provider.of<UserProvider>(context).user!.userCharacter;
+    final userid =
+        Provider.of<UserProvider>(context).user!.userId;
+    print(userid);
+
     final userExp =
         Provider.of<UserProvider>(context).user!.exp;
     // 화면의 너비와 높이를 가져옵니다.
@@ -205,6 +209,7 @@ class _MainScreenState extends State<MainScreen> {
                       children: [
                         GestureDetector(
                           onTap: () {
+                                                        print(user);
                             Navigator.push(context, MaterialPageRoute(
                               builder: (context) {
                                 return DiaryMain();

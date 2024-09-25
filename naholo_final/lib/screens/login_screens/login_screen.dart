@@ -9,6 +9,7 @@ import 'package:nahollo/login_platform.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
 import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/local_signup_screen.dart';
 import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
@@ -102,49 +103,43 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  Future<void> login(String id, String pw) async {
-    // Provider를 미리 가져와서 저장
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+ Future<void> login(String id, String pw) async {
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // 로그인 성공
-    var res;
-    final response = await http.get(
-      Uri.parse('${Api.baseUrl}/login/?user_id=$id&user_pw=$pw'),
+  final response = await http.get(
+    Uri.parse('${Api.baseUrl}/login/?user_id=$id&user_pw=$pw'),
+  );
+
+  if (response.statusCode == 200) {
+    var res = jsonDecode(utf8.decode(response.bodyBytes));
+
+    UserModel user = UserModel(
+      userId: res['user_id'],
+      nickName: res["nickname"],
+      userCharacter: res["userCharacter"],
+      lv: res["lv"],
+      introduce: res["introduce"],
+      exp: res["exp"],
     );
-    print(res);
-    if (response.statusCode == 200) {
-      res = jsonDecode(utf8.decode(response.bodyBytes));
 
-      // UserModel을 생성하여 provider에 저장
-      UserModel user = UserModel(
-        nickName: res["nickname"],
-        userCharacter: res["userCharacter"],
-        lv: res["lv"],
-        introduce: res["introduce"],
-        exp : res["exp"]
-      );
+    userProvider.setUser(user);
 
-      // provider에 유저 정보 저장
-      userProvider.setUser(user);
+    Fluttertoast.showToast(msg: res["message"]);
 
-      Fluttertoast.showToast(
-        msg: res["message"],
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(),
+        ),
       );
-      print(
-          "Login Success Response: ${res["NICKNAME"]}, ${res["USER_CHARACTER"]}, ${res["LV"]}, ${res["INTRODUCE"]}");
-      isLoginSuccess = true;
-      if (context.mounted) {
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const MainScreen()));
-      }
-    } else {
-      Fluttertoast.showToast(
-        msg: "로그인 실패",
-      );
-      print(
-          "Login Success Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
     }
+  } else {
+    Fluttertoast.showToast(msg: "로그인 실패");
+    print("Login Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onTap: () {
                           signInWithGoogle();
                           if (isLoginSuccess) {
+
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
