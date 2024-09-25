@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:nahollo/colors.dart';
-import 'package:nahollo/util.dart';
 
 class NaholloWhereRegisterSearchScreen extends StatefulWidget {
   const NaholloWhereRegisterSearchScreen({super.key});

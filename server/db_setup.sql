@@ -17,6 +17,7 @@ CREATE TABLE `Users` (
     `LV` BIGINT NOT NULL DEFAULT 0,
     `INTRODUCE` VARCHAR(255) NOT NULL,
     `IMAGE` longtext NULL, -- 이미지 경로 저장
+    `EXP` BIGINT NOT NULL DEFAULT 0, -- 경험치 필드 추가
     PRIMARY KEY (`USER_ID`)
 );
 
@@ -120,3 +121,4 @@ CREATE TABLE `Journal_comment` (
     FOREIGN KEY (`POST_ID`) REFERENCES `Journal_post`(`POST_ID`) ON DELETE CASCADE,
     FOREIGN KEY (`USER_ID`) REFERENCES `Users`(`USER_ID`) ON DELETE CASCADE
 );
+

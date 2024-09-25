@@ -2,12 +2,10 @@ import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/screens/login_screens/login_emailverrify_screen.dart';
-import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 

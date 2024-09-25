@@ -265,8 +265,9 @@ def login(user_id: str, user_pw: str):
             "user_id": db_user['USER_ID'],
             "nickname": db_user['NICKNAME'],
             "lv": db_user['LV'],
+            "exp" : db_user['EXP'],
             "introduce": db_user['INTRODUCE'],
-            "image": db_user['IMAGE'], # 예시 이미지 URL
+            "image": db_user['IMAGE'], # 예시 이미지 URL    
             "userCharacter": db_user['USER_CHARACTER']
         }
     

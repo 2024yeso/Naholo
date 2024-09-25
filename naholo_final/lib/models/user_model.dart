@@ -10,6 +10,7 @@ class UserModel {
   int lv;
   String introduce;
   String image;
+  int exp;
 
   UserModel({
     this.userId = "userId",
@@ -23,5 +24,6 @@ class UserModel {
     this.lv = 0,
     this.introduce = "introduce",
     this.image = "image",
+    this.exp = 0
   });
 }

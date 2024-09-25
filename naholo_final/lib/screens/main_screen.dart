@@ -22,6 +22,8 @@ class _MainScreenState extends State<MainScreen> {
     final user = context.read<UserProvider>().user;
     final userCharacter =
         Provider.of<UserProvider>(context).user!.userCharacter;
+    final userExp =
+        Provider.of<UserProvider>(context).user!.exp;
     // 화면의 너비와 높이를 가져옵니다.
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -141,11 +143,9 @@ class _MainScreenState extends State<MainScreen> {
                     child: SizedBox(
                       width: 0.5 * screenWidth,
                       height: 0.025 * screenHeight,
-                      child: const LinearProgressIndicator(
+                      child: LinearProgressIndicator(
                         color: Color(0xFFf9747d), // 진행 바 색상
-                        borderRadius:
-                            BorderRadius.all(Radius.circular(20)), // 모서리 둥글게 설정
-                        value: 0.7, // 진행률 (0.0에서 1.0 사이)
+                        value: userExp != null ? userExp / 100 : 0, // 진행률 (0.0에서 1.0 사이)
                       ),
                     ),
                   ),

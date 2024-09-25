@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -112,16 +111,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await http.get(
       Uri.parse('${Api.baseUrl}/login/?user_id=$id&user_pw=$pw'),
     );
-
+    print(res);
     if (response.statusCode == 200) {
       res = jsonDecode(utf8.decode(response.bodyBytes));
 
       // UserModel을 생성하여 provider에 저장
       UserModel user = UserModel(
-        nickName: res["NICKNAME"],
-        userCharacter: res["USER_CHARACTER"],
-        lv: res["LV"],
-        introduce: res["INTRODUCE"],
+        nickName: res["nickname"],
+        userCharacter: res["userCharacter"],
+        lv: res["lv"],
+        introduce: res["introduce"],
+        exp : res["exp"]
       );
 
       // provider에 유저 정보 저장

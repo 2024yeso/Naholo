@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/util.dart';
