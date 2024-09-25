@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
+import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/util.dart';
 
 import 'package:o3d/o3d.dart';
 import 'package:provider/provider.dart';
+
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -201,6 +204,13 @@ class _MainScreenState extends State<MainScreen> {
                     child: Column(
                       children: [
                         GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (context) {
+                                return DiaryMain();
+                              },
+                            ));
+                          },
                           // 책 아이콘을 클릭할 수 있도록 GestureDetector 사용
                           child: Container(
                             decoration: BoxDecoration(
