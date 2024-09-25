@@ -1,9 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
 import 'package:nahollo/util.dart';
 import 'package:o3d/o3d.dart';
+import 'package:nahollo/services/auth_service.dart';
+import 'package:nahollo/providers/user_provider.dart';
+import 'package:provider/provider.dart';
+
 
 class CharacterExplainScreen extends StatefulWidget {
   String character;
@@ -170,16 +175,27 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                                 height: screenWidth * 0.1, // 텍스트와 버튼 사이의 여백
                               ),
                               ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
+                                  final authService = AuthService();
+                                  final userProvider = Provider.of<UserProvider>(context, listen: false);
+                                  final user = userProvider.user!;
+                                  // 비동기 함수 호출을 위해 onPressed 콜백을 async로 선언
+                                  await authService.updateUser(
+                                    context: context, // 필수 매개변수로 context 전달
+                                    userId: user.userId, 
+                                    userCharacter: widget.character, // 예시로 userCharacter를 widget에서 가져옴
+                                    // 필요한 다른 필드들을 추가로 전달합니다.
+                                  );
+
+                                  // updateUser 함수가 성공적으로 실행된 후 화면 전환
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          CharacterCreatingScreen(
-                                              character: widget.character),
+                                          CharacterCreatingScreen(character: widget.character),
                                     ),
                                   );
-                                }, //버튼 클릭시 래서판다 생성중 화면으로 이동
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: darkpurpleColor, // 버튼 배경색
                                 ),

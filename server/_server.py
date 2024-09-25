@@ -119,6 +119,81 @@ def get_user(db, username: str):
     user = cursor.fetchone()
     cursor.close()
     return user
+from fastapi import HTTPException
+
+# 유저 정보 업데이트 모델 정의 (선택적 필드만 포함)
+class UserUpdate(BaseModel):
+    USER_PW: Optional[str] = None
+    NAME: Optional[str] = None
+    PHONE: Optional[str] = None
+    BIRTH: Optional[str] = None
+    GENDER: Optional[bool] = None
+    NICKNAME: Optional[str] = None
+    USER_CHARACTER: Optional[str] = None
+    LV: Optional[int] = None
+    INTRODUCE: Optional[str] = None
+    IMAGE: Optional[str] = None
+
+# 유저 정보 업데이트 엔드포인트
+@app.put("/update_user/{user_id}")
+async def update_user(user_id: str, user_update: UserUpdate, db=Depends(get_db)):
+    try:
+        cursor = db.cursor()
+
+        # 업데이트할 필드가 있는지 확인
+        update_fields = []
+        update_values = []
+
+        if user_update.USER_PW is not None:
+            update_fields.append("USER_PW = %s")
+            update_values.append(user_update.USER_PW)
+        if user_update.NAME is not None:
+            update_fields.append("NAME = %s")
+            update_values.append(user_update.NAME)
+        if user_update.PHONE is not None:
+            update_fields.append("PHONE = %s")
+            update_values.append(user_update.PHONE)
+        if user_update.BIRTH is not None:
+            update_fields.append("BIRTH = %s")
+            update_values.append(user_update.BIRTH)
+        if user_update.GENDER is not None:
+            update_fields.append("GENDER = %s")
+            update_values.append(user_update.GENDER)
+        if user_update.NICKNAME is not None:
+            update_fields.append("NICKNAME = %s")
+            update_values.append(user_update.NICKNAME)
+        if user_update.USER_CHARACTER is not None:
+            update_fields.append("USER_CHARACTER = %s")
+            update_values.append(user_update.USER_CHARACTER)
+        if user_update.LV is not None:
+            update_fields.append("LV = %s")
+            update_values.append(user_update.LV)
+        if user_update.INTRODUCE is not None:
+            update_fields.append("INTRODUCE = %s")
+            update_values.append(user_update.INTRODUCE)
+        if user_update.IMAGE is not None:
+            update_fields.append("IMAGE = %s")
+            update_values.append(user_update.IMAGE)
+
+        if not update_fields:
+            raise HTTPException(status_code=400, detail="No fields to update")
+
+        update_query = f"UPDATE Users SET {', '.join(update_fields)} WHERE USER_ID = %s"
+        update_values.append(user_id)
+
+        cursor.execute(update_query, tuple(update_values))
+        db.commit()
+
+        cursor.close()
+
+        return {"message": "User information updated successfully"}
+    
+    except mysql.connector.Error as err:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 중복확인 엔드포인트
 @app.get("/check_id/")

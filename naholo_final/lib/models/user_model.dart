@@ -9,7 +9,7 @@ class UserModel {
   String userCharacter;
   int lv;
   String introduce;
-  int image;
+  String image;
 
   UserModel({
     this.userId = "userId",
@@ -22,6 +22,6 @@ class UserModel {
     this.userCharacter = "hedgehog",
     this.lv = 0,
     this.introduce = "introduce",
-    this.image = 1,
+    this.image = "image",
   });
 }

@@ -16,6 +16,8 @@ import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
+
+
 class NicknameSettingScreen extends StatefulWidget {
   Info info;
 
@@ -34,11 +36,11 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   String? _errorMessage;
 
-  Future<void> login() async {
+  Future<void> _1st_login() async {
     //로그인 스크린에 있는 함수긴 한데 여기서만 재사용될꺼라 일단 걍 복사하긴함..ㅎ
     // Provider를 미리 가져와서 저장
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-
+    
     // 로그인 성공
     var res;
     final response = await http.get(
@@ -51,10 +53,11 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
 
       // UserModel을 생성하여 provider에 저장
       UserModel user = UserModel(
-        nickName: res["NICKNAME"],
-        userCharacter: res["USER_CHARACTER"],
-        lv: res["LV"],
-        introduce: res["INTRODUCE"],
+        nickName: res["nickname"],
+        userId : res["user_id"],
+        userCharacter: res["userCharacter"],
+        lv: res["lv"],
+        introduce: res["introduce"],
       );
 
       // provider에 유저 정보 저장
@@ -91,7 +94,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
         "NICKNAME": widget.info.nickName,
         "USER_CHARACTER": "red_panda",
         "LV": 1,
-        "INTRODUCE": "Hello, I am a test user!",
+        "INTRODUCE": "자기소개를 입력해주세요",
         "IMAGE": "defaultimage.png" // 문자열로 수정
       }),
     );
@@ -122,6 +125,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget.info);
     final size = MediaQuery.of(context).size;
     return PopScope(
       canPop: false,
@@ -199,7 +203,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
                       _submitNickname();
                       if (_isNicknameGood) {
                         await addUser();
-                        await login();
+                        await _1st_login();
                         if (_isLoginSuccess) {
                           if (context.mounted) {
                             Navigator.pushReplacement(

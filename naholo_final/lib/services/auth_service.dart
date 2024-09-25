@@ -68,4 +68,56 @@ class AuthService {
       return false;
     }
   }
+
+  // 유저 정보 업데이트 함수
+  Future<void> updateUser({context,
+    required String userId,
+    String? userPw,
+    String? name,
+    String? phone,
+    String? birth,
+    bool? gender,
+    String? nickname,
+    String? userCharacter,
+    int? level,
+    String? introduce,
+    String? imageBase64,
+  }) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user!;
+    // 서버의 URL
+    final url = Uri.parse('http://10.0.2.2:8000/update_user/$userId');
+    
+    // 업데이트할 데이터 맵핑
+    Map<String, dynamic> data = {
+      if (nickname != null) 'NICKNAME': nickname,
+      if (userCharacter != null) 'USER_CHARACTER': userCharacter,
+      if (level != null) 'LV': level,
+      if (introduce != null) 'INTRODUCE': introduce,
+      if (imageBase64 != null) 'IMAGE': imageBase64,
+    };
+    if (nickname != null) user.nickName = nickname; 
+    if (userCharacter != null) user.userCharacter = userCharacter;
+    if (level != null) user.lv = level;
+    if (introduce != null) user.introduce = introduce;
+    if (imageBase64 != null) user.image = imageBase64;
+
+    // HTTP PUT 요청 보내기
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(data),
+    );
+
+    // 응답 처리
+    if (response.statusCode == 200) {
+      userProvider.setUser(user);
+      
+      print('User information updated successfully.');
+    } else {
+      print('Failed to update user information. Status code: ${response.statusCode}');
+      print('Error: ${response.body}');
+    }
+  }
+
 }
