@@ -24,7 +24,6 @@ class DiaryText extends StatefulWidget {
   final String authorID;
   final DateTime createdAt; // 작성 시간
   final List<bool> subjList;
-  bool liked;
 
   DiaryText({
     required this.postTitle,
@@ -33,7 +32,6 @@ class DiaryText extends StatefulWidget {
     required this.authorID,
     required this.createdAt,
     required this.subjList,
-    required this.liked,
   });
 
   @override
@@ -41,7 +39,7 @@ class DiaryText extends StatefulWidget {
 }
 
 class _DiaryTextState extends State<DiaryText> {
-  // bool isLiked = false; // 좋아요 상태
+  bool isLiked = false; // 좋아요 상태
   int likeCount = 10; // 좋아요 수 (예시)
 
   @override
@@ -102,8 +100,8 @@ class _DiaryTextState extends State<DiaryText> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              DiaryUser(authorID: widget.authorID), // DiaryUser로 이동
+                          builder: (context) => DiaryUser(
+                              authorID: widget.authorID), // DiaryUser로 이동
                         ),
                       );
                     },
@@ -114,7 +112,9 @@ class _DiaryTextState extends State<DiaryText> {
                           backgroundColor: Colors.grey,
                           child: Icon(Icons.person, color: Colors.white),
                         ),
-                        SizedBox(width: SizeScaler.scaleSize(context, 4)), // 글쓴이 프로필의 사진과 이름 간격
+                        SizedBox(
+                            width: SizeScaler.scaleSize(
+                                context, 4)), // 글쓴이 프로필의 사진과 이름 간격
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,20 +300,20 @@ class _DiaryTextState extends State<DiaryText> {
                               iconSize: SizeScaler.scaleSize(context, 10),
                               padding: EdgeInsets.zero,
                               icon: Icon(
-                                widget.liked
+                                isLiked
                                     ? Icons.favorite
                                     : Icons.favorite_border,
-                                color: widget.liked ? Colors.red : Colors.black,
+                                color: isLiked ? Colors.red : Colors.black,
                                 size: SizeScaler.scaleSize(context, 10),
                               ),
                               onPressed: () {
                                 setState(() {
-                                  if (widget.liked) {
+                                  if (isLiked) {
                                     likeCount--;
                                   } else {
                                     likeCount++;
                                   }
-                                  widget.liked = !widget.liked;
+                                  isLiked = !isLiked;
                                 });
                               },
                             ),

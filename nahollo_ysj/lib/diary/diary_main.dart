@@ -17,31 +17,6 @@ class _DiaryMainState extends State<DiaryMain> {
   // 현재 선택된 버튼을 관리하기 위한 변수
   int _selectedIndex = 0;
 
-/*
-  if (response.statusCode == 200) {
-    final data = jsonDecode(utf8.decode(response.bodyBytes));
-    print("Journal Main Data:");
-
-    // 최신순 10개의 일지 데이터를 반복하여 출력
-    print("\nLatest 10 Journal Posts:");
-    for (var post in data["data"]["latest_10"]) {
-      print(
-          "Post Name: ${post['POST_NAME']}, User: ${post['USER_ID']}, Likes: ${post['POST_LIKE']}, Image: ${post['USER_IMAGE']}, UPDATED:${post['POST_UPDATE']}");
-    }
-
-    // 인기순 10개의 일지 데이터를 반복하여 출력
-    print("\nTop 10 Journal Posts by Likes:");
-    for (var post in data["data"]["top_10"]) {
-      print(
-          "Post Name: ${post['POST_NAME']}, User: ${post['USER_ID']}, Likes: ${post['POST_LIKE']}, Image: ${post['USER_IMAGE']},UPDATED:${post['POST_UPDATE']}");
-    }
-
-  } else {
-    print("Failed to fetch journal main data: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
-  }
-}
-*/
-
   // 샘플 데이터
   List<diaryPost_model> allBlogPosts = [
     diaryPost_model(
@@ -75,6 +50,17 @@ class _DiaryMainState extends State<DiaryMain> {
       likes: 10,
       liked: true,
       subjList: [true, false, true, false, true, true, false],
+    ),
+    diaryPost_model(
+      author: '경희대학교',
+      authorID: '4',
+      createdAt: DateTime.now().subtract(Duration(days: 23)),
+      title: '대학영어 면제 기준 완화 안내',
+      content:
+          '후마니타스칼리지와의 총 3차례 면담을 통해 대학영어 면제 기준 완화를 요청하였습니다.\n이후 면제 기준에 대해 국제캠퍼스 후마니타스칼리지와 서울캠퍼스 후마니타스칼리지의 합의가 완료된 상황입니다. 추후 해당 안건에 대해 본부의 심의가 진행될 예정이며, 심의 진행 완료 후 면제 기준 변경 안건이 확정됩니다.\n\n면제 기준 완화(안)\n\n가. 기존 이수면제 기준 완화\nTOEIC 915점 -> 875점\n\n나. 적용 시기\n2025학년도 1학기',
+      likes: 100,
+      liked: true,
+      subjList: [false, false, false, false, false, false, true],
     ),
   ];
 
@@ -160,7 +146,8 @@ class _DiaryMainState extends State<DiaryMain> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => DiaryUser(
-                                  authorID: '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
+                                  authorID:
+                                      '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
                             ),
                           );
                         },
@@ -183,6 +170,113 @@ class _DiaryMainState extends State<DiaryMain> {
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
             height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+          ), // 수정
+          SizedBox(
+              height: SizeScaler.scaleSize(context, 28)), // 구분선과 텍스트 사이의 간격
+          Container(
+            alignment: Alignment.centerLeft,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
+                  child: Text(
+                    "오늘의 나홀로 생활은 어땠어?",
+                    style: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 12),
+                        fontWeight: FontWeight.w800),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(
+                      left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
+                  child: Text(
+                    "나홀로일지로 당신의 하루를 기록해 보세요.",
+                    style: TextStyle(
+                      fontSize: SizeScaler.scaleSize(context, 7),
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF727272), // 텍스트 색상 설정
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Container(
+            margin: EdgeInsets.only(
+                top: SizeScaler.scaleSize(context, 12)), // 텍스트와의 간격 설정
+            width: SizeScaler.scaleSize(context, 157), // 원하는 너비
+            height: SizeScaler.scaleSize(context, 86), // 원하는 높이
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFC974F9), Color(0xFF9A9EF0)], // 그라데이션 색상 변경
+                begin: Alignment.topLeft, // 그라데이션 시작점
+                end: Alignment.bottomCenter, // 그라데이션 끝점
+              ),
+              borderRadius: BorderRadius.circular(
+                  SizeScaler.scaleSize(context, 10)), // 둥근 모서리
+            ),
+            child: Row(
+              children: [
+                // 좌측 영역
+                Expanded(
+                  flex: 89,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left: SizeScaler.scaleSize(context, 11),
+                            top: SizeScaler.scaleSize(context, 18)), // 여백 추가
+                        child: Text(
+                          '일지 쓰고 캐릭터 성장시키자!',
+                          style: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 10)),
+                        ),
+                      ),
+                      SizedBox(
+                          height:
+                              SizeScaler.scaleSize(context, 14)), // 텍스트 간 간격
+                      Padding(
+                        padding: EdgeInsets.only(
+                            left: SizeScaler.scaleSize(context,
+                                11)), // 여백 추가(일지 쓰고 캐릭터 성장시키자!의 좌측 패딩과 동일 수치 필요)
+                        child: Text(
+                          '오늘 하루 기록하러 가기 >',
+                          style: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 6)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // 우측 영역
+                Expanded(
+                    flex: 68,
+                    child: OverflowBox(
+                      maxHeight: SizeScaler.scaleSize(context, 100),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            bottom:
+                                SizeScaler.scaleSize(context, -20), // 밖으로 나가게
+                            child: Icon(
+                              Icons.person,
+                              size: SizeScaler.scaleSize(context, 80),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 32)), // 버튼과의 간격
+          Container(
+            color: const Color(0xFFD9D9D9), // 구분선
+            height: SizeScaler.scaleSize(context, 4), // 구분선 두께
           ),
           // 정렬 버튼
           Container(
@@ -253,7 +347,7 @@ class _DiaryMainState extends State<DiaryMain> {
             child: ListView.separated(
               itemCount: blogPosts.length,
               separatorBuilder: (context, index) => Divider(
-                color: const Color(0xFFD9D9D9), // 회색 바
+                color: const Color(0xFFD9D9D9), // 구분선
                 thickness: SizeScaler.scaleSize(context, 3), // 글 구분선 두께
               ),
               itemBuilder: (context, index) {
@@ -284,7 +378,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DiaryUser(
-                                        authorID: post.authorID), // DiaryUser로 이동
+                                        authorID:
+                                            post.authorID), // DiaryUser로 이동
                                   ),
                                 );
                               },
@@ -340,7 +435,6 @@ class _DiaryMainState extends State<DiaryMain> {
                                       authorID: post.authorID,
                                       createdAt: post.createdAt,
                                       subjList: post.subjList,
-                                      liked: post.liked,
                                     ),
                                   ),
                                 );
