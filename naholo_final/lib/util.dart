@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nahollo/community_screen.dart';
+import 'package:nahollo/screens/diary_screens/diary_main.dart';
+import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/screens/myPage_screen.dart';
@@ -145,7 +147,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       case 1:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const NaholloAnjiScreen()),
+          MaterialPageRoute(builder: (context) => const DiaryMain()),
         );
         break;
       case 2:
@@ -163,7 +165,11 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       case 4:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const MypageScreen()),
+          MaterialPageRoute(
+            builder: (context) => const DiaryUser(
+              authorID: "임시",
+            ),
+          ),
         );
         break;
     }
