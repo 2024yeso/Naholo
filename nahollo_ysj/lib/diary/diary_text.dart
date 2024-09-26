@@ -24,6 +24,7 @@ class DiaryText extends StatefulWidget {
   final String authorID;
   final DateTime createdAt; // 작성 시간
   final List<bool> subjList;
+  bool liked;
 
   DiaryText({
     required this.postTitle,
@@ -32,6 +33,7 @@ class DiaryText extends StatefulWidget {
     required this.authorID,
     required this.createdAt,
     required this.subjList,
+    required this.liked,
   });
 
   @override
@@ -39,7 +41,7 @@ class DiaryText extends StatefulWidget {
 }
 
 class _DiaryTextState extends State<DiaryText> {
-  bool isLiked = false; // 좋아요 상태
+  // bool isLiked = false; // 좋아요 상태
   int likeCount = 10; // 좋아요 수 (예시)
 
   @override
@@ -298,20 +300,20 @@ class _DiaryTextState extends State<DiaryText> {
                               iconSize: SizeScaler.scaleSize(context, 10),
                               padding: EdgeInsets.zero,
                               icon: Icon(
-                                isLiked
+                                widget.liked
                                     ? Icons.favorite
                                     : Icons.favorite_border,
-                                color: isLiked ? Colors.red : Colors.black,
+                                color: widget.liked ? Colors.red : Colors.black,
                                 size: SizeScaler.scaleSize(context, 10),
                               ),
                               onPressed: () {
                                 setState(() {
-                                  if (isLiked) {
+                                  if (widget.liked) {
                                     likeCount--;
                                   } else {
                                     likeCount++;
                                   }
-                                  isLiked = !isLiked;
+                                  widget.liked = !widget.liked;
                                 });
                               },
                             ),

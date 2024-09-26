@@ -340,6 +340,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                       authorID: post.authorID,
                                       createdAt: post.createdAt,
                                       subjList: post.subjList,
+                                      liked: post.liked,
                                     ),
                                   ),
                                 );

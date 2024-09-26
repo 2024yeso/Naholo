@@ -48,8 +48,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
         ),
         actions: [
           Padding(
-            padding:
-                EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
+            padding: EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
             child: Center(
               child: GestureDetector(
                 onTap: () {
@@ -202,8 +201,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
             ),
             // 내용 입력 부분
             Padding(
-              padding:
-                  EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
+              padding: EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
               child: TextField(
                 controller: _contentController,
                 maxLines: null, // 제한 없는 줄 수
