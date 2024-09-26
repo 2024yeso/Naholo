@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:video_player/video_player.dart';
 
 class StartLogoScreen extends StatefulWidget {
   const StartLogoScreen({super.key});
@@ -10,7 +11,32 @@ class StartLogoScreen extends StatefulWidget {
 }
 
 class _StartLogoScreenState extends State<StartLogoScreen> {
+  late VideoPlayerController _controller;
+
   @override
+  void initState() {
+    super.initState();
+    _controller =
+        VideoPlayerController.asset('assets/images/cat.mp4') // 앱에 있는 동영상 경로
+          ..initialize().then((_) {
+            setState(() {}); // 초기화 후 상태 업데이트
+            _controller.play(); // 자동 재생
+            _controller.setLooping(false);
+          });
+
+    _controller.addListener(() {
+      if (_controller.value.position == _controller.value.duration) {
+        // 재생이 끝났을 때
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ));
+      }
+    });
+  }
+
+  /* @override
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -25,6 +51,13 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
       );
     });
   }
+*/
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +67,13 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Column(
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : const CircularProgressIndicator(),
+        /* Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
@@ -48,7 +87,7 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
               height: screenWidth * 0.15,
             )
           ],
-        ),
+        ), */
       ),
     );
   }

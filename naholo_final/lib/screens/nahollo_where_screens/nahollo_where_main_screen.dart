@@ -94,7 +94,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       bottomNavigationBar: CustomBottomNavBar(selectedIndex: _selectedIndex),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(10.0),
+          padding: const EdgeInsets.all(20),
           child: Stack(
             children: [
               SingleChildScrollView(
@@ -533,7 +533,7 @@ class GradientElevatedButton extends StatelessWidget {
     final size = SizeUtil.getScreenSize(context);
     return Container(
       width: size.width * 0.25,
-      height: size.width * 0.1,
+      height: size.width * 0.0,
       decoration: BoxDecoration(
         gradient: isSelected
             ? const LinearGradient(
