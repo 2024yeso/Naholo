@@ -64,7 +64,7 @@ void fetchData(String userId) async {
             diaryPost_model post = diaryPost_model(
               author: postData['USER_ID'],
               authorID: postData['USER_ID'],
-              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              createdAt: DateTime.parse(postData['POST_CREATE']), // 확인: POST_UPDATE에서 created_at으로 변경
               title: postData['POST_NAME'],
               content: postData['POST_CONTENT'] ?? '',
               likes: postData['POST_LIKE'],
@@ -84,7 +84,7 @@ void fetchData(String userId) async {
             diaryPost_model post = diaryPost_model(
               author: postData['USER_ID'],
               authorID: postData['USER_ID'],
-              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              createdAt: DateTime.parse(postData['POST_CREATE']), // 확인: POST_UPDATE에서 created_at으로 변경
               title: postData['POST_NAME'],
               content: postData['POST_CONTENT'] ?? '',
               likes: postData['POST_LIKE'],
@@ -104,7 +104,7 @@ void fetchData(String userId) async {
             diaryPost_model post = diaryPost_model(
               author: postData['USER_ID'],
               authorID: postData['USER_ID'],
-              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              createdAt: DateTime.parse(postData['POST_CREATE']), // 확인: POST_UPDATE에서 created_at으로 변경
               title: postData['POST_NAME'],
               content: postData['POST_CONTENT'] ?? '',
               likes: postData['POST_LIKE'],

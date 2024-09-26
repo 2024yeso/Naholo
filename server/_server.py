@@ -11,6 +11,12 @@ import base64  # Base64 인코딩을 위해 필요
 import logging
 from datetime import datetime
 
+logging.basicConfig(
+    level=logging.DEBUG,  # 로그 레벨을 DEBUG로 설정
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -623,9 +629,9 @@ async def upload_profile_image(
         logging.error(f"Failed to upload profile image: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to upload profile image: {e}")
 
-# 일지 메인페이지
 @app.get("/journal/main")
 def get_journal(user_id: str, db=Depends(get_db)):
+    logger.debug("get_journal 함수가 호출되었습니다.1231232321")
     results = {"latest_10": [], "top_10": [], "followers_latest": []}
 
     try:
@@ -636,25 +642,26 @@ def get_journal(user_id: str, db=Depends(get_db)):
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
         FROM `Journal_post` jp
         LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
+        ORDER BY jp.POST_CREATE DESC
         LIMIT 10;
         """
         cursor.execute(latest_query)
         latest_10 = cursor.fetchall()
         results["latest_10"] = latest_10 if latest_10 else []
-        print(latest_10)
-        print(123)
+        logger.debug(f"Latest 10 reviews fetched: {latest_10}")
+
         # 인기순으로 10개의 일지를 가져오는 쿼리 (POST_LIKE 순으로 정렬)
         top_query = """
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
         FROM `Journal_post` jp
         LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.POST_LIKE DESC, jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
+        ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC
         LIMIT 10;
         """
         cursor.execute(top_query)
         top_10 = cursor.fetchall()
         results["top_10"] = top_10 if top_10 else []
+        logger.debug(f"Top 10 reviews fetched: {top_10}")
 
         # 팔로우한 사용자의 일지를 최신순으로 가져오는 쿼리
         followers_query = """
@@ -666,24 +673,28 @@ def get_journal(user_id: str, db=Depends(get_db)):
             FROM `Follow` f
             WHERE f.USER_ID = %s
         )
-        ORDER BY jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
+        ORDER BY jp.POST_CREATE DESC
         LIMIT 10;
         """
         cursor.execute(followers_query, (user_id,))
         followers_latest = cursor.fetchall()
         results["followers_latest"] = followers_latest if followers_latest else []
-        
+        logger.debug(f"Followers' latest reviews fetched: {followers_latest}")
+
         cursor.close()
-        print(results)
+
+        logger.debug(f"Final Results: {results}")
+
         return {"data": results}
 
     except mysql.connector.Error as err:
-        # 데이터베이스 오류 발생 시 처리
-        return {"error": f"Database error: {err}"}
-        
+        logger.error(f"Database error: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
     except Exception as e:
-        # 기타 예상치 못한 오류 발생 시 처리
-        return {"error": f"Unexpected error: {e}"}
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 
 
@@ -858,4 +869,4 @@ def get_user_profile(user_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=HOST, port=PORT)
+    uvicorn.run(app, host=HOST, port=PORT, log_level="debug")

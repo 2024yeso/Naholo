@@ -162,9 +162,13 @@ class _MainScreenState extends State<MainScreen> {
                 height: screenHeight * 0.1, // 하단 아이콘 그룹과의 여백
               ),
               Row(
+                
                 mainAxisAlignment:
                     MainAxisAlignment.spaceBetween, // 아이콘 그룹을 좌우 끝에 배치
                 children: [
+                  SizedBox(
+                height: screenWidth * 0.1, // 하단 아이콘 그룹과의 여백
+              ),
                   Padding(
                     padding:
                         EdgeInsets.only(left: screenHeight * 0.01), // 좌측 여백
@@ -327,10 +331,13 @@ class _MainScreenState extends State<MainScreen> {
                           style: TextStyle(
                               color: Colors.white, fontSize: 10), // 텍스트 색상
                         ),
+                        
                       ],
                     ),
                   ),
-                ],
+                SizedBox(
+                height: screenWidth * 0.1, // 하단 아이콘 그룹과의 여백
+              ),],
               ),
             ],
           ),
