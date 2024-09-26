@@ -13,6 +13,8 @@ import 'dart:convert'; // JSON 파싱을 위해 필요
 import 'package:provider/provider.dart'; // Provider 패키지 임포트
 
 class DiaryMain extends StatefulWidget {
+  const DiaryMain({super.key});
+
   @override
   _DiaryMainState createState() => _DiaryMainState();
 }
@@ -23,7 +25,7 @@ class _DiaryMainState extends State<DiaryMain> {
   List<diaryPost_model> topPosts = [];
   List<diaryPost_model> latestPosts = [];
   List<diaryPost_model> followPosts = [];
-  List<diaryPost_model> blogPosts = []; // 현재 선택된 정렬 방식에 따른 포스트 리스트
+  List<diaryPost_model> blogPosts = []; // 현재 선택된  방식에 따른 포스트 리스트
 
   final List<String> _buttonLabels = ['인기순', '최신순', '팔로우'];
 
@@ -41,74 +43,90 @@ class _DiaryMainState extends State<DiaryMain> {
     });
   }
 
-  // 서버로부터 데이터를 가져오는 함수
-  void fetchData(String userId) async {
-    final url = 'http://10.0.2.2:8000/journal/main'; // 서버 URL 변경 필요
-    final response = await http.get(Uri.parse('$url?user_id=$userId'));
+void fetchData(String userId) async {
+  final url = 'http://10.0.2.2:8000/journal/main'; // 서버 URL
+  final response = await http.get(Uri.parse('$url?user_id=$userId'));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
+  if (response.statusCode == 200) {
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
 
+    // 데이터가 null이 아닌지 체크
+    if (data != null && data['data'] != null) {
       setState(() {
         topPosts = [];
         latestPosts = [];
         followPosts = [];
 
         // 인기순 포스트 처리
-        List<dynamic> topData = data['data']['top_10'];
-        for (var postData in topData) {
-          diaryPost_model post = diaryPost_model(
-            author: postData['USER_ID'],
-            authorID: postData['USER_ID'],
-            createdAt: DateTime.parse(postData['POST_UPDATE']),
-            title: postData['POST_NAME'],
-            content: postData['POST_CONTENT'] ?? '',
-            likes: postData['POST_LIKE'],
-            liked: false,
-            subjList: [false, false, false, false, false, false, false],
-          );
-          topPosts.add(post);
+        if (data['data']['top_10'] != null && data['data']['top_10'].isNotEmpty) {
+          List<dynamic> topData = data['data']['top_10'];
+          for (var postData in topData) {
+            diaryPost_model post = diaryPost_model(
+              author: postData['USER_ID'],
+              authorID: postData['USER_ID'],
+              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              title: postData['POST_NAME'],
+              content: postData['POST_CONTENT'] ?? '',
+              likes: postData['POST_LIKE'],
+              liked: false,
+              subjList: [false, false, false, false, false, false, false],
+            );
+            topPosts.add(post);
+          }
+        } else {
+          print('No top posts available');
         }
 
         // 최신순 포스트 처리
-        List<dynamic> latestData = data['data']['latest_10'];
-        for (var postData in latestData) {
-          diaryPost_model post = diaryPost_model(
-            author: postData['USER_ID'],
-            authorID: postData['USER_ID'],
-            createdAt: DateTime.parse(postData['POST_UPDATE']),
-            title: postData['POST_NAME'],
-            content: postData['POST_CONTENT'] ?? '',
-            likes: postData['POST_LIKE'],
-            liked: false,
-            subjList: [false, false, false, false, false, false, false],
-          );
-          latestPosts.add(post);
+        if (data['data']['latest_10'] != null && data['data']['latest_10'].isNotEmpty) {
+          List<dynamic> latestData = data['data']['latest_10'];
+          for (var postData in latestData) {
+            diaryPost_model post = diaryPost_model(
+              author: postData['USER_ID'],
+              authorID: postData['USER_ID'],
+              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              title: postData['POST_NAME'],
+              content: postData['POST_CONTENT'] ?? '',
+              likes: postData['POST_LIKE'],
+              liked: false,
+              subjList: [false, false, false, false, false, false, false],
+            );
+            latestPosts.add(post);
+          }
+        } else {
+          print('No latest posts available');
         }
 
         // 팔로우 포스트 처리
-        List<dynamic> followData = data['data']["followers_latest"];
-        for (var postData in followData) {
-          diaryPost_model post = diaryPost_model(
-            author: postData['USER_ID'],
-            authorID: postData['USER_ID'],
-            createdAt: DateTime.parse(postData['POST_UPDATE']),
-            title: postData['POST_NAME'],
-            content: postData['POST_CONTENT'] ?? '',
-            likes: postData['POST_LIKE'],
-            liked: false,
-            subjList: [false, false, false, false, false, false, false],
-          );
-          followPosts.add(post);
+        if (data['data']['followers_latest'] != null && data['data']['followers_latest'].isNotEmpty) {
+          List<dynamic> followData = data['data']['followers_latest'];
+          for (var postData in followData) {
+            diaryPost_model post = diaryPost_model(
+              author: postData['USER_ID'],
+              authorID: postData['USER_ID'],
+              createdAt: DateTime.parse(postData['created_at']), // 확인: POST_UPDATE에서 created_at으로 변경
+              title: postData['POST_NAME'],
+              content: postData['POST_CONTENT'] ?? '',
+              likes: postData['POST_LIKE'],
+              liked: false,
+              subjList: [false, false, false, false, false, false, false],
+            );
+            followPosts.add(post);
+          }
+        } else {
+          print('No follow posts available');
         }
 
         // 선택된 정렬 방식에 따라 blogPosts 업데이트
         _updateBlogPosts();
       });
     } else {
-      print('Failed to fetch data: ${response.statusCode}');
+      print('Failed to parse data: data or data[\'data\'] is null');
     }
+  } else {
+    print('Failed to fetch data: ${response.statusCode}');
   }
+}
 
   // 선택된 정렬 방식에 따라 blogPosts 리스트 업데이트
   void _updateBlogPosts() {

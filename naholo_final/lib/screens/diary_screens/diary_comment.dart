@@ -6,7 +6,7 @@ import 'package:nahollo/sizeScaler.dart'; // 크기 조절
 class DiaryComment extends StatelessWidget {
   final String postTitle;
 
-  DiaryComment({required this.postTitle});
+  const DiaryComment({super.key, required this.postTitle});
 
   @override
   Widget build(BuildContext context) {

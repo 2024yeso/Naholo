@@ -21,7 +21,7 @@ int follower = 10, following = 30;
 class DiaryUser extends StatelessWidget {
   final String authorID;
 
-  DiaryUser({required this.authorID});
+  const DiaryUser({super.key, required this.authorID});
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +192,7 @@ class DiaryUser extends StatelessWidget {
                   backgroundColor:
                       const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
                   side: BorderSide(
-                      color: Color(0xFF7320BC), width: SizeScaler.scaleSize(context, 0.5)), // 테두리 색상 및 두께
+                      color: const Color(0xFF7320BC), width: SizeScaler.scaleSize(context, 0.5)), // 테두리 색상 및 두께
                   elevation: 0,
                   padding: EdgeInsets.zero, // 패딩 제거
                   shape: RoundedRectangleBorder(
