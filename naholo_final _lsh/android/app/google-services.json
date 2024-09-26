@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "288800266354",
+    "project_id": "nahollo-39acd",
+    "storage_bucket": "nahollo-39acd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:288800266354:android:b01c78e0e396c3b3690aeb",
+        "android_client_info": {
+          "package_name": "com.example.nahollo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDwMiCY4Q8xQ4Wsk1s_bhNhoWT5YjtA7ro"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

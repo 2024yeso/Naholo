@@ -69,9 +69,14 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(
+              Container(
                 height: 200,
-                child: Image.network("https://i.imgur.com/tV71llG.jpeg"),
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: NetworkImage(info["IMAGE"]),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               const SizedBox(
                 height: 10,

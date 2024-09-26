@@ -26,7 +26,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   final _bytype = byType;
   final _overall = overall;
   final PageController _pageController =
-      PageController(viewportFraction: 0.5, initialPage: 4);
+      PageController(viewportFraction: 0.4, initialPage: 1);
+  int _currentPage = 1;
+
   String _searchQuery = '';
   List<Map<String, dynamic>> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
@@ -65,11 +67,18 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   void initState() {
     super.initState();
     getNaholloWhereTopRated(); // 화면 초기화 시 데이터 불러오기
+    _pageController.addListener(() {
+      // 현재 가운데 있는 페이지 인덱스를 계산
+      setState(() {
+        _currentPage = (_pageController.page ?? 0).round();
+      });
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose(); // 메모리 누수를 방지하기 위해 컨트롤러를 dispose합니다.
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -403,24 +412,37 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       children: [
         // 가로 스크롤이 가능한 리스트뷰
         SizedBox(
-          height: 200, // 이미지와 텍스트가 잘 보이도록 높이 설정
+          height: 300, // 이미지와 텍스트가 잘 보이도록 높이 설정
           child: PageView.builder(
             controller: _pageController,
             itemCount: items.length == 0 ? 0 : null,
             itemBuilder: (context, index) {
               final item = items[index % items.length];
+              double scale = _currentPage == index ? 1.0 : 0.8;
+              double opacity = _currentPage == index ? 1.0 : 0.5;
               print("ㅇ?? $index");
               return AnimatedBuilder(
-                animation: PageController(viewportFraction: 0.6),
+                animation: PageController(viewportFraction: 0.3),
                 builder: (context, child) {
                   print("이거 뭐임 $child");
                   return Transform.scale(
-                    scale: 1.0, // 이 부분을 조정하여 중간 항목을 확대할 수 있음
-                    child: child,
+                    scale: scale, // 이 부분을 조정하여 중간 항목을 확대할 수 있음
+                    child: Opacity(
+                      opacity: opacity,
+                      child: child,
+                    ),
                   );
                 },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            NaholloWhereDetailScreen(item: item),
+                      ),
+                    );
+                  },
                   child: Column(
                     children: [
                       item["IMAGE"] != null
@@ -445,56 +467,43 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                               ),
                             )
                           : const Icon(Icons.image_not_supported, size: 50),
-                      Text(
-                        item["WHERE_NAME"] ?? "Unknown",
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.location_on_sharp,
-                            size: 13,
-                          ),
-                          Text(
-                            '${item["WHERE_LOCATE"] ?? "N/A"}',
-                            style: const TextStyle(
-                                fontSize: 11,
-                                color: Colors.black,
-                                fontWeight: FontWeight.w200),
-                          ),
-                        ],
-                      ), /* ListView.builder(
-            scrollDirection: Axis.horizontal, // 가로 스크롤 설정
-            itemCount:
-                items.length == 0 ? 0 : null, // 무한 스크롤을 위해 itemCount를 null로 설정
-            itemBuilder: (context, index) {
-              // 무한 스크롤을 위해 인덱스를 리스트 길이로 나눈 나머지 값 사용
-              final item = items[index % items.length]; 
-              final imageUrl = item["IMAGE"];
-              final placeName = item["WHERE_NAME"] ?? "Unknown";
-              final location = item["WHERE_LOCATE"] ?? "N/A";
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  children: [
-                    // 이미지를 보여주는 부분
-                    imageUrl != null
-                        ? Image.network(
-                            imageUrl,
-                            width: 70,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          )
-                        : const Icon(Icons.image_not_supported, size: 50),  
-                    // 장소 이름과 위치를 보여주는 부분
-                    Text(placeName, style: const TextStyle(fontSize: 12)),
-                    Text(
-                      '위치: $location',
-                      style: const TextStyle(fontSize: 10, color: Colors.grey),
-                    ), */
+                      if (_currentPage == index)
+                        Column(
+                          children: [
+                            const SizedBox(
+                              height: 2,
+                            ),
+                            const AutoSizeText(
+                              "장소를 더 보려면 탭 하세요",
+                              style: TextStyle(
+                                fontSize: 12,
+                              ),
+                              maxLines: 1, // 최대 줄 수 설정
+                              minFontSize: 8, // 최소 폰트 크기 설정
+                            ),
+                            Text(
+                              item["WHERE_NAME"] ?? "Unknown",
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.location_on_sharp,
+                                  size: 13,
+                                ),
+                                Text(
+                                  '${item["WHERE_LOCATE"] ?? "N/A"}',
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w200),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
