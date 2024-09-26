@@ -78,408 +78,463 @@ class _DiaryMainState extends State<DiaryMain> {
     blogPosts.sort((a, b) => b.likes.compareTo(a.likes)); // 인기순 정렬
   } // 만약 설정으로 기본 정렬을 고를 수 있게 할 경우 이곳을 수정
 
+  bool visible = true; // 상단 일지 작성 안내 보여주기 여부
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          AppBar(
-            backgroundColor: Colors.white,
-            toolbarHeight: SizeScaler.scaleSize(context, 25),
-            automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
-            title: Row(
-              children: [
-                // 좌측 영역: 커스텀 뒤로가기 아이콘
-                Expanded(
-                  flex: 1,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: SizeScaler.scaleSize(context, 10),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                ),
-                // 중앙 영역: 텍스트 (가운데 정렬)
-                Expanded(
-                  flex: 2,
-                  child: Center(
-                    child: Text(
-                      '나홀로일지',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 8),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
-                ),
-                // 우측 영역: 검색 아이콘과 유저 프로필
-                Expanded(
-                  flex: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      // 검색 아이콘
-                      IconButton(
-                        icon: Icon(Icons.search,
-                            size: SizeScaler.scaleSize(context, 14)),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFF6EDFF), // 시작 색상
+              Colors.white, // 끝 색상
+            ],
+            begin: Alignment.topCenter, // 그라데이션 시작 위치
+            end: Alignment.bottomCenter, // 그라데이션 끝 위치
+          ),
+        ),
+        child: Column(
+          children: [
+            AppBar(
+              backgroundColor: Colors.transparent,
+              toolbarHeight: SizeScaler.scaleSize(context, 25),
+              automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
+              title: Row(
+                children: [
+                  // 좌측 영역: 커스텀 뒤로가기 아이콘
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: Colors.black,
+                          size: SizeScaler.scaleSize(context, 10),
+                        ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const DiarySearch()),
-                          );
+                          Navigator.pop(context);
                         },
                       ),
-                      // 유저 프로필 사진
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => DiaryUser(
-                                  authorID:
-                                      '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
-                            ),
-                          );
-                        },
-                        child: CircleAvatar(
-                          radius: SizeScaler.scaleSize(context, 7.25),
-                          backgroundColor: Colors.grey,
-                          child: Icon(Icons.person,
-                              color: Colors.white,
-                              size: SizeScaler.scaleSize(context, 12.325)),
-                        ),
-                      ),
-                      SizedBox(
-                          width: SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-            height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
-          ), // 수정
-          SizedBox(
-              height: SizeScaler.scaleSize(context, 28)), // 구분선과 텍스트 사이의 간격
-          Container(
-            alignment: Alignment.centerLeft,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.only(
-                      left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
-                  child: Text(
-                    "오늘의 나홀로 생활은 어땠어?",
-                    style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 12),
-                        fontWeight: FontWeight.w800),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(
-                      left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
-                  child: Text(
-                    "나홀로일지로 당신의 하루를 기록해 보세요.",
-                    style: TextStyle(
-                      fontSize: SizeScaler.scaleSize(context, 7),
-                      fontWeight: FontWeight.w400,
-                      color: const Color(0xFF727272), // 텍스트 색상 설정
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          Container(
-            margin: EdgeInsets.only(
-                top: SizeScaler.scaleSize(context, 12)), // 텍스트와의 간격 설정
-            width: SizeScaler.scaleSize(context, 157), // 원하는 너비
-            height: SizeScaler.scaleSize(context, 86), // 원하는 높이
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFC974F9), Color(0xFF9A9EF0)], // 그라데이션 색상 변경
-                begin: Alignment.topLeft, // 그라데이션 시작점
-                end: Alignment.bottomCenter, // 그라데이션 끝점
-              ),
-              borderRadius: BorderRadius.circular(
-                  SizeScaler.scaleSize(context, 10)), // 둥근 모서리
-            ),
-            child: Row(
-              children: [
-                // 좌측 영역
-                Expanded(
-                  flex: 89,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: SizeScaler.scaleSize(context, 11),
-                            top: SizeScaler.scaleSize(context, 18)), // 여백 추가
-                        child: Text(
-                          '일지 쓰고 캐릭터 성장시키자!',
-                          style: TextStyle(
-                              fontSize: SizeScaler.scaleSize(context, 10)),
-                        ),
-                      ),
-                      SizedBox(
-                          height:
-                              SizeScaler.scaleSize(context, 14)), // 텍스트 간 간격
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: SizeScaler.scaleSize(context,
-                                11)), // 여백 추가(일지 쓰고 캐릭터 성장시키자!의 좌측 패딩과 동일 수치 필요)
-                        child: Text(
-                          '오늘 하루 기록하러 가기 >',
-                          style: TextStyle(
-                              fontSize: SizeScaler.scaleSize(context, 6)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // 우측 영역
-                Expanded(
-                    flex: 68,
-                    child: OverflowBox(
-                      maxHeight: SizeScaler.scaleSize(context, 100),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            bottom:
-                                SizeScaler.scaleSize(context, -20), // 밖으로 나가게
-                            child: Icon(
-                              Icons.person,
-                              size: SizeScaler.scaleSize(context, 80),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )),
-              ],
-            ),
-          ),
-          SizedBox(height: SizeScaler.scaleSize(context, 32)), // 버튼과의 간격
-          Container(
-            color: const Color(0xFFD9D9D9), // 구분선
-            height: SizeScaler.scaleSize(context, 4), // 구분선 두께
-          ),
-          // 정렬 버튼
-          Container(
-            padding: EdgeInsets.only(
-                left: SizeScaler.scaleSize(context, 11),
-                top: SizeScaler.scaleSize(context, 7),
-                bottom: SizeScaler.scaleSize(context, 7)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: List.generate(_buttonLabels.length, (index) {
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = index; // 선택된 버튼의 인덱스 업데이트
-                      if (_selectedIndex == 0) {
-                        // 인기순: 'hot' 값으로 내림차순 정렬
-                        blogPosts = List.from(allBlogPosts);
-                        blogPosts.sort((a, b) => b.likes.compareTo(a.likes));
-                      } else if (_selectedIndex == 1) {
-                        // 최신순: 'createdAt' 값으로 내림차순 정렬
-                        blogPosts = List.from(allBlogPosts);
-                        blogPosts
-                            .sort((a, b) => b.createdAt.compareTo(a.createdAt));
-                      } else if (_selectedIndex == 2) {
-                        blogPosts =
-                            allBlogPosts.where((post) => post.liked).toList();
-                        blogPosts.sort((a, b) => b.createdAt
-                            .compareTo(a.createdAt)); // 구독한 포스트들을 최신순으로 정렬
-                      }
-                    });
-                  },
-                  child: Container(
-                    width: SizeScaler.scaleSize(context, 29), // 버튼의 가로 길이 설정
-                    height: SizeScaler.scaleSize(context, 12), // 버튼의 세로 길이 설정
-                    margin: EdgeInsets.only(
-                        right: SizeScaler.scaleSize(context, 2)), // 버튼 사이 간격 설정
-                    padding: EdgeInsets.symmetric(
-                        vertical: SizeScaler.scaleSize(context, 2),
-                        horizontal:
-                            SizeScaler.scaleSize(context, 4)), // 버튼 내부 패딩
-                    decoration: BoxDecoration(
-                      color: _selectedIndex == index
-                          ? const Color(0xFFE7E7E7)
-                          : Colors.white, // 선택된 버튼 색상 : 선택되지 않은 버튼 색상
-                      border:
-                          Border.all(color: const Color(0xFF9C9C9C)), // 테두리 색상
-                      borderRadius: BorderRadius.circular(
-                          SizeScaler.scaleSize(context, 12)), // 모서리 둥글게
-                    ),
+                  // 중앙 영역: 텍스트 (가운데 정렬)
+                  Expanded(
+                    flex: 2,
                     child: Center(
                       child: Text(
-                        _buttonLabels[index],
+                        '나홀로일지',
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(
-                              context, 5), // 버튼 텍스트 폰트 크기 설정
-                          fontWeight: FontWeight.w400,
+                          fontSize: SizeScaler.scaleSize(context, 8),
+                          fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
                       ),
                     ),
                   ),
-                );
-              }),
-            ),
-          ),
-          // ...
-          Expanded(
-            child: ListView.separated(
-              itemCount: blogPosts.length,
-              separatorBuilder: (context, index) => Divider(
-                color: const Color(0xFFD9D9D9), // 구분선
-                thickness: SizeScaler.scaleSize(context, 3), // 글 구분선 두께
+                  // 우측 영역: 검색 아이콘과 유저 프로필
+                  Expanded(
+                    flex: 1,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        // 검색 아이콘
+                        IconButton(
+                          icon: Icon(Icons.search,
+                              size: SizeScaler.scaleSize(context, 14)),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const DiarySearch()),
+                            );
+                          },
+                        ),
+                        // 유저 프로필 사진
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DiaryUser(
+                                    authorID:
+                                        '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
+                              ),
+                            );
+                          },
+                          child: CircleAvatar(
+                            radius: SizeScaler.scaleSize(context, 7.25),
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person,
+                                color: Colors.white,
+                                size: SizeScaler.scaleSize(context, 12.325)),
+                          ),
+                        ),
+                        SizedBox(
+                            width:
+                                SizeScaler.scaleSize(context, 2)), // 버튼 사이의 여백
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              itemBuilder: (context, index) {
-                final post = blogPosts[index];
-                return Container(
-                  padding: EdgeInsets.only(
-                    left: SizeScaler.scaleSize(context, 13),
-                    top: SizeScaler.scaleSize(context, 15),
-                    bottom: SizeScaler.scaleSize(context, 18),
-                    right: SizeScaler.scaleSize(context, 9),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬
-                    children: [
-                      // 왼쪽 칸
-                      // 왼쪽 칸
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween, // 추가
-                          children: [
-                            // 프로필 사진, 작성자, 시간
-                            GestureDetector(
-                              onTap: () {
-                                // 유저 프로필 페이지로 이동
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DiaryUser(
-                                        authorID:
-                                            post.authorID), // DiaryUser로 이동
-                                  ),
-                                );
-                              },
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: SizeScaler.scaleSize(context, 10),
-                                    backgroundColor: Colors.grey,
-                                    child: Icon(Icons.person,
-                                        color: Colors.white,
-                                        size: SizeScaler.scaleSize(
-                                            context, 17)), // 기본 아이콘
-                                  ),
-                                  SizedBox(
-                                      width: SizeScaler.scaleSize(
-                                          context, 5)), // 간격
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(post.author,
-                                            style: TextStyle(
-                                                fontSize: SizeScaler.scaleSize(
-                                                    context, 8),
-                                                fontWeight: FontWeight.w600)),
-                                        Text(_formatDateTime(post.createdAt),
-                                            style: TextStyle(
-                                                fontSize: SizeScaler.scaleSize(
-                                                    context, 6),
-                                                fontWeight: FontWeight.w300,
-                                                color:
-                                                    const Color(0xFF7E7E7E))),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                                height: SizeScaler.scaleSize(context, 6)), // 간격
-                            // 제목, 본문 미리보기
-                            GestureDetector(
-                              onTap: () {
-                                // 포스트 상세 페이지로 이동
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => DiaryText(
-                                      postTitle: post.title,
-                                      postContent: post.content,
-                                      author: post.author,
-                                      authorID: post.authorID,
-                                      createdAt: post.createdAt,
-                                      subjList: post.subjList,
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(post.title,
-                                      style: TextStyle(
-                                          fontSize: SizeScaler.scaleSize(
-                                              context, 8))),
-                                  SizedBox(
-                                      height: SizeScaler.scaleSize(
-                                          context, 4.5)), // 간격
-                                  Text(post.getContentPreview(38),
-                                      style: TextStyle(
-                                          fontSize:
-                                              SizeScaler.scaleSize(context, 6),
-                                          fontWeight: FontWeight.w200,
-                                          color: const Color(0xFF7E7E7E))),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(width: SizeScaler.scaleSize(context, 8)), // 간격
-                      // 오른쪽 칸 (사진)
-                      Container(
-                        width: SizeScaler.scaleSize(context, 70), // 사진의 가로 길이
-                        height: SizeScaler.scaleSize(context, 70), // 사진의 세로 길이
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300], // 회색 상자
-                          borderRadius: BorderRadius.circular(
-                              SizeScaler.scaleSize(context, 4)), // 둥근 모서리
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
             ),
-          ),
-        ],
+            Container(
+              color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
+              height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+            ),
+            if (visible)
+              SizedBox(
+                height: SizeScaler.scaleSize(context, 25), // 간격
+                child: Padding(
+                  padding:
+                      EdgeInsets.only(right: SizeScaler.scaleSize(context, 2)),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.close,
+                          color: Colors.black,
+                          size: SizeScaler.scaleSize(context, 9)), // X 아이콘
+                      onPressed: () {
+                        setState(() {
+                          visible = false; // X 버튼 클릭 시 컨테이너 숨기기
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            if (visible)
+              Container(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
+                      child: Text(
+                        "오늘의 나홀로 생활은 어땠어?",
+                        style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 12),
+                            fontWeight: FontWeight.w800),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: SizeScaler.scaleSize(context, 12)), // 좌측 여백 설정
+                      child: Text(
+                        "나홀로일지로 당신의 하루를 기록해 보세요.",
+                        style: TextStyle(
+                          fontSize: SizeScaler.scaleSize(context, 7),
+                          fontWeight: FontWeight.w400,
+                          color: const Color(0xFF727272), // 텍스트 색상 설정
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (visible)
+              Container(
+                margin: EdgeInsets.only(
+                    top: SizeScaler.scaleSize(context, 12)), // 텍스트와의 간격 설정
+                width: SizeScaler.scaleSize(context, 160), // 원하는 너비
+                height: SizeScaler.scaleSize(context, 86), // 원하는 높이
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFFC974F9),
+                      Color(0xFF9A9EF0)
+                    ], // 그라데이션 색상 변경
+                    begin: Alignment.topLeft, // 그라데이션 시작점
+                    end: Alignment.bottomCenter, // 그라데이션 끝점
+                  ),
+                  borderRadius: BorderRadius.circular(
+                      SizeScaler.scaleSize(context, 10)), // 둥근 모서리
+                ),
+                child: Row(
+                  children: [
+                    // 좌측 영역
+                    Expanded(
+                      flex: 89,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                                left: SizeScaler.scaleSize(context, 11),
+                                top:
+                                    SizeScaler.scaleSize(context, 18)), // 여백 추가
+                            child: Text(
+                              '일지 쓰고 캐릭터 성장시키자!',
+                              style: TextStyle(
+                                  fontSize: SizeScaler.scaleSize(context, 10)),
+                            ),
+                          ),
+                          SizedBox(
+                              height: SizeScaler.scaleSize(
+                                  context, 14)), // 텍스트 간 간격
+                          Padding(
+                              padding: EdgeInsets.only(
+                                  left: SizeScaler.scaleSize(context,
+                                      11)), // 여백 추가(일지 쓰고 캐릭터 성장시키자!의 좌측 패딩과 동일 수치 필요)
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => DiaryWriting()),
+                                  );
+                                },
+                                child: Text(
+                                  '오늘 하루 기록하러 가기 >',
+                                  style: TextStyle(
+                                      fontSize:
+                                          SizeScaler.scaleSize(context, 6)),
+                                ),
+                              )),
+                        ],
+                      ),
+                    ),
+                    // 우측 영역
+                    Expanded(
+                        flex: 68,
+                        child: OverflowBox(
+                          maxHeight: SizeScaler.scaleSize(context, 100),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                bottom: SizeScaler.scaleSize(
+                                    context, -20), // 밖으로 나가게
+                                child: Icon(
+                                  Icons.person,
+                                  size: SizeScaler.scaleSize(context, 80),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )),
+                  ],
+                ),
+              ),
+            if (visible)
+              SizedBox(height: SizeScaler.scaleSize(context, 30)), // 간격
+            if (visible)
+              Container(
+                color: const Color(0xFFD9D9D9), // 구분선
+                height: SizeScaler.scaleSize(context, 4), // 구분선 두께
+              ),
+            // 정렬 버튼
+            Container(
+              padding: EdgeInsets.only(
+                  left: SizeScaler.scaleSize(context, 11),
+                  top: SizeScaler.scaleSize(context, 7),
+                  bottom: SizeScaler.scaleSize(context, 7)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: List.generate(_buttonLabels.length, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedIndex = index; // 선택된 버튼의 인덱스 업데이트
+                        if (_selectedIndex == 0) {
+                          // 인기순: 'hot' 값으로 내림차순 정렬
+                          blogPosts = List.from(allBlogPosts);
+                          blogPosts.sort((a, b) => b.likes.compareTo(a.likes));
+                        } else if (_selectedIndex == 1) {
+                          // 최신순: 'createdAt' 값으로 내림차순 정렬
+                          blogPosts = List.from(allBlogPosts);
+                          blogPosts.sort(
+                              (a, b) => b.createdAt.compareTo(a.createdAt));
+                        } else if (_selectedIndex == 2) {
+                          blogPosts =
+                              allBlogPosts.where((post) => post.liked).toList();
+                          blogPosts.sort((a, b) => b.createdAt
+                              .compareTo(a.createdAt)); // 구독한 포스트들을 최신순으로 정렬
+                        }
+                      });
+                    },
+                    child: Container(
+                      width: SizeScaler.scaleSize(context, 29), // 버튼의 가로 길이 설정
+                      height: SizeScaler.scaleSize(context, 12), // 버튼의 세로 길이 설정
+                      margin: EdgeInsets.only(
+                          right:
+                              SizeScaler.scaleSize(context, 2)), // 버튼 사이 간격 설정
+                      padding: EdgeInsets.symmetric(
+                          vertical: SizeScaler.scaleSize(context, 2),
+                          horizontal:
+                              SizeScaler.scaleSize(context, 4)), // 버튼 내부 패딩
+                      decoration: BoxDecoration(
+                        color: _selectedIndex == index
+                            ? const Color(0xFFE7E7E7)
+                            : Colors.white, // 선택된 버튼 색상 : 선택되지 않은 버튼 색상
+                        border: Border.all(
+                            color: const Color(0xFF9C9C9C)), // 테두리 색상
+                        borderRadius: BorderRadius.circular(
+                            SizeScaler.scaleSize(context, 12)), // 모서리 둥글게
+                      ),
+                      child: Center(
+                        child: Text(
+                          _buttonLabels[index],
+                          style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(
+                                context, 5), // 버튼 텍스트 폰트 크기 설정
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+            // ...
+            Expanded(
+              child: ListView.separated(
+                itemCount: blogPosts.length,
+                separatorBuilder: (context, index) => Divider(
+                  color: const Color(0xFFD9D9D9), // 구분선
+                  thickness: SizeScaler.scaleSize(context, 3), // 글 구분선 두께
+                ),
+                itemBuilder: (context, index) {
+                  final post = blogPosts[index];
+                  return Container(
+                    padding: EdgeInsets.only(
+                      left: SizeScaler.scaleSize(context, 13),
+                      top: SizeScaler.scaleSize(context, 15),
+                      bottom: SizeScaler.scaleSize(context, 18),
+                      right: SizeScaler.scaleSize(context, 9),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬
+                      children: [
+                        // 왼쪽 칸
+                        // 왼쪽 칸
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween, // 추가
+                            children: [
+                              // 프로필 사진, 작성자, 시간
+                              GestureDetector(
+                                onTap: () {
+                                  // 유저 프로필 페이지로 이동
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DiaryUser(
+                                          authorID:
+                                              post.authorID), // DiaryUser로 이동
+                                    ),
+                                  );
+                                },
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: SizeScaler.scaleSize(context, 10),
+                                      backgroundColor: Colors.grey,
+                                      child: Icon(Icons.person,
+                                          color: Colors.white,
+                                          size: SizeScaler.scaleSize(
+                                              context, 17)), // 기본 아이콘
+                                    ),
+                                    SizedBox(
+                                        width: SizeScaler.scaleSize(
+                                            context, 5)), // 간격
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(post.author,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      SizeScaler.scaleSize(
+                                                          context, 8),
+                                                  fontWeight: FontWeight.w600)),
+                                          Text(_formatDateTime(post.createdAt),
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      SizeScaler.scaleSize(
+                                                          context, 6),
+                                                  fontWeight: FontWeight.w300,
+                                                  color:
+                                                      const Color(0xFF7E7E7E))),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                  height:
+                                      SizeScaler.scaleSize(context, 6)), // 간격
+                              // 제목, 본문 미리보기
+                              GestureDetector(
+                                onTap: () {
+                                  // 포스트 상세 페이지로 이동
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => DiaryText(
+                                        postTitle: post.title,
+                                        postContent: post.content,
+                                        author: post.author,
+                                        authorID: post.authorID,
+                                        createdAt: post.createdAt,
+                                        subjList: post.subjList,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(post.title,
+                                        style: TextStyle(
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 8))),
+                                    SizedBox(
+                                        height: SizeScaler.scaleSize(
+                                            context, 4.5)), // 간격
+                                    Text(post.getContentPreview(38),
+                                        style: TextStyle(
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 6),
+                                            fontWeight: FontWeight.w200,
+                                            color: const Color(0xFF7E7E7E))),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(width: SizeScaler.scaleSize(context, 8)), // 간격
+                        // 오른쪽 칸 (사진)
+                        Container(
+                          width: SizeScaler.scaleSize(context, 70), // 사진의 가로 길이
+                          height:
+                              SizeScaler.scaleSize(context, 70), // 사진의 세로 길이
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300], // 회색 상자
+                            borderRadius: BorderRadius.circular(
+                                SizeScaler.scaleSize(context, 4)), // 둥근 모서리
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
       floatingActionButton: Container(
         width: SizeScaler.scaleSize(context, 60), // 원하는 너비
