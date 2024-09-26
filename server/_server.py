@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile, Form
+from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile, Form, Query, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
@@ -9,7 +9,7 @@ import os
 from uuid import uuid4
 import base64  # Base64 인코딩을 위해 필요
 import logging
-
+from datetime import datetime
 
 
 app = FastAPI()
@@ -79,6 +79,8 @@ class Where(BaseModel):
     WHERE_TYPE: str
     LATITUDE: Optional[float] = None
     LONGITUDE: Optional[float] = None
+    
+
 
 class WhereReview(BaseModel):
     user_id: str
@@ -634,24 +636,25 @@ def get_journal(user_id: str, db=Depends(get_db)):
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
         FROM `Journal_post` jp
         LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.POST_UPDATE DESC
+        ORDER BY jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
         LIMIT 10;
         """
         cursor.execute(latest_query)
         latest_10 = cursor.fetchall()
-        results["latest_10"] = latest_10
-
+        results["latest_10"] = latest_10 if latest_10 else []
+        print(latest_10)
+        print(123)
         # 인기순으로 10개의 일지를 가져오는 쿼리 (POST_LIKE 순으로 정렬)
         top_query = """
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
         FROM `Journal_post` jp
         LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.POST_LIKE DESC, jp.POST_UPDATE DESC
+        ORDER BY jp.POST_LIKE DESC, jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
         LIMIT 10;
         """
         cursor.execute(top_query)
         top_10 = cursor.fetchall()
-        results["top_10"] = top_10
+        results["top_10"] = top_10 if top_10 else []
 
         # 팔로우한 사용자의 일지를 최신순으로 가져오는 쿼리
         followers_query = """
@@ -663,21 +666,25 @@ def get_journal(user_id: str, db=Depends(get_db)):
             FROM `Follow` f
             WHERE f.USER_ID = %s
         )
-        ORDER BY jp.POST_UPDATE DESC
+        ORDER BY jp.created_at DESC  -- POST_UPDATE 대신 created_at으로 변경
         LIMIT 10;
         """
         cursor.execute(followers_query, (user_id,))
         followers_latest = cursor.fetchall()
-        results["followers_latest"] = followers_latest
-        print(followers_latest)
+        results["followers_latest"] = followers_latest if followers_latest else []
+        
         cursor.close()
+        print(results)
         return {"data": results}
 
     except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
+        # 데이터베이스 오류 발생 시 처리
+        return {"error": f"Database error: {err}"}
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+        # 기타 예상치 못한 오류 발생 시 처리
+        return {"error": f"Unexpected error: {e}"}
+
 
 
 # 일지 댓글
@@ -731,6 +738,62 @@ def add_comment(comment: JournalComment, db=Depends(get_db)):
 
     except mysql.connector.Error as err:
         db.rollback()  # 데이터베이스 오류 발생 시 롤백
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    
+class JournalPost(BaseModel):
+    title: str
+    content: str
+    혼캎: bool = False
+    혼영: bool = False
+    혼놀: bool = False
+    혼밥: bool = False
+    혼박: bool = False
+    혼술: bool = False
+    기타: bool = False
+    images: List[str]  # base64로 인코딩된 이미지 리스트
+    created_at: Optional[datetime] = None  # 작성 시간 필드 추가
+
+@app.post("/journal/upload/")
+async def add_journal(
+    user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
+    journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
+    db=Depends(get_db)
+):
+    try:
+        cursor = db.cursor()
+
+        # 현재 시간을 기본값으로 설정
+        created_at = journal_post.created_at or datetime.now()
+
+        # journal_post 테이블에 일지 내용 삽입
+        insert_post_query = """
+        INSERT INTO journal_post (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_post_query, (
+            user_id, journal_post.title, journal_post.content,
+            journal_post.혼캎, journal_post.혼영, journal_post.혼놀, journal_post.혼밥,
+            journal_post.혼박, journal_post.혼술, journal_post.기타, created_at
+        ))
+
+        # 삽입된 일지의 POST_ID 가져오기
+        post_id = cursor.lastrowid
+
+        # journal_image 테이블에 이미지 데이터 삽입
+        insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
+        for image in journal_post.images:
+            cursor.execute(insert_image_query, (post_id, image))
+
+        db.commit()
+        cursor.close()
+
+        return {"message": "Journal post and images added successfully", "post_id": post_id}
+    
+    except mysql.connector.Error as err:
+        db.rollback()
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
     except Exception as e:

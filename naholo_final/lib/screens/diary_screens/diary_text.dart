@@ -25,7 +25,7 @@ class DiaryText extends StatefulWidget {
   final DateTime createdAt; // 작성 시간
   final List<bool> subjList;
 
-  DiaryText({
+  const DiaryText({super.key, 
     required this.postTitle,
     required this.postContent,
     required this.author,
@@ -110,7 +110,7 @@ class _DiaryTextState extends State<DiaryText> {
                         CircleAvatar(
                           radius: SizeScaler.scaleSize(context, 10),
                           backgroundColor: Colors.grey,
-                          child: Icon(Icons.person, color: Colors.white),
+                          child: const Icon(Icons.person, color: Colors.white),
                         ),
                         SizedBox(width: SizeScaler.scaleSize(context, 4)), // 글쓴이 프로필의 사진과 이름 간격
                         Expanded(
@@ -363,7 +363,7 @@ class _DiaryTextState extends State<DiaryText> {
           children: userName == widget.author
               ? [
                   ListTile(
-                    leading: Icon(Icons.edit),
+                    leading: const Icon(Icons.edit),
                     title: const Text('수정하기'),
                     onTap: () {
                       // 수정 기능
@@ -371,7 +371,7 @@ class _DiaryTextState extends State<DiaryText> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.delete),
+                    leading: const Icon(Icons.delete),
                     title: const Text('삭제하기'),
                     onTap: () {
                       // 삭제 기능
@@ -381,7 +381,7 @@ class _DiaryTextState extends State<DiaryText> {
                 ]
               : [
                   ListTile(
-                    leading: Icon(Icons.block),
+                    leading: const Icon(Icons.block),
                     title: const Text('차단하기'),
                     onTap: () {
                       // 차단 기능
@@ -389,7 +389,7 @@ class _DiaryTextState extends State<DiaryText> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.report),
+                    leading: const Icon(Icons.report),
                     title: const Text('신고하기'),
                     onTap: () {
                       // 신고 기능

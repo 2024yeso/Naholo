@@ -81,12 +81,12 @@ INSERT INTO `WHERE_IMAGE` (`WHERE_ID`, `IMAGE`) VALUES
 (5, 'where_image5_additional.jpg');
 
 -- 9. Journal_post 테이블에 더미 데이터 삽입
-INSERT INTO `Journal_post` (`USER_ID`, `WHERE_ID`, `POST_NAME`, `POST_CONTENT`, `POST_CREATE`, `POST_UPDATE`, `POST_LIKE`) VALUES
-('user1', 1, 'Morning at Sunny Cafe', 'Had a wonderful morning sipping coffee.', '2023-01-01', '2023-01-01', 30),
-('user2', 2, 'Dinner at Moonlight', 'Enjoyed a romantic dinner.', '2023-02-01', '2023-02-02', 20),
-('user3', 3, 'Relaxing at Star Park', 'Spent the day reading under the trees.', '2023-03-01', '2023-03-01', 25),
-('user4', 4, 'Exploring Galaxy Museum', 'Learned a lot about space.', '2023-04-01', '2023-04-02', 15),
-('user5', 5, 'Watching a Play at Comet Theater', 'The performance was breathtaking.', '2023-05-01', '2023-05-01', 35);
+INSERT INTO `Journal_post` (`USER_ID`, `POST_NAME`, `POST_CONTENT`, `POST_CREATE`, `POST_LIKE`) VALUES
+('user1',  'Morning at Sunny Cafe', 'Had a wonderful morning sipping coffee.',  '2023-01-01', 30),
+('user2',  'Dinner at Moonlight', 'Enjoyed a romantic dinner.', '2023-02-01', 20),
+('user3', 'Relaxing at Star Park', 'Spent the day reading under the trees.', '2023-03-01',  25),
+('user4','Exploring Galaxy Museum', 'Learned a lot about space.', '2023-04-01', 15),
+('user5',  'Watching a Play at Comet Theater', 'The performance was breathtaking.', '2023-05-01', , 35);
 
 -- 10. Journal_comment 테이블에 더미 데이터 삽입
 INSERT INTO `Journal_comment` (`POST_ID`, `COMMENT_CONTENT`, `USER_ID`) VALUES

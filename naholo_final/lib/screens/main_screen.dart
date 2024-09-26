@@ -151,7 +151,7 @@ class _MainScreenState extends State<MainScreen> {
                       width: 0.5 * screenWidth,
                       height: 0.025 * screenHeight,
                       child: LinearProgressIndicator(
-                        color: Color(0xFFf9747d), // 진행 바 색상
+                        color: const Color(0xFFf9747d), // 진행 바 색상
                         value: userExp != null ? userExp / 100 : 0, // 진행률 (0.0에서 1.0 사이)
                       ),
                     ),

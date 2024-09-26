@@ -9,7 +9,6 @@ import 'package:nahollo/login_platform.dart';
 import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/providers/emailVerify_static.dart';
 import 'package:nahollo/providers/user_provider.dart';
-import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/local_signup_screen.dart';
 import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
