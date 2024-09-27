@@ -2,7 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
-import 'package:nahollo/screens/attend_screens/attend_main_screen.py';
+import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/sizeScaler.dart';
