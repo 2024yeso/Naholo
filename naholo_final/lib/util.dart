@@ -7,6 +7,7 @@ import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 
 void showExitDialog(BuildContext context) {
   //회원가입 취소 팝업창
@@ -175,38 +176,56 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      selectedLabelStyle: TextStyle(
-        fontSize: MediaQuery.of(context).size.width * 0.04, // 화면 너비의 4%
+    return SizedBox(
+      height: SizeScaler.scaleSize(context, 50),
+      child: BottomNavigationBar(
+        backgroundColor: Colors.white,
+        selectedLabelStyle: TextStyle(
+          fontSize: MediaQuery.of(context).size.width * 0.035, // 화면 너비의 4%
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: MediaQuery.of(context).size.width * 0.03, // 화면 너비의 3.5%
+        ),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: widget.selectedIndex, // 선택된 탭 유지
+        onTap: _onItemTapped, // 탭 선택 시 _onItemTapped 호출
+        items: <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.search,
+              size: SizeScaler.scaleSize(context, 20),
+            ),
+            label: "나홀로어디?",
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.book,
+                size: SizeScaler.scaleSize(context, 20),
+              ),
+              label: "나홀로일지"),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+              size: SizeScaler.scaleSize(context, 20),
+            ),
+            label: '홈',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.chat,
+              size: SizeScaler.scaleSize(context, 20),
+            ),
+            label: '커뮤니티',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.person,
+              size: SizeScaler.scaleSize(context, 20),
+            ),
+            label: '마이페이지',
+          ),
+        ],
       ),
-      unselectedLabelStyle: TextStyle(
-        fontSize: MediaQuery.of(context).size.width * 0.035, // 화면 너비의 3.5%
-      ),
-      type: BottomNavigationBarType.fixed,
-      currentIndex: widget.selectedIndex, // 선택된 탭 유지
-      onTap: _onItemTapped, // 탭 선택 시 _onItemTapped 호출
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: "나홀로어디",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: '나홀로안지',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: '홈',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.chat),
-          label: '커뮤니티',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: '마이페이지',
-        ),
-      ],
     );
   }
 }

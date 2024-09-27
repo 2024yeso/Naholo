@@ -3,12 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_search_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
@@ -108,34 +111,38 @@ class _NaholloWhereRegisterScreenState
   }
 
   Future<void> _submitReview() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user;
+    if (_result["name"] == "장소를 입력해주세요") {
+      Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+    } else {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = userProvider.user;
 
-    // 데이터 추가 시 null 체크 및 기본값 제공
-    byType[_selectedType]?.add({
-      "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
-      "WHERE_ID": 1,
-      "REVIEW_CONTENT": _memoController.text.trim(),
-      "WHERE_LIKE": 10,
-      "WHERE_RATE": _rating ?? 0.0, // null 방지
-      "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
-      "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
-      "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
-      "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
-      "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
-      "REASON_PARK": _reasons["주차 가능해요"] ?? false,
-      "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
-      "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
-      "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
-      "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
-      "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
-      "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
-      "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
-      "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
-      "IMAGE": "https://i.imgur.com/tV71llG.jpeg"
-    });
+      // 데이터 추가 시 null 체크 및 기본값 제공
+      byType[_selectedType]?.add({
+        "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
+        "WHERE_ID": 1,
+        "REVIEW_CONTENT": _memoController.text.trim(),
+        "WHERE_LIKE": 10,
+        "WHERE_RATE": _rating ?? 0.0, // null 방지
+        "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
+        "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
+        "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
+        "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
+        "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
+        "REASON_PARK": _reasons["주차 가능해요"] ?? false,
+        "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
+        "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
+        "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
+        "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
+        "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
+        "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
+        "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
+        "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
+        "IMAGE": "https://i.imgur.com/tV71llG.jpeg"
+      });
 
-    Navigator.pop(context);
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -143,7 +150,9 @@ class _NaholloWhereRegisterScreenState
     var size = SizeUtil.getScreenSize(context);
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
           '나홀로 어디? 등록',
@@ -157,7 +166,10 @@ class _NaholloWhereRegisterScreenState
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.symmetric(
+          vertical: SizeScaler.scaleSize(context, 15),
+          horizontal: SizeScaler.scaleSize(context, 15),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -165,8 +177,8 @@ class _NaholloWhereRegisterScreenState
               '나홀로 어디? 사진 0/20',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
-              height: 5,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 5),
             ),
             GestureDetector(
               onTap: _pickImages,
@@ -183,13 +195,15 @@ class _NaholloWhereRegisterScreenState
                     : Image.file(_selectedImages[0], fit: BoxFit.cover),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 15),
+            ),
             const Text(
               '다녀온 나홀로 어디?',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
-              height: 5,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 10),
             ),
             GestureDetector(
               onTap: () {
@@ -223,124 +237,77 @@ class _NaholloWhereRegisterScreenState
                 ),
               ),
             ),
-            const SizedBox(
-              height: 10,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 15),
             ),
             const Text(
               '혼자 뭐하러?',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 5),
+            ),
             SingleChildScrollView(
               scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
               child: Row(
                 children: [
-                  ElevatedButton(
+                  GradientElevatedButton(
+                    label: "혼놀",
+                    isSelected: _selectedType == "play",
                     onPressed: () {
                       setState(() {
-                        _selectedType = "play"; // 혼놀 보기
+                        _selectedType = "play"; // 전체 보기
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
-                      backgroundColor: _selectedType == "play"
-                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                          : Colors.white,
-                      foregroundColor: _selectedType == "play"
-                          ? Colors.white
-                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                      side: BorderSide(
-                        color: _selectedType == "play"
-                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                            : Colors.white, // 테두리 색상 설정
-                      ),
-                    ),
-                    child: const Text("혼놀"),
                   ),
                   const SizedBox(
                     width: 6,
                   ),
-                  ElevatedButton(
+                  GradientElevatedButton(
+                    label: "혼밥",
+                    isSelected: _selectedType == "eat",
                     onPressed: () {
                       setState(() {
-                        _selectedType = "eat"; // 혼밥 보기
+                        _selectedType = "eat"; // 전체 보기
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
-                      backgroundColor: _selectedType == "eat"
-                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                          : Colors.white,
-                      foregroundColor: _selectedType == "eat"
-                          ? Colors.white
-                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                      side: BorderSide(
-                        color: _selectedType == "eat"
-                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                            : Colors.white, // 테두리 색상 설정
-                      ),
-                    ),
-                    child: const Text("혼밥"),
                   ),
                   const SizedBox(
                     width: 6,
                   ),
-                  ElevatedButton(
+                  GradientElevatedButton(
+                    label: "혼박",
+                    isSelected: _selectedType == "sleep",
                     onPressed: () {
                       setState(() {
-                        _selectedType = "sleep"; // 혼박 보기
+                        _selectedType = "sleep"; // 전체 보기
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
-                      backgroundColor: _selectedType == "sleep"
-                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                          : Colors.white,
-                      foregroundColor: _selectedType == "sleep"
-                          ? Colors.white
-                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                      side: BorderSide(
-                        color: _selectedType == "sleep"
-                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                            : Colors.white, // 테두리 색상 설정
-                      ),
-                    ),
-                    child: const Text("혼박"),
                   ),
                   const SizedBox(
                     width: 6,
                   ),
-                  ElevatedButton(
+                  GradientElevatedButton(
+                    label: "혼술",
+                    isSelected: _selectedType == "drink",
                     onPressed: () {
                       setState(() {
-                        _selectedType = "drink"; // 혼술 보기
+                        _selectedType = "drink"; // 전체 보기
                       });
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 10),
-                      backgroundColor: _selectedType == "drink"
-                          ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                          : Colors.white,
-                      foregroundColor: _selectedType == "drink"
-                          ? Colors.white
-                          : Colors.black, // 선택된 버튼의 텍스트 색상 변경
-                      side: BorderSide(
-                        color: _selectedType == "drink"
-                            ? const Color(0xFF8A2EC1).withOpacity(0.7)
-                            : Colors.white, // 테두리 색상 설정
-                      ),
-                    ),
-                    child: const Text("혼술"),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 20),
+            ),
             const Text(
               '나홀로 가기 좋은 이유',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
-              height: 10,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 12),
             ),
             Wrap(
               spacing: 3.0,
@@ -349,34 +316,53 @@ class _NaholloWhereRegisterScreenState
                 return FilterChip(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0), // 버튼에 모서리 둥글게 적용
+                    side: BorderSide(
+                      color: _reasons[reason]!
+                          ? const Color(0xff794FFF)
+                          : Colors.black,
+                    ),
                   ),
                   labelPadding: const EdgeInsets.symmetric(
                     horizontal: 2,
                   ),
                   label: Text(
                     reason,
-                    style: const TextStyle(fontSize: 10),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: _reasons[reason]!
+                          ? const Color(0xff794FFF)
+                          : Colors.black,
+                    ),
                   ),
                   selected: _reasons[reason]!,
+                  backgroundColor: Colors.white, // 기본 배경색 흰색
+                  selectedColor: const Color(0xffD8CBFF), // 선택된 상태에서의 배경색 보라색
                   onSelected: (bool selected) {
                     setState(() {
                       _reasons[reason] = selected;
                     });
                   },
+                  side: const BorderSide(
+                    color: Colors.black, // 검정 테두리 유지
+                  ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 16),
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 15),
+            ),
             const Text(
               '별점 리뷰',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 5),
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 10),
+            ),
             Row(
               children: [
                 Container(
-                  width: size.width * 0.5,
-                  height: size.width * 0.1,
+                  width: SizeScaler.scaleSize(context, 99),
+                  height: SizeScaler.scaleSize(context, 19),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(15),
                       color: Colors.white,
@@ -388,43 +374,51 @@ class _NaholloWhereRegisterScreenState
                           spreadRadius: 2,
                         )
                       ]),
-                  child: Padding(
-                    padding: const EdgeInsets.all(2.0),
-                    child: RatingBar.builder(
-                      itemSize: 25,
-                      initialRating: 0,
-                      minRating: 1,
-                      direction: Axis.horizontal,
-                      allowHalfRating: true,
-                      itemCount: 5,
-                      itemBuilder: (context, _) => const Icon(
-                        Icons.star,
-                        color: Colors.amber,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: RatingBar.builder(
+                        itemSize: 25,
+                        initialRating: 0,
+                        minRating: 1,
+                        direction: Axis.horizontal,
+                        allowHalfRating: true,
+                        itemCount: 5,
+                        itemPadding: EdgeInsets.symmetric(
+                          horizontal: SizeScaler.scaleSize(context, 2),
+                        ), // 별 사이의 간격 조정
+                        itemBuilder: (context, _) => Image.asset(
+                          "assets/images/star.png",
+                          height: SizeScaler.scaleSize(context, 17),
+                          width: SizeScaler.scaleSize(context, 17),
+                        ),
+                        onRatingUpdate: (rating) {
+                          setState(() {
+                            _rating = rating;
+                          });
+                        },
                       ),
-                      onRatingUpdate: (rating) {
-                        setState(() {
-                          _rating = rating;
-                        });
-                      },
                     ),
                   ),
                 ),
-                const SizedBox(
-                  width: 10,
+                SizedBox(
+                  width: SizeScaler.scaleSize(context, 15),
                 ),
-                Text('$_rating'),
-                const SizedBox(height: 16),
+                Text(
+                  '$_rating',
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
-            const SizedBox(
-              height: 30,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 20),
             ),
             const Text(
               '나홀로 메모',
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(
-              height: 10,
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 10),
             ),
             TextField(
               controller: _memoController,

@@ -96,7 +96,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       bottomNavigationBar: CustomBottomNavBar(selectedIndex: _selectedIndex),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+          ),
           child: Stack(
             children: [
               SingleChildScrollView(
@@ -106,8 +108,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       height: size.width * 0.15,
                     ),
                     SizedBox(
-                      width: size.width * 0.9,
-                      height: size.width * 0.15,
+                      width: SizeScaler.scaleSize(context, 175),
+                      height: SizeScaler.scaleSize(context, 24),
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
@@ -118,11 +120,11 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             color: Color(0xff5357df),
                           ),
                           border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(30),
                               borderSide:
                                   const BorderSide(color: Color(0xff5357df))),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(30),
                             borderSide: const BorderSide(
                                 color: Color(0xff5357df)), // 비활성 상태의 테두리 색상
                           ),
@@ -151,26 +153,39 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                     _searchResults.isNotEmpty
                         ? Container(
                             decoration: const BoxDecoration(),
-                            width: 200,
+                            width: 300,
                             height: 100,
                             child: ListView.builder(
                               itemBuilder: (context, index) {
-                                return ListTile(
-                                  title:
-                                      Text(_searchResults[index]['WHERE_NAME']),
-                                  subtitle: Text(
-                                      _searchResults[index]['WHERE_LOCATE']),
-                                  onTap: () {
-                                    // 검색 결과 항목 클릭 시 다음 화면으로 이동
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            NaholloWhereDetailScreen(
-                                                item: _searchResults[index]),
+                                return Row(
+                                  children: [
+                                    Image.network(
+                                      _searchResults[0]['IMAGE'],
+                                      width: 50, // 이미지의 적절한 너비 지정
+                                      height: 50, // 이미지의 적절한 높이 지정
+                                      fit: BoxFit.cover, // 이미지가 적절히 맞춰지도록 설정
+                                    ),
+                                    Expanded(
+                                      child: ListTile(
+                                        title: Text(
+                                            _searchResults[0]['WHERE_NAME']),
+                                        subtitle: Text(
+                                            _searchResults[0]['WHERE_LOCATE']),
+                                        onTap: () {
+                                          // 검색 결과 항목 클릭 시 다음 화면으로 이동
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  NaholloWhereDetailScreen(
+                                                      item: _searchResults[
+                                                          index]),
+                                            ),
+                                          );
+                                        },
                                       ),
-                                    );
-                                  },
+                                    ),
+                                  ],
                                 );
                               },
                             ),
@@ -251,32 +266,34 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    "${user!.nickName}를 위한\n장소를 추천해줄께-!",
-                                    style: TextStyle(
-                                      fontSize:
-                                          SizeScaler.scaleSize(context, 12),
-                                      fontWeight: FontWeight.w600,
-                                      color: darkpurpleColor,
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${user!.nickName}를 위한\n장소를 추천해줄께-!",
+                                        style: TextStyle(
+                                          fontSize:
+                                              SizeScaler.scaleSize(context, 12),
+                                          fontWeight: FontWeight.w600,
+                                          color: darkpurpleColor,
+                                        ),
+                                      ),
+                                      const Text(
+                                        "전국 핫플 혼놀 장소",
+                                        style: TextStyle(
+                                          color: Colors.blueGrey,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                   Image.asset(
                                     "assets/images/${user.userCharacter}.png",
-                                    width: size.width * 0.4,
-                                    height: size.width * 0.4,
+                                    width: SizeScaler.scaleSize(context, 80),
+                                    height:
+                                        SizeScaler.scaleSize(context, 800 / 9),
                                   )
-                                ],
-                              ),
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "전국 핫플 혼놀 장소",
-                                    style: TextStyle(
-                                      color: Colors.blueGrey,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
                                 ],
                               ),
                               SizedBox(
@@ -326,19 +343,21 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                           ),
                         ),
                         child: SizedBox(
-                          width: size.width * 0.2,
-                          child: const Row(
+                          width: size.width * 0.15,
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 "글쓰기",
                                 style: TextStyle(
-                                    fontSize: 12, color: Colors.white),
+                                    fontSize: SizeScaler.scaleSize(context, 8),
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
                               Icon(
                                 Icons.create_outlined,
                                 color: Colors.white,
-                                size: 18,
+                                size: SizeScaler.scaleSize(context, 8.5),
                               )
                             ],
                           ),
@@ -346,6 +365,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       ),
                     ],
                   ),
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 20),
+                  )
                 ],
               ),
             ],
@@ -459,11 +481,10 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
               final item = items[index % items.length];
               double scale = _currentPage == index ? 1.0 : 0.8;
               double opacity = _currentPage == index ? 1.0 : 0.5;
-              print("ㅇ?? $index");
+
               return AnimatedBuilder(
                 animation: PageController(viewportFraction: 0.3),
                 builder: (context, child) {
-                  print("이거 뭐임 $child");
                   return Transform.scale(
                     scale: scale, // 이 부분을 조정하여 중간 항목을 확대할 수 있음
                     child: Opacity(
@@ -571,12 +592,12 @@ class GradientElevatedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = SizeUtil.getScreenSize(context);
     return Container(
-      width: size.width * 0.25,
-      height: size.width * 0.1,
+      width: SizeScaler.scaleSize(context, 33),
+      height: SizeScaler.scaleSize(context, 13),
       decoration: BoxDecoration(
         gradient: isSelected
             ? const LinearGradient(
-                colors: [Color(0xFF8A2EC1), Color(0xFFDCA1E7)],
+                colors: [Color(0xff4722BC), Color(0xffC17AFF)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
