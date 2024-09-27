@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nahollo/community_screen.dart';
+import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
@@ -158,7 +159,11 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       case 3:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const CommunityScreen()),
+          MaterialPageRoute(
+            builder: (context) => const AttendMainScreen(
+              hasCheckedInToday: true,
+            ),
+          ),
         );
         break;
       case 4:
@@ -212,10 +217,10 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.chat,
+              Icons.check_box,
               size: SizeScaler.scaleSize(context, 20),
             ),
-            label: '커뮤니티',
+            label: '출석',
           ),
           BottomNavigationBarItem(
             icon: Icon(

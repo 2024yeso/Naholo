@@ -1,7 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:nahollo/firebase_options.dart';
-
+import 'package:intl/intl.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/start_logo_screen.dart';
@@ -12,6 +13,8 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform, // Firebase 초기화
   );
+  await initializeDateFormatting('ko_KR', null);
+
   runApp(const MyApp()); // 앱 실행
 }
 

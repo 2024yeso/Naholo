@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/sizeScaler.dart';
@@ -286,6 +287,14 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         children: [
                           GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AttendMainScreen(
+                                  hasCheckedInToday: true,
+                                ),
+                              ),
+                            ),
                             // 채팅 아이콘을 클릭할 수 있도록 GestureDetector 사용
                             child: Container(
                               decoration: BoxDecoration(
@@ -297,7 +306,7 @@ class _MainScreenState extends State<MainScreen> {
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
                               child: const Icon(
-                                Icons.chat, // 채팅 아이콘
+                                Icons.check_box,
                                 color: Colors.white, // 아이콘 색상
                               ),
                             ),
