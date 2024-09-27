@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           create: (_) => UserProvider(),
         ),
       ],
-      child: Builder(
+      child: Builder( 
         builder: (context) => MaterialApp(
           title: 'Nahollo',
           theme: ThemeData(

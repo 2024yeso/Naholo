@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_detail_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:http/http.dart' as http;
@@ -94,7 +96,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       bottomNavigationBar: CustomBottomNavBar(selectedIndex: _selectedIndex),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           child: Stack(
             children: [
               SingleChildScrollView(
@@ -125,20 +127,56 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                 color: Color(0xff5357df)), // 비활성 상태의 테두리 색상
                           ),
                         ),
-                        onChanged: (value) {},
+                        onChanged: (value) {
+                          _searchQuery = value;
+                          _updateSearchResults(_searchQuery);
+                        },
                         onSubmitted: (value) {
                           _searchQuery = value;
                           _updateSearchResults(_searchQuery);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => NaholloWhereDetailScreen(
-                                  item: _searchResults[0]),
-                            ),
-                          );
+                          if (_searchResults.isEmpty) {
+                            Fluttertoast.showToast(msg: "검색어가 존재하지 않습니다");
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => NaholloWhereDetailScreen(
+                                    item: _searchResults[0]),
+                              ),
+                            );
+                          }
                         },
                       ),
                     ),
+                    _searchResults.isNotEmpty
+                        ? Container(
+                            decoration: const BoxDecoration(),
+                            width: 200,
+                            height: 100,
+                            child: ListView.builder(
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title:
+                                      Text(_searchResults[index]['WHERE_NAME']),
+                                  subtitle: Text(
+                                      _searchResults[index]['WHERE_LOCATE']),
+                                  onTap: () {
+                                    // 검색 결과 항목 클릭 시 다음 화면으로 이동
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            NaholloWhereDetailScreen(
+                                                item: _searchResults[index]),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          )
+                        : Container(),
+
                     const SizedBox(
                       height: 10,
                     ),
@@ -215,16 +253,17 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                 children: [
                                   Text(
                                     "${user!.nickName}를 위한\n장소를 추천해줄께-!",
-                                    style: const TextStyle(
-                                      fontSize: 20,
+                                    style: TextStyle(
+                                      fontSize:
+                                          SizeScaler.scaleSize(context, 12),
                                       fontWeight: FontWeight.w600,
                                       color: darkpurpleColor,
                                     ),
                                   ),
                                   Image.asset(
                                     "assets/images/${user.userCharacter}.png",
-                                    width: size.width * 0.3,
-                                    height: size.width * 0.3,
+                                    width: size.width * 0.4,
+                                    height: size.width * 0.4,
                                   )
                                 ],
                               ),
@@ -533,7 +572,7 @@ class GradientElevatedButton extends StatelessWidget {
     final size = SizeUtil.getScreenSize(context);
     return Container(
       width: size.width * 0.25,
-      height: size.width * 0.0,
+      height: size.width * 0.1,
       decoration: BoxDecoration(
         gradient: isSelected
             ? const LinearGradient(

@@ -139,50 +139,50 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.all(SizeScaler.scaleSize(context, 10)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Divider(
-                      height: 0,
-                      thickness: 1, // 두께
-                      color: Colors.grey, // 선 색상
-                    ),
-                    SizedBox(
-                      height: SizeScaler.scaleSize(context, 10),
-                    ),
-                    // 프로필 섹션
-                    _buildProfileSection(),
-                    const Divider(),
-                    // 팔로워, 팔로잉, 프로필 수정 버튼
-                    _buildProfileActions(context),
-                    // 가고 싶어요 버튼
-                    _buildWishlistButton(context),
-                    const Divider(),
-                    // 탭 전환 버튼 (일지/지도)
-                    Row(
-                      children: [
-                        _buildTabButton(Icons.apps, '일지', 0),
-                        _buildTabButton(Icons.map, '지도', 1),
-                      ],
-                    ),
-                    SizedBox(height: SizeScaler.scaleSize(context, 8)),
-                    _selectedTab == 0
-                        ? JournalContent(
-                            reviews: _reviews, userProfile: _userProfile)
-                        : MapContent(
-                            markers: _markers,
-                            initialPosition: _initialPosition,
-                            mapController: _mapController,
-                          ),
-                  ],
-                ),
+      body: /* _isLoading
+          ? const Center(child: CircularProgressIndicator())  
+          : */
+          SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(SizeScaler.scaleSize(context, 10)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Divider(
+                height: 0,
+                thickness: 1, // 두께
+                color: Colors.grey, // 선 색상
               ),
-            ),
+              SizedBox(
+                height: SizeScaler.scaleSize(context, 10),
+              ),
+              // 프로필 섹션
+              _buildProfileSection(),
+              const Divider(),
+              // 팔로워, 팔로잉, 프로필 수정 버튼
+              _buildProfileActions(context),
+              // 가고 싶어요 버튼
+              _buildWishlistButton(context),
+              const Divider(),
+              // 탭 전환 버튼 (일지/지도)
+              Row(
+                children: [
+                  _buildTabButton(Icons.apps, '일지', 0),
+                  _buildTabButton(Icons.map, '지도', 1),
+                ],
+              ),
+              SizedBox(height: SizeScaler.scaleSize(context, 8)),
+              _selectedTab == 0
+                  ? JournalContent(reviews: _reviews, userProfile: _userProfile)
+                  : MapContent(
+                      markers: _markers,
+                      initialPosition: _initialPosition,
+                      mapController: _mapController,
+                    ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
