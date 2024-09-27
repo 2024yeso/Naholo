@@ -5,6 +5,7 @@ import 'diary_comment.dart'; // 나홀로일지 댓글
 import 'diary_writing.dart';
 import 'diary_user.dart';
 import 'package:nahollo/sizeScaler.dart';
+import 'dart:convert'; // base64 디코딩을 위해 필요
 
 String userName = "시금치"; // 현재 유저의 닉네임
 final List<String> subjects = [
@@ -24,14 +25,16 @@ class DiaryText extends StatefulWidget {
   final String authorID;
   final DateTime createdAt; // 작성 시간
   final List<bool> subjList;
+  final List<dynamic> images;
 
-  const DiaryText({super.key, 
+  const DiaryText({super.key,
     required this.postTitle,
     required this.postContent,
     required this.author,
     required this.authorID,
     required this.createdAt,
     required this.subjList,
+    required this.images,
   });
 
   @override
@@ -236,6 +239,35 @@ class _DiaryTextState extends State<DiaryText> {
                     ),
                   ),
                   SizedBox(height: SizeScaler.scaleSize(context, 25)),
+                  
+                  // 이미지 슬라이더 추가
+                  if (widget.images.isNotEmpty) ...[
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 100), // 높이를 고정하여 슬라이더 높이 일정
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: widget.images.length,
+                        itemBuilder: (context, index) {
+                          final decodedImage = base64Decode(widget.images[index]);
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: SizeScaler.scaleSize(context, 5),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(SizeScaler.scaleSize(context, 7)),
+                              child: Image.memory(
+                                decodedImage,
+                                width: SizeScaler.scaleSize(context, 100), // 고정된 너비 설정
+                                fit: BoxFit.contain, // 이미지 비율을 유지하며 잘리지 않게 표시
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: SizeScaler.scaleSize(context, 25)),
+                  ],
+                  
                   Container(
                     margin: EdgeInsets.symmetric(
                         horizontal:

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nahollo/community_screen.dart';
-import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
+import 'package:nahollo/screens/attend_screens/attend_main_screen.py';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
