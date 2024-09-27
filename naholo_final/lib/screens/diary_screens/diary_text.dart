@@ -184,7 +184,7 @@ class _DiaryTextState extends State<DiaryText> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                DiaryWriting(), // DiaryWriting 페이지로 이동
+                                const DiaryWriting(), // DiaryWriting 페이지로 이동
                           ),
                         );
                       },

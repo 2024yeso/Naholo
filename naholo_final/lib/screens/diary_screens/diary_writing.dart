@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert'; // base64 인코딩을 위한 패키지
 import 'dart:io'; // 파일 관련
 import 'package:http/http.dart' as http; // 서버 요청을 위한 패키지
-import 'diary_text.dart'; // 나홀로일지 글 상세보기
+// 나홀로일지 글 상세보기
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:provider/provider.dart'; // Provider 패키지 임포트

@@ -10,6 +10,8 @@ from uuid import uuid4
 import base64  # Base64 인코딩을 위해 필요
 import logging
 from datetime import datetime
+from typing import Dict, List
+
 
 logging.basicConfig(
     level=logging.DEBUG,  # 로그 레벨을 DEBUG로 설정
@@ -631,17 +633,16 @@ async def upload_profile_image(
 
 @app.get("/journal/main")
 def get_journal(user_id: str, db=Depends(get_db)):
-    logger.debug("get_journal 함수가 호출되었습니다.1231232321")
     results = {"latest_10": [], "top_10": [], "followers_latest": []}
 
     try:
         cursor = db.cursor(dictionary=True)
 
-        # 최신순으로 10개의 일지를 가져오는 쿼리
+        # Fetch latest 10 posts
         latest_query = """
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM `Journal_post` jp
-        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        FROM Journal_post jp
+        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
         ORDER BY jp.POST_CREATE DESC
         LIMIT 10;
         """
@@ -650,11 +651,11 @@ def get_journal(user_id: str, db=Depends(get_db)):
         results["latest_10"] = latest_10 if latest_10 else []
         logger.debug(f"Latest 10 reviews fetched: {latest_10}")
 
-        # 인기순으로 10개의 일지를 가져오는 쿼리 (POST_LIKE 순으로 정렬)
+        # Fetch top 10 posts sorted by likes
         top_query = """
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM `Journal_post` jp
-        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        FROM Journal_post jp
+        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
         ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC
         LIMIT 10;
         """
@@ -663,14 +664,14 @@ def get_journal(user_id: str, db=Depends(get_db)):
         results["top_10"] = top_10 if top_10 else []
         logger.debug(f"Top 10 reviews fetched: {top_10}")
 
-        # 팔로우한 사용자의 일지를 최신순으로 가져오는 쿼리
+        # Fetch latest 10 posts from followed users
         followers_query = """
         SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM `Journal_post` jp
-        LEFT JOIN `Users_Image` ui ON jp.USER_ID = ui.USER_ID
+        FROM Journal_post jp
+        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
         WHERE jp.USER_ID IN (
             SELECT f.FOLLOWER
-            FROM `Follow` f
+            FROM Follow f
             WHERE f.USER_ID = %s
         )
         ORDER BY jp.POST_CREATE DESC
@@ -681,9 +682,60 @@ def get_journal(user_id: str, db=Depends(get_db)):
         results["followers_latest"] = followers_latest if followers_latest else []
         logger.debug(f"Followers' latest reviews fetched: {followers_latest}")
 
+        # Collect all POST_IDs from the fetched posts using a list to maintain order and remove duplicates
+        all_post_ids = []
+        seen_post_ids = set()
+        for key in results:
+            for post in results[key]:
+                post_id = post['POST_ID']
+                if post_id not in seen_post_ids:
+                    all_post_ids.append(post_id)
+                    seen_post_ids.add(post_id)
+
+        if all_post_ids:
+            # Fetch all images for the collected POST_IDs
+            format_strings = ','.join(['%s'] * len(all_post_ids))
+            images_query = f"""
+            SELECT POST_ID, IMAGE_DATA
+            FROM journal_image
+            WHERE POST_ID IN ({format_strings});
+            """
+            try:
+                cursor.execute(images_query, all_post_ids)
+                images_data = cursor.fetchall()
+                logger.debug(f"Fetched images: {images_data}")
+            except Exception as e:
+                logger.error(f"Error fetching images: {e}")
+                raise
+
+            # Map POST_ID to list of images
+            post_images_map: Dict[int, List[str]] = {}
+            for image in images_data:
+                post_id = image['POST_ID']
+                if post_id not in post_images_map:
+                    post_images_map[post_id] = []
+                post_images_map[post_id].append(image['IMAGE_DATA'])
+
+            # Attach images to each post
+            for key in results:
+                for post in results[key]:
+                    post_id = post['POST_ID']
+                    post['images'] = post_images_map.get(post_id, [])
+
+                    # Convert integer flags to bool if necessary
+                    post['subjList'] = [
+                        bool(post.get('혼캎', False)),
+                        bool(post.get('혼영', False)),
+                        bool(post.get('혼놀', False)),
+                        bool(post.get('혼밥', False)),
+                        bool(post.get('혼박', False)),
+                        bool(post.get('혼술', False)),
+                        bool(post.get('기타', False)),
+                    ]
+
         cursor.close()
 
-        logger.debug(f"Final Results: {results}")
+        logger.debug(f"Final Results with Images: {results}")
 
         return {"data": results}
 
@@ -731,6 +783,7 @@ def get_journal_comments(post_id: int):
 
 @app.post("/journal/add_comment")
 def add_comment(comment: JournalComment, db=Depends(get_db)):
+    logger.debug(f"Followers' latest reviews fetched: {comment}")
     try:
         cursor = db.cursor()
 
@@ -773,6 +826,9 @@ async def add_journal(
     journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
     db=Depends(get_db)
 ):
+    logger.debug(f"Uploading journal post for user_id: {user_id}")
+    logger.debug(f"JournalPost data: {journal_post}")
+
     try:
         cursor = db.cursor()
 
@@ -781,22 +837,33 @@ async def add_journal(
 
         # journal_post 테이블에 일지 내용 삽입
         insert_post_query = """
-        INSERT INTO journal_post (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
+        INSERT INTO journal_post 
+        (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(insert_post_query, (
-            user_id, journal_post.title, journal_post.content,
-            journal_post.혼캎, journal_post.혼영, journal_post.혼놀, journal_post.혼밥,
-            journal_post.혼박, journal_post.혼술, journal_post.기타, created_at
+            user_id, 
+            journal_post.title, 
+            journal_post.content,
+            journal_post.혼캎, 
+            journal_post.혼영, 
+            journal_post.혼놀, 
+            journal_post.혼밥,
+            journal_post.혼박, 
+            journal_post.혼술, 
+            journal_post.기타, 
+            created_at
         ))
 
         # 삽입된 일지의 POST_ID 가져오기
         post_id = cursor.lastrowid
+        logger.debug(f"Inserted journal_post with POST_ID: {post_id}")
 
         # journal_image 테이블에 이미지 데이터 삽입
         insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
         for image in journal_post.images:
             cursor.execute(insert_image_query, (post_id, image))
+            logger.debug(f"Inserted image for POST_ID {post_id}")
 
         db.commit()
         cursor.close()
@@ -805,9 +872,11 @@ async def add_journal(
     
     except mysql.connector.Error as err:
         db.rollback()
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
 
     except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
     
 @app.get("/get_user_profile/")

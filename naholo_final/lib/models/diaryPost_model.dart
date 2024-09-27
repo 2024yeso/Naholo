@@ -1,14 +1,13 @@
-// diaryPost_model.dart
 class diaryPost_model {
-  final String author; // 일지 작성자 이름
-  final String authorID; // 일지 작성자
-  final DateTime createdAt; // 일지 작성 시간
-  final String title; // 일지 제목
-  final String content; // 일지 내용
-  final int likes; // 일지 좋아요 수
-  final bool liked; // 유저의 일지 좋아요 여부
+  final String author;
+  final String authorID;
+  final DateTime createdAt;
+  final String title;
+  final String content;
+  final int likes;
+  final bool liked;
   final List<bool> subjList;
-// '# 혼캎', '# 혼영', '# 혼놀', '# 혼밥', '# 혼박', '# 혼술', '# 기타'
+  final List<dynamic> images; // 이미지 리스트 추가
 
   diaryPost_model({
     required this.author,
@@ -19,10 +18,15 @@ class diaryPost_model {
     required this.likes,
     required this.liked,
     required this.subjList,
+    required this.images,
   });
 
-  String getContentPreview(int length) {
-    // 본문 미리보기용 문자열을 생성
-    return content.length > length ? '${content.substring(0, length)}...' : content;
+  // 본문 미리보기 생성 메서드
+  String getContentPreview(int maxLength) {
+    if (content.length <= maxLength) {
+      return content;
+    } else {
+      return '${content.substring(0, maxLength)}...';
+    }
   }
 }

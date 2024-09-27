@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:video_player/video_player.dart';
 
 class StartLogoScreen extends StatefulWidget {
