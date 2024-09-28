@@ -1,23 +1,20 @@
+# _server.py
+
 from fastapi import FastAPI, HTTPException, status, Depends, File, UploadFile, Form, Query, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ValidationError
 import mysql.connector
 from mysql.connector.errors import IntegrityError
-from typing import Optional, List
+from typing import Optional, List, Dict
 import os
 from uuid import uuid4
 import base64  # Base64 인코딩을 위해 필요
 import logging
 from datetime import datetime
-from typing import Dict, List
 
-
-logging.basicConfig(
-    level=logging.DEBUG,  # 로그 레벨을 DEBUG로 설정
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
-
+# 로깅 설정
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -25,7 +22,7 @@ app = FastAPI()
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 필요한 도메인으로 제한하는 것이 좋습니다.
+    allow_origins=["*"],  # 필요에 따라 특정 도메인으로 제한하는 것이 좋습니다.
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -87,8 +84,6 @@ class Where(BaseModel):
     WHERE_TYPE: str
     LATITUDE: Optional[float] = None
     LONGITUDE: Optional[float] = None
-    
-
 
 class WhereReview(BaseModel):
     user_id: str
@@ -123,13 +118,11 @@ def get_db():
         conn.close()
 
 # 사용자 검색 함수
-def get_user(db, username: str):
-    cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM Users WHERE USER_ID = %s", (username,))
-    user = cursor.fetchone()
-    cursor.close()
+def get_user(db, username: str) -> Optional[Dict]:
+    with db.cursor(dictionary=True) as cursor:
+        cursor.execute("SELECT * FROM Users WHERE USER_ID = %s", (username,))
+        user = cursor.fetchone()
     return user
-from fastapi import HTTPException
 
 # 유저 정보 업데이트 모델 정의 (선택적 필드만 포함)
 class UserUpdate(BaseModel):
@@ -147,202 +140,168 @@ class UserUpdate(BaseModel):
 # 유저 정보 업데이트 엔드포인트
 @app.put("/update_user/{user_id}")
 async def update_user(user_id: str, user_update: UserUpdate, db=Depends(get_db)):
+    logger.info(f"Updating user: {user_id}")
+    update_fields = []
+    update_values = []
+
+    for field, value in user_update.dict(exclude_unset=True).items():
+        update_fields.append(f"{field} = %s")
+        update_values.append(value)
+
+    if not update_fields:
+        logger.warning("No fields to update")
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    update_query = f"UPDATE Users SET {', '.join(update_fields)} WHERE USER_ID = %s"
+    update_values.append(user_id)
+
     try:
-        cursor = db.cursor()
-
-        # 업데이트할 필드가 있는지 확인
-        update_fields = []
-        update_values = []
-
-        if user_update.USER_PW is not None:
-            update_fields.append("USER_PW = %s")
-            update_values.append(user_update.USER_PW)
-        if user_update.NAME is not None:
-            update_fields.append("NAME = %s")
-            update_values.append(user_update.NAME)
-        if user_update.PHONE is not None:
-            update_fields.append("PHONE = %s")
-            update_values.append(user_update.PHONE)
-        if user_update.BIRTH is not None:
-            update_fields.append("BIRTH = %s")
-            update_values.append(user_update.BIRTH)
-        if user_update.GENDER is not None:
-            update_fields.append("GENDER = %s")
-            update_values.append(user_update.GENDER)
-        if user_update.NICKNAME is not None:
-            update_fields.append("NICKNAME = %s")
-            update_values.append(user_update.NICKNAME)
-        if user_update.USER_CHARACTER is not None:
-            update_fields.append("USER_CHARACTER = %s")
-            update_values.append(user_update.USER_CHARACTER)
-        if user_update.LV is not None:
-            update_fields.append("LV = %s")
-            update_values.append(user_update.LV)
-        if user_update.INTRODUCE is not None:
-            update_fields.append("INTRODUCE = %s")
-            update_values.append(user_update.INTRODUCE)
-        if user_update.IMAGE is not None:
-            update_fields.append("IMAGE = %s")
-            update_values.append(user_update.IMAGE)
-
-        if not update_fields:
-            raise HTTPException(status_code=400, detail="No fields to update")
-
-        update_query = f"UPDATE Users SET {', '.join(update_fields)} WHERE USER_ID = %s"
-        update_values.append(user_id)
-
-        cursor.execute(update_query, tuple(update_values))
-        db.commit()
-
-        cursor.close()
-
+        with db.cursor() as cursor:
+            cursor.execute(update_query, tuple(update_values))
+            db.commit()
+        logger.info(f"User {user_id} updated successfully")
         return {"message": "User information updated successfully"}
-    
     except mysql.connector.Error as err:
         db.rollback()
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 중복확인 엔드포인트
 @app.get("/check_id/")
 def check_id(user_id: str):
+    logger.info(f"Checking availability for user_id: {user_id}")
     try:
-        conn = mysql.connector.connect(**db_config)
-        db_user = get_user(conn, user_id)
-        conn.close()
-
-        if db_user:
-            return {"message": "ID already exists", "available": True}
-        else:
-            return {"message": "ID is available", "available": False}
-
+        with mysql.connector.connect(**db_config) as conn:
+            user = get_user(conn, user_id)
+            if user:
+                logger.info(f"user_id {user_id} already exists")
+                return {"message": "ID already exists", "available": False}
+            else:
+                logger.info(f"user_id {user_id} is available")
+                return {"message": "ID is available", "available": True}
     except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 회원가입 엔드포인트
 @app.post("/add_user/")
 def add_user(user: User):
+    logger.info(f"Adding new user: {user.USER_ID}")
+    insert_query = """
+    INSERT INTO Users (USER_ID, USER_PW, NAME, PHONE, BIRTH, GENDER, NICKNAME, USER_CHARACTER, LV, INTRODUCE, IMAGE)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor()
-
-        insert_query = """
-        INSERT INTO Users (USER_ID, USER_PW, NAME, PHONE, BIRTH, GENDER, NICKNAME, USER_CHARACTER, LV, INTRODUCE, IMAGE)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_query, (
-            user.USER_ID, user.USER_PW, user.NAME, user.PHONE, user.BIRTH, user.GENDER,
-            user.NICKNAME, user.USER_CHARACTER, user.LV, user.INTRODUCE, user.IMAGE
-        ))
-
-        conn.commit()
-        cursor.close()
-        conn.close()
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(insert_query, (
+                    user.USER_ID, user.USER_PW, user.NAME, user.PHONE, user.BIRTH, user.GENDER,
+                    user.NICKNAME, user.USER_CHARACTER, user.LV, user.INTRODUCE, user.IMAGE
+                ))
+                conn.commit()
+        logger.info(f"User {user.USER_ID} added successfully")
         return {"message": "User added successfully"}
-    
     except IntegrityError as err:
         if err.errno == 1062:
+            logger.warning(f"Duplicate entry for user_id {user.USER_ID}")
             raise HTTPException(status_code=400, detail="Duplicate entry for primary key")
         else:
+            logger.error(f"Integrity error: {err}")
             raise HTTPException(status_code=500, detail=f"Integrity error: {err}")
-
     except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 로그인 엔드포인트
 @app.get("/login/")
 def login(user_id: str, user_pw: str):
+    logger.info(f"Login attempt for user_id: {user_id}")
     try:
-        conn = mysql.connector.connect(**db_config)
-        db_user = get_user(conn, user_id)
-        conn.close()
-
-        if not db_user or db_user['USER_PW'] != user_pw:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="유저 정보가 없거나 비밀번호가 맞지 않습니다"
-            )
-        return {
-            "message": "로그인 성공",
-            "user_id": db_user['USER_ID'],
-            "nickname": db_user['NICKNAME'],
-            "lv": db_user['LV'],
-            "exp" : db_user['EXP'],
-            "introduce": db_user['INTRODUCE'],
-            "image": db_user['IMAGE'], # 예시 이미지 URL    
-            "userCharacter": db_user['USER_CHARACTER']
-        }
-    
+        with mysql.connector.connect(**db_config) as conn:
+            user = get_user(conn, user_id)
+            if not user or user['USER_PW'] != user_pw:
+                logger.warning(f"Login failed for user_id: {user_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="유저 정보가 없거나 비밀번호가 맞지 않습니다"
+                )
+            logger.info(f"User {user_id} logged in successfully")
+            return {
+                "message": "로그인 성공",
+                "user_id": user['USER_ID'],
+                "nickname": user['NICKNAME'],
+                "lv": user['LV'],
+                "exp": user.get('EXP', 0),  # EXP 필드가 있는지 확인 필요
+                "introduce": user['INTRODUCE'],
+                "image": user['IMAGE'],  # 예시 이미지 URL
+                "userCharacter": user['USER_CHARACTER']
+            }
     except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+# 리뷰 추가 엔드포인트
 @app.post("/add_review/")   
 async def add_review(review: WhereReview, db=Depends(get_db)):
-    # 입력된 리뷰 데이터를 로그로 출력
-    print(f"Received review data: {review.dict()}")
-
+    logger.info(f"Adding review for user_id: {review.user_id}, where_id: {review.where_id}")
+    logger.debug(f"Review data: {review.dict()}")
+    insert_review_query = """
+    INSERT INTO WHERE_REVIEW (
+        USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
+        REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
+        REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
+        REASON_PHOTO, REASON_WATCH
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    insert_image_query = """
+    INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
+    """
     try:
-        cursor = db.cursor()
+        with db.cursor() as cursor:
+            # 리뷰 데이터 삽입
+            cursor.execute(insert_review_query, (
+                review.user_id, review.where_id, review.review_content, review.where_like, review.where_rate,
+                review.reason_menu, review.reason_mood, review.reason_safe, review.reason_seat, review.reason_transport,
+                review.reason_park, review.reason_long, review.reason_view, review.reason_interaction, review.reason_quite,
+                review.reason_photo, review.reason_watch
+            ))
+            review_id = cursor.lastrowid
+            logger.debug(f"Inserted WHERE_REVIEW with REVIEW_ID: {review_id}")
 
-        # 리뷰 데이터 삽입
-        insert_review_query = """
-        INSERT INTO WHERE_REVIEW (
-            USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
-            REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
-            REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
-            REASON_PHOTO, REASON_WATCH
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_review_query, (
-            review.user_id, review.where_id, review.review_content, review.where_like, review.where_rate,
-            review.reason_menu, review.reason_mood, review.reason_safe, review.reason_seat, review.reason_transport,
-            review.reason_park, review.reason_long, review.reason_view, review.reason_interaction, review.reason_quite,
-            review.reason_photo, review.reason_watch
-        ))      
+            # 리뷰 이미지 삽입
+            for base64_image in review.images:
+                cursor.execute(insert_image_query, (review_id, base64_image))
+                logger.debug(f"Inserted image for REVIEW_ID {review_id}")
 
-        # 삽입된 리뷰의 ID 가져오기
-        review_id = cursor.lastrowid
-
-        # 리뷰 이미지 삽입
-        insert_image_query = """
-        INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
-        """
-        for base64_image in review.images:
-            # Base64 인코딩된 이미지 데이터 저장
-            cursor.execute(insert_image_query, (review_id, base64_image))
-
-        db.commit()
-        cursor.close()
-
-        logging.debug("Review and images added successfully")
+            db.commit()
+        logger.info("Review and images added successfully")
         return {"message": "Review and images added successfully"}
-    
     except ValidationError as ve:
-        logging.error(f"Validation Error: {ve.json()}")
+        logger.error(f"Validation Error: {ve.json()}")
         raise HTTPException(status_code=422, detail=ve.errors())
-    
     except mysql.connector.Error as err:
-        db.rollback()  # 데이터베이스 오류 시 롤백
-        logging.error(f"Database error: {err}")
+        db.rollback()
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
-        logging.error(f"Unexpected error: {e}")
+        db.rollback()
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 리뷰 호출 함수
-def call_review(user_id):
+def call_review(user_id: str) -> List[Dict]:
     query = """
     SELECT 
         w.WHERE_NAME AS WHERE_NAME,
@@ -373,56 +332,75 @@ def call_review(user_id):
     WHERE 
         wr.USER_ID = %s;
     """
+    reviews = []
+    try:
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor(dictionary=True) as cursor:
+                logger.debug(f"Executing review query for user_id: {user_id}")
+                cursor.execute(query, (user_id,))
+                reviews = cursor.fetchall()
+                logger.debug(f"Fetched {len(reviews)} reviews")
+
+                # REVIEW_IMAGE가 없을 경우 None으로 설정
+                for review in reviews:
+                    if not review.get('REVIEW_IMAGE'):
+                        review['REVIEW_IMAGE'] = None
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in call_review: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in call_review: {e}")
+    finally:
+        return reviews
+class PostDetailsResponse(BaseModel):
+    likes: int
+    comments: int
+    liked: bool
+@app.get("/journal/post_details", response_model=PostDetailsResponse)
+def get_post_details(
+    post_id: int = Query(..., description="게시물의 ID"),
+    user_id: Optional[str] = Query(None, description="현재 사용자의 ID"),
+    db=Depends(get_db)
+):
+    logger.info(f"Fetching details for post_id: {post_id} by user_id: {user_id}")
     
     try:
-        # 디버그: 데이터베이스 연결 시도
-        print("Connecting to the database...")
-        conn = mysql.connector.connect(**db_config)
-        review_conn = conn.cursor(dictionary=True)
+        with db.cursor(dictionary=True) as cursor:
+            # 좋아요 수 조회
+            likes_query = "SELECT COUNT(*) AS likes FROM Post_like WHERE POST_ID = %s;"
+            cursor.execute(likes_query, (post_id,))
+            likes_result = cursor.fetchone()
+            likes = likes_result['likes'] if likes_result else 0
+            logger.debug(f"Likes count: {likes}")
 
-        # 디버그: 쿼리 실행 전 확인
-        print(f"Executing query for user_id: {user_id}")
-        review_conn.execute(query, (user_id,))
-        
-        # 디버그: 쿼리 결과 확인
-        print("Fetching results...")
-        review_list = review_conn.fetchall()
-        
-        # 디버그: 쿼리 결과 출력
-        print(f"Number of reviews fetched: {len(review_list)}")
-        for review in review_list:
-            print(f"Review: {review}")
-        
-        # REVIEW_IMAGE가 없을 경우 None으로 설정
-        for review in review_list:
-            if not review['REVIEW_IMAGE']:
-                review['REVIEW_IMAGE'] = None  # 이미지가 없을 경우 None 설정
+            # 댓글 수 조회
+            comments_query = "SELECT COUNT(*) AS comments FROM Journal_comment WHERE POST_ID = %s;"
+            cursor.execute(comments_query, (post_id,))
+            comments_result = cursor.fetchone()
+            comments = comments_result['comments'] if comments_result else 0
+            logger.debug(f"Comments count: {comments}")
 
-        review_conn.close()
-        conn.close()
-        
-        return review_list
-    
+            # 현재 사용자가 좋아요 했는지 여부 조회
+            if user_id:
+                liked_query = "SELECT * FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+                cursor.execute(liked_query, (post_id, user_id))
+                liked_result = cursor.fetchone()
+                liked = bool(liked_result)
+                logger.debug(f"User liked: {liked}")
+            else:
+                liked = False
+                logger.debug("User ID not provided, defaulting liked to False.")
+
+        return PostDetailsResponse(likes=likes, comments=comments, liked=liked)
+
     except mysql.connector.Error as err:
-        # 디버그: 데이터베이스 오류 발생 시
-        print(f"Database error occurred: {err}")
-        return []
-    
+        logger.error(f"Database error in get_post_details: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
     except Exception as e:
-        # 디버그: 일반 오류 발생 시
-        print(f"An error occurred: {e}")
-        return []
-    
-    finally:
-        # 디버그: 커넥션과 커서가 올바르게 닫혔는지 확인
-        if review_conn:
-            review_conn.close()
-        if conn:
-            conn.close()
-
+        logger.error(f"Unexpected error in get_post_details: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
 
 # 좋아요 호출 함수
-def call_wanted(user_id):
+def call_wanted(user_id: str) -> List[Dict]:
     query = """
     SELECT 
         w.WHERE_NAME AS WHERE_NAME,
@@ -438,375 +416,504 @@ def call_wanted(user_id):
     WHERE 
         l.USER_ID = %s;
     """
-    
-    conn = mysql.connector.connect(**db_config)
-    wanted_conn = conn.cursor(dictionary=True)
-    wanted_conn.execute(query, (user_id,))
-    where_wanted = wanted_conn.fetchall()
-    wanted_conn.close()
-    conn.close()
-    
-    # 이미지 경로를 URL로 변환
-    for wanted in where_wanted:
-        if wanted['PLACE_IMAGE']:
-            wanted['PLACE_IMAGE'] = f"http://{IMAGE_HOST}:{PORT}/images/{wanted['PLACE_IMAGE']}"
-    
-    return where_wanted
+    where_wanted = []
+    try:
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor(dictionary=True) as cursor:
+                logger.debug(f"Executing liked places query for user_id: {user_id}")
+                cursor.execute(query, (user_id,))
+                where_wanted = cursor.fetchall()
+                logger.debug(f"Fetched {len(where_wanted)} liked places")
+
+                # 이미지 경로를 URL로 변환
+                for wanted in where_wanted:
+                    if wanted.get('PLACE_IMAGE'):
+                        wanted['PLACE_IMAGE'] = f"http://{IMAGE_HOST}:{PORT}/images/{wanted['PLACE_IMAGE']}"
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in call_wanted: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in call_wanted: {e}")
+    finally:
+        return where_wanted
 
 # 마이페이지 엔드포인트
 @app.get("/my_page/")
-def my_page(user_id: str):
+def my_page(user_id: str, db=Depends(get_db)):
+    logger.info(f"Fetching my_page data for user_id: {user_id}")
     try:
-        r_review = call_review(user_id)
-        print(r_review)
-        return {"reviews": r_review}
-    
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
+        reviews = call_review(user_id)
+        liked_places = call_wanted(user_id)
+        return {"reviews": reviews, "liked_places": liked_places}
+    except HTTPException as he:
+        raise he
     except Exception as e:
+        logger.error(f"Unexpected error in my_page: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 팔로우페이지 엔드포인트
 @app.get("/follow_page/")
 def follow_page(user_id: str):
+    logger.info(f"Fetching follow_page data for user_id: {user_id}")
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT FOLLOWER FROM FOLLOW WHERE USER_ID = %s", (user_id,))
-        follow = cursor.fetchall()
-        cursor.execute("SELECT USER_ID FROM FOLLOW WHERE FOLLOWER = %s", (user_id,))
-        follower = cursor.fetchall()
-        cursor.close()
-        conn.close()
-
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor(dictionary=True) as cursor:
+                cursor.execute("SELECT FOLLOWER FROM Follow WHERE USER_ID = %s", (user_id,))
+                follow = cursor.fetchall()
+                cursor.execute("SELECT USER_ID FROM Follow WHERE FOLLOWER = %s", (user_id,))
+                follower = cursor.fetchall()
         return {"follow": follow, "follower": follower}
-        
     except mysql.connector.Error as err:
+        logger.error(f"Database error in follow_page: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error in follow_page: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 각 type별로 상위 8개 항목과 이미지를 불러오는 엔드포인트
 @app.get("/where/top-rated")
-def get_top_rated_places(db = Depends(get_db)):
+def get_top_rated_places(db=Depends(get_db)):
     types = ["play", "eat", "sleep", "drink"]
     results = {"by_type": {}, "overall_top_8": []}
 
     try:
-        cursor = db.cursor(dictionary=True)
-        
-        # 각 타입별로 평점이 높은 순서대로 8개의 항목을 가져오는 쿼리
-        for place_type in types:
-            query = """
+        with db.cursor(dictionary=True) as cursor:
+            # 각 타입별로 평점이 높은 순서대로 8개의 항목을 가져오는 쿼리
+            for place_type in types:
+                query = """
+                SELECT w.*, wi.IMAGE
+                FROM `Where` w
+                LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+                WHERE w.WHERE_TYPE = %s
+                ORDER BY w.WHERE_RATE DESC
+                LIMIT 8;
+                """
+                logger.debug(f"Fetching top 8 places for type: {place_type}")
+                cursor.execute(query, (place_type,))
+                rows = cursor.fetchall()
+                results["by_type"][place_type] = rows
+                logger.debug(f"Fetched {len(rows)} places for type: {place_type}")
+
+            # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
+            overall_query = """
             SELECT w.*, wi.IMAGE
             FROM `Where` w
             LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
-            WHERE w.WHERE_TYPE = %s
             ORDER BY w.WHERE_RATE DESC
             LIMIT 8;
             """
-            cursor.execute(query, (place_type,))
-            rows = cursor.fetchall()
-            results["by_type"][place_type] = rows
+            logger.debug("Fetching overall top 8 places")
+            cursor.execute(overall_query)
+            overall_top_8 = cursor.fetchall()
+            results["overall_top_8"] = overall_top_8
+            logger.debug(f"Fetched {len(overall_top_8)} overall top places")
 
-        # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
-        overall_query = """
-        SELECT w.*, wi.IMAGE
-        FROM `Where` w
-        LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
-        ORDER BY w.WHERE_RATE DESC
-        LIMIT 8;
-        """
-        cursor.execute(overall_query)
-        overall_top_8 = cursor.fetchall()
-        results["overall_top_8"] = overall_top_8
-
-        cursor.close()
         return {"data": results}
-
     except mysql.connector.Error as err:
+        logger.error(f"Database error in get_top_rated_places: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error in get_top_rated_places: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 장소 세부 정보를 불러오는 엔드포인트
 @app.get("/where/place-info")
 def get_place_info(where_id: int, db=Depends(get_db)):
+    logger.info(f"Fetching place info for WHERE_ID: {where_id}")
+    place_query = """
+    SELECT w.*, wi.IMAGE
+    FROM `Where` w
+    LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
+    WHERE w.WHERE_ID = %s;
+    """
+    review_query = """
+    SELECT wr.*, ri.IMAGE AS REVIEW_IMAGE
+    FROM `WHERE_REVIEW` wr
+    LEFT JOIN `REVIEW_IMAGE` ri ON wr.REVIEW_ID = ri.REVIEW_ID
+    WHERE wr.WHERE_ID = %s;
+    """
     try:
-        # 커서를 buffered=True로 설정하여 모든 결과를 메모리에 버퍼링
-        cursor = db.cursor(dictionary=True, buffered=True)
+        with db.cursor(dictionary=True) as cursor:
+            # 장소의 기본 정보와 이미지 가져오기
+            logger.debug(f"Executing place_query for WHERE_ID: {where_id}")
+            cursor.execute(place_query, (where_id,))
+            place_info = cursor.fetchone()
 
-        # 장소의 기본 정보와 이미지 가져오기
-        place_query = """
-        SELECT w.*, wi.IMAGE
-        FROM `Where` w
-        LEFT JOIN `WHERE_IMAGE` wi ON w.WHERE_ID = wi.WHERE_ID
-        WHERE w.WHERE_ID = %s;
-        """
-        cursor.execute(place_query, (where_id,))
-        place_info = cursor.fetchone()
+            if not place_info:
+                logger.warning(f"Place with WHERE_ID {where_id} not found")
+                raise HTTPException(status_code=404, detail="Place not found")
 
-        if not place_info:
-            cursor.close()
-            raise HTTPException(status_code=404, detail="Place not found")
+            # 장소의 리뷰와 리뷰 이미지 가져오기
+            logger.debug(f"Executing review_query for WHERE_ID: {where_id}")
+            cursor.execute(review_query, (where_id,))
+            reviews = cursor.fetchall()
 
-        # 장소의 리뷰와 리뷰 이미지 가져오기
-        review_query = """
-        SELECT wr.*, ri.IMAGE AS REVIEW_IMAGE
-        FROM `WHERE_REVIEW` wr
-        LEFT JOIN `REVIEW_IMAGE` ri ON wr.REVIEW_ID = ri.REVIEW_ID
-        WHERE wr.WHERE_ID = %s;
-        """
-        cursor.execute(review_query, (where_id,))
-        reviews = cursor.fetchall()
-
-        cursor.close()
-
-        # 결과 반환
         return {
             "place_info": place_info,
             "reviews": reviews
         }
-
     except mysql.connector.Error as err:
+        logger.error(f"Database error in get_place_info: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
+        logger.error(f"Unexpected error in get_place_info: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-    
-def encode_image_to_base64(file_content):
+
+# 이미지 Base64 인코딩 함수
+def encode_image_to_base64(file_content: bytes) -> str:
     return base64.b64encode(file_content).decode('utf-8')
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
-
+# 프로필 이미지 업로드 엔드포인트
 @app.post("/upload_profile_image/")
 async def upload_profile_image(
     user_id: str = Form(...),
     file: UploadFile = File(...),
     db=Depends(get_db)
 ):
+    logger.info(f"Uploading profile image for user_id: {user_id}")
     try:
         # 파일 내용을 읽어서 Base64로 인코딩
         file_content = await file.read()
         encoded_image = encode_image_to_base64(file_content)
 
-        # 데이터베이스에 Base64 인코딩된 이미지 저장
-        cursor = db.cursor()
+        with db.cursor() as cursor:
+            # Users 테이블 업데이트
+            update_users_query = "UPDATE Users SET IMAGE = %s WHERE USER_ID = %s"
+            cursor.execute(update_users_query, (encoded_image, user_id))
 
-        # Users 테이블 업데이트
-        update_users_query = "UPDATE Users SET IMAGE = %s WHERE USER_ID = %s"
-        cursor.execute(update_users_query, (encoded_image, user_id))
+            # Users_Image 테이블에 데이터가 존재하는지 확인
+            check_query = "SELECT * FROM Users_Image WHERE USER_ID = %s"
+            cursor.execute(check_query, (user_id,))
+            existing_image = cursor.fetchone()
 
-        # Users_Image 테이블에 데이터가 존재하는지 확인
-        check_query = "SELECT * FROM Users_Image WHERE USER_ID = %s"
-        cursor.execute(check_query, (user_id,))
-        existing_image = cursor.fetchone()
+            if existing_image:
+                # 이미 데이터가 있는 경우 업데이트
+                update_image_query = "UPDATE Users_Image SET IMAGE = %s WHERE USER_ID = %s"
+                cursor.execute(update_image_query, (encoded_image, user_id))
+                logger.debug(f"Updated image in Users_Image for user_id: {user_id}")
+            else:
+                # 데이터가 없는 경우 삽입
+                insert_image_query = "INSERT INTO Users_Image (USER_ID, IMAGE) VALUES (%s, %s)"
+                cursor.execute(insert_image_query, (user_id, encoded_image))
+                logger.debug(f"Inserted image into Users_Image for user_id: {user_id}")
 
-        if existing_image:
-            # 이미 데이터가 있는 경우 업데이트
-            update_image_query = "UPDATE Users_Image SET IMAGE = %s WHERE USER_ID = %s"
-            cursor.execute(update_image_query, (encoded_image, user_id))
-        else:
-            # 데이터가 없는 경우 삽입
-            insert_image_query = "INSERT INTO Users_Image (USER_ID, IMAGE) VALUES (%s, %s)"
-            cursor.execute(insert_image_query, (user_id, encoded_image))
+            db.commit()
 
-        # 커밋하여 변경 사항을 저장
-        db.commit()
-        cursor.close()
-
-        logging.info(f"Profile image for {user_id} uploaded successfully")
+        logger.info(f"Profile image for {user_id} uploaded successfully")
         return {"message": "Profile image uploaded successfully", "image_base64": encoded_image}
-
     except mysql.connector.Error as err:
         db.rollback()
-        logging.error(f"Database error: {err}")
+        logger.error(f"Database error in upload_profile_image: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        logging.error(f"Failed to upload profile image: {e}")
+        logger.error(f"Failed to upload profile image: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to upload profile image: {e}")
 
+class LikePostRequest(BaseModel):
+    post_id: int
+    user_id: str
+
+# /journal/like_post 엔드포인트 수정
+@app.post("/journal/like_post")
+def like_post(payload: LikePostRequest, db=Depends(get_db)):
+    post_id = payload.post_id
+    user_id = payload.user_id
+
+    logger.info(f"User {user_id} is trying to like post {post_id}")
+
+    try:
+        with db.cursor() as cursor:
+            # 이미 좋아요를 눌렀는지 확인
+            logger.debug(f"Checking if user {user_id} has already liked post {post_id}")
+            check_query = "SELECT * FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+            cursor.execute(check_query, (post_id, user_id))
+            existing_like = cursor.fetchone()
+
+            if existing_like:
+                logger.warning(f"User {user_id} has already liked post {post_id}")
+                raise HTTPException(status_code=400, detail="이미 좋아요를 눌렀습니다.")
+
+            # Post_like 테이블에 추가
+            insert_query = "INSERT INTO Post_like (POST_ID, USER_ID) VALUES (%s, %s);"
+            cursor.execute(insert_query, (post_id, user_id))
+            logger.debug(f"Inserted like for user {user_id} on post {post_id}")
+
+            # Journal_post 테이블의 POST_LIKE 수 증가
+            update_like_query = "UPDATE Journal_post SET POST_LIKE = POST_LIKE + 1 WHERE POST_ID = %s;"
+            cursor.execute(update_like_query, (post_id,))
+            logger.debug(f"Incremented POST_LIKE for post {post_id}")
+
+            db.commit()
+
+        logger.info(f"User {user_id} liked post {post_id} successfully")
+        return {"message": "좋아요가 추가되었습니다."}
+
+    except HTTPException as he:
+        raise he
+    except mysql.connector.Error as err:
+        db.rollback()
+        logger.error(f"Database error in like_post: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error in like_post: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+
+# Pydantic 요청 모델 정의
+class UnlikePostRequest(BaseModel):
+    post_id: int
+    user_id: str
+
+# /journal/unlike_post 엔드포인트 수정
+@app.post("/journal/unlike_post")
+def unlike_post(payload: UnlikePostRequest, db=Depends(get_db)):
+    post_id = payload.post_id
+    user_id = payload.user_id
+
+    logger.info(f"User {user_id} is trying to unlike post {post_id}")
+
+    try:
+        with db.cursor() as cursor:
+            # 좋아요가 눌려있는지 확인
+            logger.debug(f"Checking if user {user_id} has liked post {post_id}")
+            check_query = "SELECT * FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+            cursor.execute(check_query, (post_id, user_id))
+            existing_like = cursor.fetchone()
+
+            if not existing_like:
+                logger.warning(f"User {user_id} has not liked post {post_id}")
+                raise HTTPException(status_code=400, detail="좋아요가 눌려있지 않습니다.")
+
+            # Post_like 테이블에서 삭제
+            delete_query = "DELETE FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+            cursor.execute(delete_query, (post_id, user_id))
+            logger.debug(f"Deleted like for user {user_id} on post {post_id}")
+
+            # Journal_post 테이블의 POST_LIKE 수 감소
+            update_like_query = "UPDATE Journal_post SET POST_LIKE = POST_LIKE - 1 WHERE POST_ID = %s;"
+            cursor.execute(update_like_query, (post_id,))
+            logger.debug(f"Decremented POST_LIKE for post {post_id}")
+
+            db.commit()
+
+        logger.info(f"User {user_id} unliked post {post_id} successfully")
+        return {"message": "좋아요가 취소되었습니다."}
+
+    except HTTPException as he:
+        raise he
+    except mysql.connector.Error as err:
+        db.rollback()
+        logger.error(f"Database error in unlike_post: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error in unlike_post: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+
+# 저널 메인 엔드포인트
 @app.get("/journal/main")
 def get_journal(user_id: str, db=Depends(get_db)):
+    logger.info(f"Fetching journal main data for user_id: {user_id}")
     results = {"latest_10": [], "top_10": [], "followers_latest": []}
-
     try:
-        cursor = db.cursor(dictionary=True)
-
-        # Fetch latest 10 posts
-        latest_query = """
-        SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM Journal_post jp
-        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.POST_CREATE DESC
-        LIMIT 10;
-        """
-        cursor.execute(latest_query)
-        latest_10 = cursor.fetchall()
-        results["latest_10"] = latest_10 if latest_10 else []
-        logger.debug(f"Latest 10 reviews fetched: {latest_10}")
-
-        # Fetch top 10 posts sorted by likes
-        top_query = """
-        SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM Journal_post jp
-        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
-        ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC
-        LIMIT 10;
-        """
-        cursor.execute(top_query)
-        top_10 = cursor.fetchall()
-        results["top_10"] = top_10 if top_10 else []
-        logger.debug(f"Top 10 reviews fetched: {top_10}")
-
-        # Fetch latest 10 posts from followed users
-        followers_query = """
-        SELECT jp.*, ui.IMAGE AS USER_IMAGE
-        FROM Journal_post jp
-        LEFT JOIN Users_Image ui ON jp.USER_ID = ui.USER_ID
-        WHERE jp.USER_ID IN (
-            SELECT f.FOLLOWER
-            FROM Follow f
-            WHERE f.USER_ID = %s
-        )
-        ORDER BY jp.POST_CREATE DESC
-        LIMIT 10;
-        """
-        cursor.execute(followers_query, (user_id,))
-        followers_latest = cursor.fetchall()
-        results["followers_latest"] = followers_latest if followers_latest else []
-        logger.debug(f"Followers' latest reviews fetched: {followers_latest}")
-
-        # Collect all POST_IDs from the fetched posts using a list to maintain order and remove duplicates
-        all_post_ids = []
-        seen_post_ids = set()
-        for key in results:
-            for post in results[key]:
-                post_id = post['POST_ID']
-                if post_id not in seen_post_ids:
-                    all_post_ids.append(post_id)
-                    seen_post_ids.add(post_id)
-
-        if all_post_ids:
-            # Fetch all images for the collected POST_IDs
-            format_strings = ','.join(['%s'] * len(all_post_ids))
-            images_query = f"""
-            SELECT POST_ID, IMAGE_DATA
-            FROM journal_image
-            WHERE POST_ID IN ({format_strings});
+        with db.cursor(dictionary=True) as cursor:
+            # 최신 10개 게시물 조회
+            latest_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            ORDER BY jp.POST_CREATE DESC
+            LIMIT 10;
             """
-            try:
-                cursor.execute(images_query, all_post_ids)
-                images_data = cursor.fetchall()
-                logger.debug(f"Fetched images: {images_data}")
-            except Exception as e:
-                logger.error(f"Error fetching images: {e}")
-                raise
+            logger.debug("Fetching latest 10 journal posts")
+            cursor.execute(latest_query)
+            latest_10 = cursor.fetchall()
+            results["latest_10"] = latest_10
+            logger.debug(f"Fetched {len(latest_10)} latest posts")
 
-            # Map POST_ID to list of images
-            post_images_map: Dict[int, List[str]] = {}
-            for image in images_data:
-                post_id = image['POST_ID']
-                if post_id not in post_images_map:
-                    post_images_map[post_id] = []
-                post_images_map[post_id].append(image['IMAGE_DATA'])
+            # 인기순 10개 게시물 조회
+            top_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC
+            LIMIT 10;
+            """
+            logger.debug("Fetching top 10 journal posts by likes")
+            cursor.execute(top_query)
+            top_10 = cursor.fetchall()
+            results["top_10"] = top_10
+            logger.debug(f"Fetched {len(top_10)} top liked posts")
 
-            # Attach images to each post
+            # 팔로우한 사용자들의 최신 10개 게시물 조회
+            followers_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID IN (
+                SELECT f.FOLLOWER
+                FROM Follow f
+                WHERE f.USER_ID = %s
+            )
+            ORDER BY jp.POST_CREATE DESC
+            LIMIT 10;
+            """
+            logger.debug(f"Fetching followers' latest 10 posts for user_id: {user_id}")
+            cursor.execute(followers_query, (user_id,))
+            followers_latest = cursor.fetchall()
+            results["followers_latest"] = followers_latest
+            logger.debug(f"Fetched {len(followers_latest)} followers' latest posts")
+
+            # 모든 POST_ID 수집
+            all_post_ids = set()
             for key in results:
                 for post in results[key]:
-                    post_id = post['POST_ID']
-                    post['images'] = post_images_map.get(post_id, [])
+                    all_post_ids.add(post['POST_ID'])
 
-                    # Convert integer flags to bool if necessary
-                    post['subjList'] = [
-                        bool(post.get('혼캎', False)),
-                        bool(post.get('혼영', False)),
-                        bool(post.get('혼놀', False)),
-                        bool(post.get('혼밥', False)),
-                        bool(post.get('혼박', False)),
-                        bool(post.get('혼술', False)),
-                        bool(post.get('기타', False)),
-                    ]
+            if all_post_ids:
+                # Post_like 테이블에서 각 POST_ID의 좋아요 개수 조회
+                format_strings = ','.join(['%s'] * len(all_post_ids))
+                likes_query = f"""
+                SELECT POST_ID, COUNT(*) AS like_count
+                FROM Post_like
+                WHERE POST_ID IN ({format_strings})
+                GROUP BY POST_ID;
+                """
+                logger.debug(f"Fetching like counts for POST_IDs: {all_post_ids}")
+                cursor.execute(likes_query, tuple(all_post_ids))
+                likes_data = cursor.fetchall()
+                logger.debug(f"Fetched like counts: {likes_data}")
 
-        cursor.close()
+                # POST_ID별 좋아요 개수 매핑
+                likes_map = {row['POST_ID']: row['like_count'] for row in likes_data}
 
-        logger.debug(f"Final Results with Images: {results}")
+                # Journal_post의 POST_LIKE 필드 업데이트
+                update_query = """
+                UPDATE Journal_post
+                SET POST_LIKE = %s
+                WHERE POST_ID = %s;
+                """
+                update_data = [(like_count, post_id) for post_id, like_count in likes_map.items()]
 
-        return {"data": results}
+                # 배치 업데이트 실행
+                if update_data:
+                    cursor.executemany(update_query, update_data)
+                    db.commit()
+                    logger.debug(f"Updated POST_LIKE for {len(update_data)} posts")
 
+                # 현재 사용자가 좋아요를 눌렀는지 여부 조회
+                liked_query = f"""
+                SELECT POST_ID
+                FROM Post_like
+                WHERE POST_ID IN ({format_strings}) AND USER_ID = %s;
+                """
+                cursor.execute(liked_query, tuple(all_post_ids) + (user_id,))
+                liked_data = cursor.fetchall()
+                liked_post_ids = {row['POST_ID'] for row in liked_data}
+                logger.debug(f"User {user_id} has liked POST_IDs: {liked_post_ids}")
+
+                # 결과 데이터에 업데이트된 POST_LIKE 및 liked 상태 반영
+                for key in results:
+                    for post in results[key]:
+                        post_id = post['POST_ID']
+                        post['POST_LIKE'] = likes_map.get(post_id, 0)
+                        post['liked'] = post_id in liked_post_ids
+
+            # POST_ID별 이미지 데이터 조회
+            if all_post_ids:
+                format_strings = ','.join(['%s'] * len(all_post_ids))
+                images_query = f"""
+                SELECT POST_ID, IMAGE_DATA
+                FROM journal_image
+                WHERE POST_ID IN ({format_strings});
+                """
+                logger.debug(f"Fetching images for POST_IDs: {all_post_ids}")
+                cursor.execute(images_query, tuple(all_post_ids))
+                images_data = cursor.fetchall()
+                logger.debug(f"Fetched {len(images_data)} images")
+
+                # POST_ID별 이미지 매핑
+                post_images_map: Dict[int, List[str]] = {}
+                for image in images_data:
+                    post_id = image['POST_ID']
+                    post_images_map.setdefault(post_id, []).append(image['IMAGE_DATA'])
+
+                # 각 게시물에 이미지 추가
+                for key in results:
+                    for post in results[key]:
+                        post_id = post['POST_ID']
+                        post['images'] = post_images_map.get(post_id, [])
+
+                        # 혼캎, 혼영, ... 필드 bool 리스트로 변환
+                        post['subjList'] = [
+                            bool(post.get('혼캎', False)),
+                            bool(post.get('혼영', False)),
+                            bool(post.get('혼놀', False)),
+                            bool(post.get('혼밥', False)),
+                            bool(post.get('혼박', False)),
+                            bool(post.get('혼술', False)),
+                            bool(post.get('기타', False)),
+                        ]
     except mysql.connector.Error as err:
-        logger.error(f"Database error: {err}")
+        logger.error(f"Database error in get_journal: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-
-
-
-# 일지 댓글
-@app.get("/journal/comment")
-def get_journal_comments(post_id: int):
-    try:
-        # 데이터베이스 연결
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
-
-        # post_id에 맞는 댓글을 가져오는 쿼리
-        query = """
-        SELECT jc.*, u.NICKNAME, u.USER_CHARACTER, u.LV
-        FROM `Journal_comment` jc
-        LEFT JOIN `Users` u ON jc.USER_ID = u.USER_ID
-        WHERE jc.POST_ID = %s
-        ORDER BY jc.COMMENT_ID DESC;
-        """
-        cursor.execute(query, (post_id,))
-        comments = cursor.fetchall()
-
-        # 연결 종료
-        cursor.close()
-        conn.close()
-
-        return {"comments": comments}
-
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-@app.post("/journal/add_comment")
-def add_comment(comment: JournalComment, db=Depends(get_db)):
-    logger.debug(f"Followers' latest reviews fetched: {comment}")
-    try:
-        cursor = db.cursor()
-
-        # 댓글 삽입 쿼리
-        insert_comment_query = """
-        INSERT INTO Journal_comment (POST_ID, USER_ID, COMMENT_CONTENT)
-        VALUES (%s, %s, %s)
-        """
-        cursor.execute(insert_comment_query, (comment.POST_ID, comment.USER_ID, comment.COMMENT_CONTENT))
-
-        # 데이터베이스 커밋
-        db.commit()
-        cursor.close()
-
-        return {"message": "Comment added successfully"}
-
-    except mysql.connector.Error as err:
-        db.rollback()  # 데이터베이스 오류 발생 시 롤백
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
-    except Exception as e:
+        logger.error(f"Unexpected error in get_journal: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
     
+    logger.debug(f"Final Results with Images: {results}")
+    return {"data": results}
+
+# 저널 댓글 조회 엔드포인트
+@app.get("/journal/comment")
+def get_journal_comments(post_id: int):
+    logger.info(f"Fetching comments for POST_ID: {post_id}")
+    query = """
+    SELECT jc.*, u.NICKNAME, u.USER_CHARACTER, u.LV
+    FROM `Journal_comment` jc
+    LEFT JOIN `Users` u ON jc.USER_ID = u.USER_ID
+    WHERE jc.POST_ID = %s
+    ORDER BY jc.COMMENT_ID DESC;
+    """
+    try:
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor(dictionary=True) as cursor:
+                logger.debug(f"Executing comment query for POST_ID: {post_id}")
+                cursor.execute(query, (post_id,))
+                comments = cursor.fetchall()
+                logger.debug(f"Fetched {len(comments)} comments")
+        return {"comments": comments}
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_journal_comments: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_journal_comments: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+# 저널 댓글 추가 엔드포인트
+@app.post("/journal/add_comment")
+def add_comment(comment: JournalComment, db=Depends(get_db)):
+    logger.info(f"Adding comment to POST_ID: {comment.POST_ID} by USER_ID: {comment.USER_ID}")
+    logger.debug(f"Comment data: {comment.dict()}")
+    insert_comment_query = """
+    INSERT INTO Journal_comment (POST_ID, USER_ID, COMMENT_CONTENT)
+    VALUES (%s, %s, %s)
+    """
+    try:
+        with db.cursor() as cursor:
+            cursor.execute(insert_comment_query, (comment.POST_ID, comment.USER_ID, comment.COMMENT_CONTENT))
+            db.commit()
+        logger.info(f"Comment added successfully to POST_ID: {comment.POST_ID}")
+        return {"message": "Comment added successfully"}
+    except mysql.connector.Error as err:
+        db.rollback()
+        logger.error(f"Database error in add_comment: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error in add_comment: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+# JournalPost 모델 정의
 class JournalPost(BaseModel):
     title: str
     content: str
@@ -820,104 +927,92 @@ class JournalPost(BaseModel):
     images: List[str]  # base64로 인코딩된 이미지 리스트
     created_at: Optional[datetime] = None  # 작성 시간 필드 추가
 
+# 저널 업로드 엔드포인트
 @app.post("/journal/upload/")
 async def add_journal(
     user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
     journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
     db=Depends(get_db)
 ):
-    logger.debug(f"Uploading journal post for user_id: {user_id}")
-    logger.debug(f"JournalPost data: {journal_post}")
+    logger.info(f"Uploading journal post for user_id: {user_id}")
+    logger.debug(f"JournalPost data: {journal_post.dict()}")
 
+    insert_post_query = """
+    INSERT INTO journal_post 
+    (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+    insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
     try:
-        cursor = db.cursor()
+        with db.cursor() as cursor:
+            # 현재 시간을 기본값으로 설정
+            created_at = journal_post.created_at or datetime.now()
 
-        # 현재 시간을 기본값으로 설정
-        created_at = journal_post.created_at or datetime.now()
+            # journal_post 테이블에 일지 내용 삽입
+            cursor.execute(insert_post_query, (
+                user_id, 
+                journal_post.title, 
+                journal_post.content,
+                journal_post.혼캎, 
+                journal_post.혼영, 
+                journal_post.혼놀, 
+                journal_post.혼밥,
+                journal_post.혼박, 
+                journal_post.혼술, 
+                journal_post.기타, 
+                created_at
+            ))
+            post_id = cursor.lastrowid
+            logger.debug(f"Inserted journal_post with POST_ID: {post_id}")
 
-        # journal_post 테이블에 일지 내용 삽입
-        insert_post_query = """
-        INSERT INTO journal_post 
-        (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        cursor.execute(insert_post_query, (
-            user_id, 
-            journal_post.title, 
-            journal_post.content,
-            journal_post.혼캎, 
-            journal_post.혼영, 
-            journal_post.혼놀, 
-            journal_post.혼밥,
-            journal_post.혼박, 
-            journal_post.혼술, 
-            journal_post.기타, 
-            created_at
-        ))
+            # journal_image 테이블에 이미지 데이터 삽입
+            for image in journal_post.images:
+                cursor.execute(insert_image_query, (post_id, image))
+                logger.debug(f"Inserted image for POST_ID {post_id}")
 
-        # 삽입된 일지의 POST_ID 가져오기
-        post_id = cursor.lastrowid
-        logger.debug(f"Inserted journal_post with POST_ID: {post_id}")
-
-        # journal_image 테이블에 이미지 데이터 삽입
-        insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
-        for image in journal_post.images:
-            cursor.execute(insert_image_query, (post_id, image))
-            logger.debug(f"Inserted image for POST_ID {post_id}")
-
-        db.commit()
-        cursor.close()
-
+            db.commit()
+        logger.info(f"Journal post and images added successfully for POST_ID: {post_id}")
         return {"message": "Journal post and images added successfully", "post_id": post_id}
-    
     except mysql.connector.Error as err:
         db.rollback()
-        logger.error(f"Database error: {err}")
+        logger.error(f"Database error in add_journal: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
-        logger.error(f"Unexpected error: {e}")
+        db.rollback()
+        logger.error(f"Unexpected error in add_journal: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-    
+
+# 사용자 프로필 조회 엔드포인트
 @app.get("/get_user_profile/")
 def get_user_profile(user_id: str):
+    logger.info(f"Fetching user profile for user_id: {user_id}")
     try:
-        conn = mysql.connector.connect(**db_config)
-        cursor = conn.cursor(dictionary=True)
+        with mysql.connector.connect(**db_config) as conn:
+            with conn.cursor(dictionary=True) as cursor:
+                # 사용자 프로필 정보 가져오기
+                logger.debug(f"Fetching profile data for user_id: {user_id}")
+                cursor.execute("SELECT NICKNAME, LV, INTRODUCE, IMAGE FROM Users WHERE USER_ID = %s", (user_id,))
+                user_data = cursor.fetchone()
+                
+                if not user_data:
+                    logger.warning(f"User with user_id {user_id} not found")
+                    raise HTTPException(status_code=404, detail="User not found")
 
-        # 사용자 프로필 정보 가져오기
-        cursor.execute("SELECT NICKNAME, LV, INTRODUCE, IMAGE FROM Users WHERE USER_ID = %s", (user_id,))
-        user_data = cursor.fetchone()
-        
-        # 디버깅을 위한 로그 추가
-        if not user_data:
-            cursor.close()
-            conn.close()
-            raise HTTPException(status_code=404, detail="User not found")
+                image = user_data['IMAGE'] if user_data['IMAGE'] else None
 
-        # 이미지 URL은 upload_profile_image에서 데이터베이스에 저장한 전체 URL을 가져옴
-        image = user_data['IMAGE'] if user_data['IMAGE'] else None
+                # 팔로워 수 가져오기
+                logger.debug(f"Fetching follower count for user_id: {user_id}")
+                cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
+                follower_data = cursor.fetchone()
+                follower_count = follower_data['follower_count'] if follower_data else 0
+                logger.debug(f"Follower count: {follower_count}")
 
-        # 팔로워 수 가져오기
-        cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
-        follower_data = cursor.fetchone()
-        
-        # 디버깅을 위한 로그 추가
-        print(f"follower_data: {follower_data}")
-
-        follower_count = follower_data['follower_count'] if follower_data else 0
-
-        # 팔로잉 수 가져오기
-        cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
-        following_data = cursor.fetchone()
-        
-        # 디버깅을 위한 로그 추가
-        print(f"following_data: {following_data}")
-
-        following_count = following_data['following_count'] if following_data else 0
-
-        cursor.close()
-        conn.close()
+                # 팔로잉 수 가져오기
+                logger.debug(f"Fetching following count for user_id: {user_id}")
+                cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
+                following_data = cursor.fetchone()
+                following_count = following_data['following_count'] if following_data else 0
+                logger.debug(f"Following count: {following_count}")
 
         return {
             "nickname": user_data['NICKNAME'],
@@ -927,15 +1022,19 @@ def get_user_profile(user_id: str):
             "followerCount": follower_count,
             "followingCount": following_count
         }
-
     except mysql.connector.Error as err:
-        print(f"Database error: {err}")
+        logger.error(f"Database error in get_user_profile: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
-
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Unexpected error in get_user_profile: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+# 서버 실행
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host=HOST, port=PORT, log_level="debug")
+    logger.info(f"Starting server at http://{HOST}:{PORT}")
+    try:
+        uvicorn.run(app, host=HOST, port=PORT, log_level="debug")
+    except Exception as e:
+        logger.error(f"Failed to start server: {e}")
+        raise

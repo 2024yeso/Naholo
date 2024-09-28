@@ -1,3 +1,5 @@
+// main.dart
+
 import 'package:flutter/material.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/diary_screens/diary_search.dart';
@@ -59,6 +61,7 @@ class _DiaryMainState extends State<DiaryMain> {
         print('POST_CONTENT: ${post["POST_CONTENT"]}');
         print('POST_CREATE: ${post["POST_CREATE"]}');
         print('POST_LIKE: ${post["POST_LIKE"]}');
+        print('liked: ${post["liked"]}');
         print('USER_IMAGE: ${post["USER_IMAGE"]}');
         print('Images: ${post["images"]}');
         print('Subject List: ${post["subjList"]}');
@@ -145,13 +148,14 @@ class _DiaryMainState extends State<DiaryMain> {
     List<diaryPost_model> posts = [];
     for (var postData in postDataList) {
       diaryPost_model post = diaryPost_model(
+        postid: postData['POST_ID'], // POST_ID 추가
         author: postData['USER_ID'] ?? 'Unknown', // 작성자의 이름 필드
         authorID: postData['USER_ID'],
         createdAt: DateTime.parse(postData['POST_CREATE']),
         title: postData['POST_NAME'],
         content: postData['POST_CONTENT'] ?? '',
         likes: postData['POST_LIKE'],
-        liked: false,
+        liked: postData['liked'] ?? false, // 서버에서 받은 liked 상태 반영
         subjList: [
           (postData['혼캎'] ?? 0) == 1,
           (postData['혼영'] ?? 0) == 1,
@@ -581,12 +585,14 @@ class _DiaryMainState extends State<DiaryMain> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) => DiaryText(
+                                                  postid: post.postid, // POST_ID 추가
                                                   postTitle: post.title,
                                                   postContent: post.content,
                                                   author: post.author,
                                                   authorID: post.authorID,
                                                   createdAt: post.createdAt,
                                                   subjList: post.subjList,
+                                                  images: post.images,
                                                 ),
                                               ),
                                             );

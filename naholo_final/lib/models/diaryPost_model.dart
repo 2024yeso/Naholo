@@ -1,4 +1,7 @@
+// diaryPost_model.dart
+
 class diaryPost_model {
+  final int postid;
   final String author;
   final String authorID;
   final DateTime createdAt;
@@ -7,9 +10,10 @@ class diaryPost_model {
   final int likes;
   final bool liked;
   final List<bool> subjList;
-  final List<dynamic> images; // 이미지 리스트 추가
+  final List<String> images; // 이미지 리스트 추가
 
   diaryPost_model({
+    required this.postid,
     required this.author,
     required this.authorID,
     required this.createdAt,

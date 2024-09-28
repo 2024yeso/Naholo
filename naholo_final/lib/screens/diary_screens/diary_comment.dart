@@ -5,8 +5,9 @@ import 'package:nahollo/sizeScaler.dart'; // 크기 조절
 
 class DiaryComment extends StatelessWidget {
   final String postTitle;
+  final int postId;
 
-  const DiaryComment({super.key, required this.postTitle});
+  const DiaryComment({super.key, required this.postTitle, required this.postId});
 
   @override
   Widget build(BuildContext context) {
@@ -14,21 +15,25 @@ class DiaryComment extends StatelessWidget {
 // 샘플 데이터 추가
     final List<diaryComment_model> comments = [
       diaryComment_model(
+        postId: 1,
         author: '홍길동',
         authorID: 'user123',
         content: '이 일기 정말 감명 깊게 읽었어요!',
       ),
       diaryComment_model(
+        postId: 1,
         author: '김철수',
         authorID: 'user456',
         content: '저도 비슷한 경험을 했어요. 공감합니다!',
       ),
       diaryComment_model(
+        postId: 1,
         author: '이영희',
         authorID: 'user789',
         content: '다음 일기도 기대됩니다 :)',
       ),
       diaryComment_model(
+        postId: 1,
         author: '박민수',
         authorID: 'user101',
         content: '좋은 글 감사합니다. 저도 글을 써보고 싶네요.',
