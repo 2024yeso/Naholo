@@ -18,6 +18,54 @@ class _TypetestScreenState extends State<TypetestScreen> {
   int count = 1; // 질문 번호 카운터
   double progress = 0; // 진행 상태 (0.0 - 1.0)
 
+  // count에 따라 그라데이션 색상을 설정하는 함수
+  List<Color> _getGradientColors(int count) {
+    switch (count) {
+      case 1:
+        return [
+          const Color(0xffF4D8FF),
+          const Color(0xffAD92FD),
+          const Color(0xffF4D8FF)
+        ];
+      case 2:
+        return [
+          const Color(0xffF4D8FF),
+          const Color(0xffAD92FD),
+          const Color(0xffF4D8FF)
+        ];
+      case 3:
+        return [
+          const Color(0xff9a77fc),
+          const Color(0xffab98fa),
+          const Color(0xff9a77fc),
+        ];
+      case 4:
+        return [
+          const Color(0xffa25bff),
+          const Color(0xff9371fc),
+          const Color(0xff9755ff),
+        ];
+      case 5:
+        return [
+          const Color(0xff6824ba),
+          const Color(0xff9353e9),
+          const Color(0xff5d1fab)
+        ];
+      case 6:
+        return [
+          const Color(0xff6824ba),
+          const Color(0xff9353e9),
+          const Color(0xff5d1fab)
+        ];
+      default:
+        return [
+          const Color(0xff6824ba),
+          const Color(0xff9353e9),
+          const Color(0xff5d1fab)
+        ];
+    }
+  }
+
   final List<String> _questions = [
     // 질문 목록
     "아무도 없는 낯선 행성에 나혼자 있다는 것을 알게 된 당신! 이때 내가 하는 생각은?",
@@ -139,10 +187,10 @@ class _TypetestScreenState extends State<TypetestScreen> {
         // 배경색 설정
         body: Container(
           decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage('assets/images/type_test_$count.png'),
-                fit: BoxFit.cover),
-          ),
+              gradient: LinearGradient(
+                  colors: _getGradientColors(count),
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight)),
           child: Center(
             child: Container(
               width: screenWidth * 0.9,

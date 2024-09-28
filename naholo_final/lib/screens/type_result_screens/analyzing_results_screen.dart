@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/character_explain_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
+import 'package:o3d/o3d.dart';
 
 class AnalyzingResultsScreen extends StatefulWidget {
   final String character;
@@ -41,6 +43,8 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
         );
       }
     });
+
+  final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
   final ValueNotifier<double> _value = ValueNotifier(0.0); // 애니메이션 진행률을 추적
 
@@ -161,6 +165,22 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                             shape: BoxShape.circle, // 원 모양
                             color: Colors.white, // 흰색
                           ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(2), // 3D 모델 주변 패딩 설정
+                      width: SizeScaler.scaleSize(context, 100),
+                      height: SizeScaler.scaleSize(context, 100),
+                      child: Card(
+                        color: Colors.transparent, // 카드 배경 투명
+                        elevation: 0, // 그림자 효과 제거
+                        child: O3D(
+                          disableTap: true, // 탭 동작 비활성화
+                          disableZoom: true, // 줌 동작 비활성화
+                          controller: controller, // 3D 모델 컨트롤러 사용
+                          autoPlay: true, // 자동 재생 설정
+                          src: 'assets/glbs/cat.glb', // 3D 모델 파일 경로
                         ),
                       ),
                     ),
