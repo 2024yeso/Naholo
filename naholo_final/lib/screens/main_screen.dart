@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
+import 'package:nahollo/screens/mypage_screens/profile_scaffold.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/sizeScaler.dart';
+import 'package:nahollo/test_day_data.dart';
 import 'package:nahollo/util.dart';
 
 import 'package:o3d/o3d.dart';
 import 'package:provider/provider.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,6 +23,49 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
+  DateTime today = DateTime.now(); // 현재 날짜와 시간을 가져옵니다.
+  bool _isCheckInDialogShown = false; // 다이얼로그가 이미 표시되었는지 확인하기 위한 변수
+
+  void showCheckInDialog(DateTime selectedDay) {
+    // 오늘 날짜가 이미 _attendanceDays에 포함되어 있는지 확인
+    if (attendanceDays
+        .any((attendanceDay) => isSameDay(attendanceDay, selectedDay))) {
+      // 이미 출석된 경우 팝업을 띄우지 않음
+
+      return;
+    }
+
+    // 출석되지 않은 경우에만 팝업 띄우기
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('출석 성공!'),
+        content: const Text('오늘도 출석하셨습니다!'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // 확인 버튼을 누르면 오늘 날짜를 _attendanceDays에 추가
+              setState(() {
+                attendanceDays.add(selectedDay);
+              });
+              Navigator.of(context).pop();
+            },
+            child: const Text('확인'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 화면이 빌드될 때 한 번만 실행되도록 조건 추가
+    if (!_isCheckInDialogShown) {
+      _isCheckInDialogShown = true; // 다이얼로그가 실행되었음을 표시
+      Future.microtask(() => showCheckInDialog(today)); // 오늘 날짜로 다이얼로그 호출
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,6 +374,12 @@ class _MainScreenState extends State<MainScreen> {
                       child: Column(
                         children: [
                           GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileScaffold(),
+                              ),
+                            ),
                             // 마이페이지 아이콘을 클릭할 수 있도록 GestureDetector 사용
                             child: Container(
                               decoration: BoxDecoration(

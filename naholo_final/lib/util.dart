@@ -7,6 +7,7 @@ import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/main_screen.dart';
+import 'package:nahollo/screens/mypage_screens/profile_scaffold.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
 
@@ -170,9 +171,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const DiaryUser(
-              authorID: "임시",
-            ),
+            builder: (context) => const ProfileScaffold(),
           ),
         );
         break;
