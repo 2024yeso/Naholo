@@ -1,45 +1,108 @@
 // diary_comment.dart
+
 import 'package:flutter/material.dart';
 import 'package:nahollo/models/diaryComment_model.dart';
 import 'package:nahollo/sizeScaler.dart'; // 크기 조절
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart'; // Provider 패키지 임포트
+import 'package:nahollo/providers/user_provider.dart';
 
-class DiaryComment extends StatelessWidget {
+class DiaryComment extends StatefulWidget {
   final String postTitle;
   final int postId;
 
   const DiaryComment({super.key, required this.postTitle, required this.postId});
 
   @override
-  Widget build(BuildContext context) {
-    // 샘플 댓글 데이터
-// 샘플 데이터 추가
-    final List<diaryComment_model> comments = [
-      diaryComment_model(
-        postId: 1,
-        author: '홍길동',
-        authorID: 'user123',
-        content: '이 일기 정말 감명 깊게 읽었어요!',
-      ),
-      diaryComment_model(
-        postId: 1,
-        author: '김철수',
-        authorID: 'user456',
-        content: '저도 비슷한 경험을 했어요. 공감합니다!',
-      ),
-      diaryComment_model(
-        postId: 1,
-        author: '이영희',
-        authorID: 'user789',
-        content: '다음 일기도 기대됩니다 :)',
-      ),
-      diaryComment_model(
-        postId: 1,
-        author: '박민수',
-        authorID: 'user101',
-        content: '좋은 글 감사합니다. 저도 글을 써보고 싶네요.',
-      ),
-    ];
+  _DiaryCommentState createState() => _DiaryCommentState();
+}
 
+class _DiaryCommentState extends State<DiaryComment> {
+  List<diaryComment_model> comments = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchComments();
+  }
+
+  // 서버로부터 댓글을 가져오는 함수
+  Future<void> fetchComments() async {
+    final url = 'http://10.0.2.2:8000/journal/get_comments?post_id=${widget.postId}';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        List<dynamic> commentsData = data['comments'];
+
+        setState(() {
+          comments = commentsData.map((json) => diaryComment_model.fromJson(json)).toList();
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch comments: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('댓글을 가져오는데 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('Error fetching comments: $e');
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('댓글을 가져오는데 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  // 댓글을 추가하는 함수 (추가 기능 구현 필요)
+  Future<void> addComment(String content) async {
+    final url = 'http://10.0.2.2:8000/journal/add_comments';
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.userId ?? 'unknown';
+    final userName = userProvider.user?.nickName ?? 'Unknown';
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'post_id': widget.postId,
+          'user_id': userId,
+          'content': content,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // 댓글 추가 성공 시, 다시 댓글을 가져옵니다.
+        await fetchComments();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('댓글이 추가되었습니다!')),
+        );
+      } else {
+        print('Failed to add comment: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('댓글을 추가하는데 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('Error adding comment: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('댓글을 추가하는데 오류가 발생했습니다.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -69,104 +132,77 @@ class DiaryComment extends StatelessWidget {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
-                    height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      top: SizeScaler.scaleSize(
-                        context,
-                        8,
-                      ),
-                      left: SizeScaler.scaleSize(context, 12),
-                      right: SizeScaler.scaleSize(context, 12),
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '댓글 ${comments.length}',
-                        style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 6),
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF7E7E7E),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: SizeScaler.scaleSize(context, 5),
-                  ),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: comments.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: SizeScaler.scaleSize(context, 3),
-                          horizontal: SizeScaler.scaleSize(context, 11),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator()) // 로딩 중 표시
+                : comments.isEmpty
+                    ? Center(child: Text('댓글이 없습니다.'))
+                    : ListView.builder(
+                        itemCount: comments.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: SizeScaler.scaleSize(context, 3),
+                              horizontal: SizeScaler.scaleSize(context, 11),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                CircleAvatar(
-                                  radius: SizeScaler.scaleSize(context, 6),
-                                  backgroundColor: Colors.grey,
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: SizeScaler.scaleSize(context, 6),
+                                      backgroundColor: Colors.grey,
+                                      child: Text(
+                                        comments[index].author[0], // 첫 글자 표시
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        width: SizeScaler.scaleSize(context, 3)),
+                                    Text(
+                                      comments[index].author,
+                                      style: TextStyle(
+                                        fontSize: SizeScaler.scaleSize(context, 6),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(
-                                    width: SizeScaler.scaleSize(context, 3)),
+                                SizedBox(height: SizeScaler.scaleSize(context, 4)),
                                 Text(
-                                  comments[index].author,
+                                  comments[index].content,
                                   style: TextStyle(
                                     fontSize: SizeScaler.scaleSize(context, 6),
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w200,
+                                    color: const Color(0xFF353535),
                                   ),
                                 ),
+                                SizedBox(height: SizeScaler.scaleSize(context, 1)),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.reply,
+                                          size: SizeScaler.scaleSize(context, 10)),
+                                      onPressed: () {
+                                        // 답글쓰기 기능 추가 (추후 구현)
+                                      },
+                                    ),
+                                    Text(
+                                      '답글쓰기',
+                                      style: TextStyle(
+                                        fontSize: SizeScaler.scaleSize(context, 5),
+                                        fontWeight: FontWeight.w500,
+                                        color: const Color(0xFF7E7E7E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Divider(), // 각 댓글 구분선
                               ],
                             ),
-                            SizedBox(height: SizeScaler.scaleSize(context, 4)),
-                            Text(
-                              comments[index].content,
-                              style: TextStyle(
-                                fontSize: SizeScaler.scaleSize(context, 6),
-                                fontWeight: FontWeight.w200,
-                                color: const Color(0xFF353535),
-                              ),
-                            ),
-                            SizedBox(height: SizeScaler.scaleSize(context, 1)),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.reply,
-                                      size: SizeScaler.scaleSize(context, 10)),
-                                  onPressed: () {
-                                    // 답글쓰기 기능 추가
-                                  },
-                                ),
-                                Text(
-                                  '답글쓰기',
-                                  style: TextStyle(
-                                    fontSize: SizeScaler.scaleSize(context, 5),
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color(0xFF7E7E7E),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
+                          );
+                        },
+                      ),
           ),
           Container(
             width: double.infinity,
@@ -199,6 +235,7 @@ class DiaryComment extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _commentController,
                           decoration: InputDecoration(
                             hintText: '댓글을 남겨주세요',
                             hintStyle: TextStyle(
@@ -214,7 +251,11 @@ class DiaryComment extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // 게시 버튼을 눌렀을 때의 동작 추가
+                          String content = _commentController.text.trim();
+                          if (content.isNotEmpty) {
+                            addComment(content);
+                            _commentController.clear();
+                          }
                         },
                         style: ButtonStyle(
                           backgroundColor:
@@ -239,5 +280,14 @@ class DiaryComment extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // 댓글 입력을 위한 컨트롤러
+  final TextEditingController _commentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
   }
 }

@@ -178,10 +178,10 @@ def check_id(user_id: str):
             user = get_user(conn, user_id)
             if user:
                 logger.info(f"user_id {user_id} already exists")
-                return {"message": "ID already exists", "available": False}
+                return {"message": "ID already exists", "available": True}
             else:
                 logger.info(f"user_id {user_id} is available")
-                return {"message": "ID is available", "available": True}
+                return {"message": "ID is available", "available": False}
     except mysql.connector.Error as err:
         logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
@@ -397,6 +397,42 @@ def get_post_details(
         raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
     except Exception as e:
         logger.error(f"Unexpected error in get_post_details: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+
+class AddCommentRequest(BaseModel):
+    post_id: int
+    user_id: str
+    content: str
+
+@app.post("/journal/add_comments")
+def add_comment(payload: AddCommentRequest, db=Depends(get_db)):
+    post_id = payload.post_id
+    user_id = payload.user_id
+    content = payload.content
+
+    logger.info(f"User {user_id} is adding a comment to post {post_id}")
+
+    try:
+        with db.cursor() as cursor:
+            # 댓글 추가 쿼리
+            insert_query = """
+                INSERT INTO Journal_comment (POST_ID, USER_ID, COMMENT_CONTENT) 
+                VALUES (%s, %s, %s);
+            """
+            cursor.execute(insert_query, (post_id, user_id, content))
+            
+            db.commit()
+        
+        logger.info(f"Comment added by user {user_id} to post {post_id}")
+        return {"message": "댓글이 추가되었습니다."}
+    
+    except mysql.connector.Error as err:
+        db.rollback()
+        logger.error(f"Database error in add_comment: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error in add_comment: {e}")
         raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
 
 # 좋아요 호출 함수
@@ -863,32 +899,64 @@ def get_journal(user_id: str, db=Depends(get_db)):
     logger.debug(f"Final Results with Images: {results}")
     return {"data": results}
 
-# 저널 댓글 조회 엔드포인트
-@app.get("/journal/comment")
-def get_journal_comments(post_id: int):
-    logger.info(f"Fetching comments for POST_ID: {post_id}")
-    query = """
-    SELECT jc.*, u.NICKNAME, u.USER_CHARACTER, u.LV
-    FROM `Journal_comment` jc
-    LEFT JOIN `Users` u ON jc.USER_ID = u.USER_ID
-    WHERE jc.POST_ID = %s
-    ORDER BY jc.COMMENT_ID DESC;
-    """
-    try:
-        with mysql.connector.connect(**db_config) as conn:
-            with conn.cursor(dictionary=True) as cursor:
-                logger.debug(f"Executing comment query for POST_ID: {post_id}")
-                cursor.execute(query, (post_id,))
-                comments = cursor.fetchall()
-                logger.debug(f"Fetched {len(comments)} comments")
-        return {"comments": comments}
-    except mysql.connector.Error as err:
-        logger.error(f"Database error in get_journal_comments: {err}")
-        raise HTTPException(status_code=500, detail=f"Database error: {err}")
-    except Exception as e:
-        logger.error(f"Unexpected error in get_journal_comments: {e}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+class Comment(BaseModel):
+    comment_id: int
+    post_id: int
+    user_id: str
+    author: str
+    content: str
+    created_at: str  # datetime 대신 문자열 사용
 
+class CommentsResponse(BaseModel):
+    comments: List[Comment]
+
+# /journal/get_comments 엔드포인트 추가
+@app.get("/journal/get_comments", response_model=CommentsResponse)
+def get_comments(post_id: int = Query(..., description="댓글을 가져올 게시물의 ID"), db=Depends(get_db)):
+    logger.info(f"Fetching comments for post_id: {post_id}")
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            # 댓글 조회 쿼리
+            query = """
+                SELECT 
+                    COMMENT_ID, 
+                    POST_ID, 
+                    USER_ID, 
+                    (SELECT nickName FROM Users WHERE Users.USER_ID = Journal_comment.USER_ID) AS author,
+                    COMMENT_CONTENT AS content,
+                    COMMENT_CREATE AS created_at
+                FROM 
+                    Journal_comment
+                WHERE 
+                    POST_ID = %s
+                ORDER BY 
+                    COMMENT_CREATE ASC;
+            """
+            cursor.execute(query, (post_id,))
+            results = cursor.fetchall()
+            
+            comments = [
+                Comment(
+                    comment_id=row['COMMENT_ID'],
+                    post_id=row['POST_ID'],
+                    user_id=row['USER_ID'],
+                    author=row['author'],
+                    content=row['content'],
+                    created_at=row['created_at'].strftime('%Y-%m-%d %H:%M:%S')  # datetime을 문자열로 변환
+                )
+                for row in results
+            ]
+            
+        return CommentsResponse(comments=comments)
+    
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_comments: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_comments: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+    
 # 저널 댓글 추가 엔드포인트
 @app.post("/journal/add_comment")
 def add_comment(comment: JournalComment, db=Depends(get_db)):
