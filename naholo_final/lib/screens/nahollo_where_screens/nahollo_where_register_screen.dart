@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -12,7 +13,8 @@ import 'package:http/http.dart' as http;
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_search_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
-import 'package:nahollo/test_data.dart';
+import 'package:nahollo/test_where_data.dart';
+import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
@@ -31,9 +33,14 @@ class _NaholloWhereRegisterScreenState
   List<File> _selectedImages = [];
   double _rating = 0;
   String _selectedType = "play";
-  Map<String, String> _result = {
+
+  Map<String, dynamic> _result = {
     'name': "장소를 입력해주세요",
     'address': "",
+    'photoUrl': "", // 장소 사진 URL 추가
+    'placeId': "", //장소 고유값
+    'lat': 0.0,
+    "lng": 0.0,
   };
 
   final Map<String, bool> _reasons = {
@@ -65,44 +72,6 @@ class _NaholloWhereRegisterScreenState
     // 받은 데이터를 원하는 방식으로 처리합니다.
   }
 
-  Future<void> testAddReview() async {
-    //나중에
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user;
-
-    final response = await http.post(
-      Uri.parse('${Api.baseUrl}/add_review/'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        "USER_ID": "${user?.userId}",
-        "WHERE_ID": 1,
-        "REVIEW_CONTENT": _memoController.text.trim(),
-        "WHERE_LIKE": 10,
-        "WHERE_RATE": _rating,
-        "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
-        "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
-        "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
-        "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
-        "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
-        "REASON_PARK": _reasons["주차 가능해요"] ?? false,
-        "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
-        "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
-        "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
-        "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
-        "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
-        "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
-        "IMAGES": ["scenery1.jpg", "scenery2.jpg"] // 리뷰와 함께 추가할 이미지들
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      print("Add Review Response: ${utf8.decode(response.bodyBytes)}");
-    } else {
-      print(
-          "Add Review Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
-    }
-  }
-
   Future<void> _pickImages() async {
     final pickedFiles = await _picker.pickMultiImage();
     setState(() {
@@ -110,39 +79,92 @@ class _NaholloWhereRegisterScreenState
     });
   }
 
-  Future<void> _submitReview() async {
-    if (_result["name"] == "장소를 입력해주세요") {
-      Fluttertoast.showToast(msg: "장소를 입력해주세요!");
-    } else {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final user = userProvider.user;
-
-      // 데이터 추가 시 null 체크 및 기본값 제공
-      byType[_selectedType]?.add({
-        "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
-        "WHERE_ID": 1,
-        "REVIEW_CONTENT": _memoController.text.trim(),
-        "WHERE_LIKE": 10,
-        "WHERE_RATE": _rating ?? 0.0, // null 방지
-        "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
-        "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
-        "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
-        "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
-        "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
-        "REASON_PARK": _reasons["주차 가능해요"] ?? false,
-        "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
-        "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
-        "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
-        "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
-        "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
-        "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
-        "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
-        "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
-        "IMAGE": "https://i.imgur.com/tV71llG.jpeg"
-      });
-
-      Navigator.pop(context);
+  void _submitWhere(Map<String, dynamic> result) {
+    //where에 데이터 추가 함수
+    // 초기값으로 중복 여부를 false로 설정
+    bool isDuplicate = false;
+    // 현재 데이터의 where 리스트를 가져옴
+    List<dynamic> whereList = where["where"];
+    // 리스트를 순회하면서 중복 여부 검사
+    for (var element in whereList) {
+      // WHERE_ID 중복 검사
+      if (element["WHERE_ID"] == result["placeId"]) {
+        isDuplicate = true;
+        print("중복된 WHERE_ID가 발견되었습니다: ${result["placeId"]}");
+        break; // 중복 발견 시 더 이상 검사하지 않고 종료
+      }
     }
+    // 중복되지 않았을 때만 실행
+    if (!isDuplicate) {
+      print(result);
+      print(where["where"]);
+      print("중복되지 않은 데이터: 실행 가능");
+
+      String placeId = result["placeId"];
+      Double lat = result["lat"];
+      Double lng = result["lng"];
+
+      // ensure placeId, lat, and lng are valid types
+      where["where"].add({
+        "WHERE_TYPE": _selectedType.toString(),
+        "WHERE_ID":
+            placeId, //result["placeId"]?.toString() ?? "", // placeId를 String으로 변환
+        "WHERE_NAME":
+            result["name"]?.toString() ?? "Unknown", // String으로 변환 및 기본값 추가
+        "WHERE_LOCATE":
+            result["address"]?.toString() ?? "Unknown", // String으로 변환 및 기본값 추가
+        "REASON_MENU": 0,
+        "REASON_MOOD": 0,
+        "REASON_SAFE": 0,
+        "REASON_SEAT": 0,
+        "REASON_TRANSPORT": 0,
+        "REASON_PARK": 0,
+        "REASON_LONG": 0,
+        "REASON_VIEW": 0,
+        "REASON_INTERACTION": 0,
+        "REASON_QUITE": 0,
+        "REASON_PHOTO": 0,
+        "REASON_WATCH": 0,
+        "IMAGE": result['photoUrl']?.toString() ?? "", // 이미지 URL을 String으로 변환
+        "WHERE_RATE": 0.0, // 기본값을 float로
+        "LATITUDE": lat, //is double ? result["lat"] : 0.0, // lat을 double로 변환
+        "LONGITUDE": lng, //is double ? result["lng"] : 0.0, // lng을 double로 변환
+        "SAVE": 0, // 저장 횟수 기본값 설정
+      });
+    } else {
+      print("중복된 where_id 또는 placeId가 발견되었습니다.");
+    }
+  }
+
+  Future<void> _submitReview() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+
+    // 데이터 추가 시 null 체크 및 기본값 제공
+    whereReview["where_review"].add({
+      "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
+      "WHERE_ID": _result["placeId"],
+      "REVIEW_CONTENT": _memoController.text.trim(),
+      "WHERE_LIKE": 0,
+      "WHERE_RATE": _rating, // null 방지
+      "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
+      "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
+      "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
+      "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
+      "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
+      "REASON_PARK": _reasons["주차 가능해요"] ?? false,
+      "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
+      "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
+      "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
+      "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
+      "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
+      "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
+      "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
+      "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
+      "IMAGE": [],
+    });
+
+    Navigator.pop(context);
   }
 
   @override
@@ -173,26 +195,48 @@ class _NaholloWhereRegisterScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              '나홀로 어디? 사진 0/20',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            Text(
+              '나홀로 어디? 사진 ${_selectedImages.length}/10',
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: SizeScaler.scaleSize(context, 5),
             ),
-            GestureDetector(
-              onTap: _pickImages,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: _selectedImages.isEmpty
-                    ? const Center(
-                        child: Text('+\n사진 선택', textAlign: TextAlign.center))
-                    : Image.file(_selectedImages[0], fit: BoxFit.cover),
+
+            // 이미지 리스트를 가로 스크롤로 보여주는 부분
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 가로 스크롤을 허용
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: _pickImages,
+                    child: Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Center(
+                          child: Text('+\n사진 선택', textAlign: TextAlign.center)),
+                    ),
+                  ),
+                  ..._selectedImages.map((image) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                        child: Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Image.file(
+                            image,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )),
+                ],
               ),
             ),
             SizedBox(
@@ -436,11 +480,17 @@ class _NaholloWhereRegisterScreenState
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _submitReview,
+              onPressed: () {
+                if (_result["name"] == "장소를 입력해주세요") {
+                  Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+                } else {
+                  _submitWhere(_result);
+                  _submitReview();
+                }
+              },
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: const Color(0xff7a4fff),
-                minimumSize: const Size(double.infinity, 40),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

@@ -9,7 +9,8 @@ import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_detail_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
-import 'package:nahollo/test_data.dart';
+import 'package:nahollo/test_where_data.dart';
+import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -25,8 +26,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   final int _selectedIndex = 0; // 선택된 인덱스
   Map<String, dynamic> results = {}; // 데이터를 저장할 변수
   String _selectedType = "overall"; // 현재 선택된 타입 ("overall"이 기본값)
-  final _bytype = byType;
-  final _overall = overall;
+  final _whereReview = whereReview;
+  final _where = where;
   final PageController _pageController =
       PageController(viewportFraction: 0.4, initialPage: 1);
   int _currentPage = 1;
@@ -38,9 +39,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     setState(() {
       _searchQuery = query;
       if (_searchQuery.isEmpty) {
-        _searchResults = List<Map<String, dynamic>>.from(byType["play"]);
+        //   _searchResults = List<Map<String, dynamic>>.from(byType["play"]);
       } else {
-        _searchResults = byType["play"]
+        _searchResults = _where["where"]
             .where((item) => item["WHERE_NAME"]
                 .toString()
                 .toLowerCase()
@@ -49,6 +50,31 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
             .cast<Map<String, dynamic>>();
       }
     });
+  }
+
+  // WHERE_TYPE에 따라 필터링된 리스트를 반환하는 함수
+  List<Map<String, dynamic>> filterByType(String type) {
+    // where["where"] 리스트에서 WHERE_TYPE이 주어진 type과 같은 항목들을 필터링하여 반환
+    return where["where"].where((item) => item["WHERE_TYPE"] == type).toList();
+  }
+
+// SAVE 값이 높은 상위 8개의 항목을 반환하는 함수
+  List<Map<String, dynamic>> filterBySave() {
+    // 데이터를 복사하여 정렬 후 변경되더라도 원본 데이터를 유지
+    List<Map<String, dynamic>> sortedList =
+        List<Map<String, dynamic>>.from(where["where"]);
+
+    // SAVE 값을 기준으로 내림차순 정렬
+    sortedList.sort((a, b) => b["SAVE"].compareTo(a["SAVE"]));
+
+    // 상위 8개 항목을 추출하여 반환
+    return sortedList.take(8).toList();
+  }
+
+  String showAdress(String adress) {
+    var list = adress.split(' ');
+    var result = '${list[0]}, ${list[1]}';
+    return result;
   }
 
   Future<void> getNaholloWhereTopRated() async {
@@ -379,7 +405,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
 
   /// 특정 타입별로 상위 항목을 보여주는 위젯 빌드
   Widget buildTypeSection(String type, Size size) {
-    final items = byType[type] ?? [];
+    final items = filterByType(type);
 
     return GridView.builder(
       shrinkWrap: true,
@@ -393,8 +419,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
-        final shotAdress = item["WHERE_LOCATE"].split(' ')[0]; //+
-        // item["WHERE_LOCATE"].split(' ')[2]; 주소 길어지면 활성화
+
         return GestureDetector(
           onTap: () {
             // 카드 클릭 시 세부 정보 화면으로 이동
@@ -445,7 +470,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                           size: 13,
                         ),
                         AutoSizeText(
-                          '${shotAdress ?? "N/A"}',
+                          showAdress(item["WHERE_LOCATE"]),
                           style: const TextStyle(
                               fontSize: 11,
                               color: Colors.black,
@@ -466,7 +491,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   }
 
   Widget buildOverallSection() {
-    final items = _overall["overall_top_8"] ?? [];
+    final items = filterBySave();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,7 +501,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
           height: 300, // 이미지와 텍스트가 잘 보이도록 높이 설정
           child: PageView.builder(
             controller: _pageController,
-            itemCount: items.length == 0 ? 0 : null,
+            itemCount: items.isEmpty ? 0 : null,
             itemBuilder: (context, index) {
               final item = items[index % items.length];
               double scale = _currentPage == index ? 1.0 : 0.8;
@@ -554,7 +579,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                   size: 13,
                                 ),
                                 Text(
-                                  '${item["WHERE_LOCATE"] ?? "N/A"}',
+                                  showAdress(item["WHERE_LOCATE"]),
                                   style: const TextStyle(
                                       fontSize: 11,
                                       color: Colors.black,

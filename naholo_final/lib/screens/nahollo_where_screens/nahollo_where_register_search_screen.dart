@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
+import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -19,9 +21,17 @@ class _NaholloWhereRegisterSearchScreenState
   Marker? _searchedPlaceMarker;
   String _address = ""; // 주소를 저장할 변수
   String _placeName = "";
+  String _photoUrl = ""; // 장소 사진 URL을 저장할 변수
+  String _placeId = "";
+  double _lat = 1.7;
+  double _lng = 0.0;
   var _locationData = {
     'name': "장소를 입력하세요",
     'address': "",
+    'photoUrl': "", // 장소 사진 URL 추가
+    'placeId': "",
+    'lat': 0.0,
+    'lng': 0.0,
   };
 
   static const String _apiKey =
@@ -42,8 +52,17 @@ class _NaholloWhereRegisterSearchScreenState
       final lng = place['geometry']['location']['lng'];
       final address = place['formatted_address']; // 주소 정보
       final placeName = place['name'] ?? '이름을 찾을 수 없습니다.';
-      print("sfsdfsdf $placeName");
-      print(placeName.runtimeType);
+      final placeId = place['place_id']; // Place ID 추출
+
+      // 사진 URL 구성
+      if (place['photos'] != null && place['photos'].isNotEmpty) {
+        final photoReference = place['photos'][0]['photo_reference'];
+        _photoUrl =
+            'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=$_apiKey';
+      } else {
+        _photoUrl = ''; // 사진이 없을 경우 빈 문자열로 처리
+      }
+
       setState(() {
         _searchedPlaceMarker = Marker(
           markerId: const MarkerId('searchedPlace'),
@@ -51,6 +70,9 @@ class _NaholloWhereRegisterSearchScreenState
         );
         _address = address; // 주소를 변수에 저장
         _placeName = placeName;
+        _placeId = placeId;
+        _lat = double.parse(lat);
+        _lng = double.parse(lng);
       });
 
       _mapController?.animateCamera(CameraUpdate.newLatLngZoom(
@@ -69,7 +91,12 @@ class _NaholloWhereRegisterSearchScreenState
       final locationData = {
         'name': _placeName,
         'address': _address,
+        'photoUrl': _photoUrl, // 사진 URL 추가
+        'placeId': _placeId,
+        "lat": _lat,
+        "lng": _lng,
       };
+
       _locationData = locationData;
       print("$locationData");
       Navigator.pop(context, _locationData); // 장소 이름과 주소를 리턴
@@ -194,7 +221,6 @@ class _NaholloWhereRegisterSearchScreenState
                 style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xff7a4fff),
                     foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 35),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadiusDirectional.circular(8))),
                 child: const Text('이 위치로 등록'),
