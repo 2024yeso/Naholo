@@ -18,6 +18,17 @@ import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:nahollo/providers/user_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:nahollo/sizeScaler.dart';
+import 'package:provider/provider.dart';
+
 class NaholloWhereRegisterScreen extends StatefulWidget {
   const NaholloWhereRegisterScreen({super.key});
 
@@ -58,18 +69,6 @@ class _NaholloWhereRegisterScreenState
     "구경할 거 있어요": false,
   };
 
-  // 파일들을 바이트 배열로 변환하는 함수    //흠..
-  Future<List<List<int>>> convertFilesToBytes(List<File> files) async {
-    // 각 파일의 읽기 작업을 Future 리스트로 만듭니다.
-    List<Future<List<int>>> readFutures =
-        files.map((file) => file.readAsBytes()).toList();
-
-    // Future 리스트를 기다려 모든 바이트 배열을 얻습니다.
-    List<List<int>> bytesList = await Future.wait(readFutures);
-
-    return bytesList;
-  }
-
   // 새로운 화면을 호출할 때 데이터를 기다리는 코드
   Future<void> _navigateAndGetLocation(BuildContext context) async {
     _result = await Navigator.push(
@@ -81,7 +80,6 @@ class _NaholloWhereRegisterScreenState
     setState(() {});
     // 결과를 받아와서 사용하는 부분
     print("받은 데이터: $_result"); // locationData가 출력됩니다.
-    // 받은 데이터를 원하는 방식으로 처리합니다.
   }
 
   Future<void> _pickImages() async {
@@ -91,151 +89,72 @@ class _NaholloWhereRegisterScreenState
     });
   }
 
-  void _submitWhere(Map<String, dynamic> result) {
-    //where에 데이터 추가 함수
-    // 초기값으로 중복 여부를 false로 설정
-    bool isDuplicate = false;
-    // 현재 데이터의 where 리스트를 가져옴
-    List<dynamic> whereList = where["where"];
-    // 리스트를 순회하면서 중복 여부 검사
-    for (var element in whereList) {
-      // WHERE_ID 중복 검사
-      if (element["WHERE_ID"] == result["placeId"]) {
-        isDuplicate = true;
-        print("중복된 WHERE_ID가 발견되었습니다: ${result["placeId"]}");
-        break; // 중복 발견 시 더 이상 검사하지 않고 종료
-      }
-    }
-    // 중복되지 않았을 때만 실행
-    if (!isDuplicate) {
-      print(result);
-      print(where["where"]);
-      print("중복되지 않은 데이터: 실행 가능");
-
-      String placeId = result["placeId"];
-      double lat = result["lat"];
-      double lng = result["lng"];
-
-      // ensure placeId, lat, and lng are valid types
-      where["where"].add({
-        "WHERE_TYPE": _selectedType.toString(),
-        "WHERE_ID":
-            placeId, //result["placeId"]?.toString() ?? "", // placeId를 String으로 변환
-        "WHERE_NAME":
-            result["name"]?.toString() ?? "Unknown", // String으로 변환 및 기본값 추가
-        "WHERE_LOCATE":
-            result["address"]?.toString() ?? "Unknown", // String으로 변환 및 기본값 추가
-        "REASON_MENU": 0,
-        "REASON_MOOD": 0,
-        "REASON_SAFE": 0,
-        "REASON_SEAT": 0,
-        "REASON_TRANSPORT": 0,
-        "REASON_PARK": 0,
-        "REASON_LONG": 0,
-        "REASON_VIEW": 0,
-        "REASON_INTERACTION": 0,
-        "REASON_QUITE": 0,
-        "REASON_PHOTO": 0,
-        "REASON_WATCH": 0,
-        "IMAGE": result['photoUrl']?.toString() ?? "", // 이미지 URL을 String으로 변환
-        "WHERE_RATE": 0.0, // 기본값을 float로
-        "LATITUDE": lat, //is double ? result["lat"] : 0.0, // lat을 double로 변환
-        "LONGITUDE": lng, //is double ? result["lng"] : 0.0, // lng을 double로 변환
-        "SAVE": 0, // 저장 횟수 기본값 설정
-      });
-    } else {
-      print("중복된 where_id 또는 placeId가 발견되었습니다.");
-    }
-  }
-
   Future<void> _submitReview() async {
+
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.user;
-    List<List<int>> iamges = await convertFilesToBytes(_selectedImages);
+    // 이미지들을 Base64로 인코딩
+    List<String> base64Images = [];
+    for (File image in _selectedImages) {
+      List<int> imageBytes = await image.readAsBytes();
+      String base64Image = base64Encode(imageBytes);
+      base64Images.add(base64Image);
+    }
     String userId = user!.userId;
     String whereId = _result["placeId"];
     String content = _memoController.text.trim().toString();
     String name = _result["name"];
     String locate = _result["address"];
+    String whereType = _selectedType;
+    double? lat = _result["lat"];
+    double? lng = _result["lng"];
 
-    // 데이터 추가 시 null 체크 및 기본값 제공
-    whereReview["where_review"].add({
-      "USER_ID": userId,
-      "WHERE_ID": whereId,
-      "REVIEW_CONTENT": content,
-      "WHERE_LIKE": 0,
-      "WHERE_RATE": _rating, // null 방지
-      "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
-      "REASON_MOOD": _reasons["분위기가 좋아요"] ?? false,
-      "REASON_SAFE": _reasons["위생관리 잘돼요"] ?? false,
-      "REASON_SEAT": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
-      "REASON_TRANSPORT": _reasons["대중교통으로 가기 편해요"] ?? false,
-      "REASON_PARK": _reasons["주차 가능해요"] ?? false,
-      "REASON_LONG": _reasons["오래 머물기 좋아요"] ?? false,
-      "REASON_VIEW": _reasons["날씨가 좋아요"] ?? false,
-      "REASON_INTERACTION": _reasons["고독할 수 있어요"] ?? false,
-      "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
-      "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
-      "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
-      "WHERE_NAME": name,
-      "WHERE_LOCATE": locate,
-      "IMAGES": iamges,
-    });
+    Map<String, dynamic> reviewData = {
+      "user_id": userId,
+      "where_id": whereId,
+      "where_name": name,
+      "where_locate": locate,
+      "where_type": whereType,
+      "latitude": lat,
+      "longitude": lng,
+      "review_content": content,
+      "where_like": 0,
+      "where_rate": _rating,
+      "reason_menu": _reasons["1인 메뉴가 좋아요"] ?? false,
+      "reason_mood": _reasons["분위기가 좋아요"] ?? false,
+      "reason_safe": _reasons["위생관리 잘돼요"] ?? false,
+      "reason_seat": _reasons["혼자 즐기 좋은 음식이 있어요"] ?? false,
+      "reason_transport": _reasons["대중교통으로 가기 편해요"] ?? false,
+      "reason_park": _reasons["주차 가능해요"] ?? false,
+      "reason_long": _reasons["오래 머물기 좋아요"] ?? false,
+      "reason_view": _reasons["날씨가 좋아요"] ?? false,
+      "reason_interaction": _reasons["고독할 수 있어요"] ?? false,
+      "reason_quite": _reasons["활발히 놀기좋아요"] ?? false,
+      "reason_photo": _reasons["사진 찍기 좋아요"] ?? false,
+      "reason_watch": _reasons["구경할 거 있어요"] ?? false,
+      "images": base64Images,
+    };
 
-    List<Map<String, dynamic>> filteredList = where["where"]
-        .where((item) => item["WHERE_ID"] == whereId)
-        .cast<Map<String, dynamic>>()
-        .toList();
+    try {
+      var url = Uri.parse('http://10.0.2.2:8000/add_review/');
 
-    if (filteredList.isNotEmpty) {
-      Map<String, dynamic> targetWhere = filteredList.first;
-      // 찾은 데이터 출력
-      print(targetWhere);
-      // 각 REASON 키에 대해 업데이트
-      targetWhere["REASON_MENU"] = _reasons["1인 메뉴가 좋아요"] == true
-          ? targetWhere["REASON_MENU"] + 1
-          : targetWhere["REASON_MENU"];
-      targetWhere["REASON_MOOD"] = _reasons["분위기가 좋아요"] == true
-          ? targetWhere["REASON_MOOD"] + 1
-          : targetWhere["REASON_MOOD"];
-      targetWhere["REASON_SAFE"] = _reasons["위생관리 잘돼요"] == true
-          ? targetWhere["REASON_SAFE"] + 1
-          : targetWhere["REASON_SAFE"];
-      targetWhere["REASON_SEAT"] = _reasons["혼자 즐기 좋은 음식이 있어요"] == true
-          ? targetWhere["REASON_SEAT"] + 1
-          : targetWhere["REASON_SEAT"];
-      targetWhere["REASON_TRANSPORT"] = _reasons["대중교통으로 가기 편해요"] == true
-          ? targetWhere["REASON_TRANSPORT"] + 1
-          : targetWhere["REASON_TRANSPORT"];
-      targetWhere["REASON_PARK"] = _reasons["주차 가능해요"] == true
-          ? targetWhere["REASON_PARK"] + 1
-          : targetWhere["REASON_PARK"];
-      targetWhere["REASON_LONG"] = _reasons["오래 머물기 좋아요"] == true
-          ? targetWhere["REASON_LONG"] + 1
-          : targetWhere["REASON_LONG"];
-      targetWhere["REASON_VIEW"] = _reasons["날씨가 좋아요"] == true
-          ? targetWhere["REASON_VIEW"] + 1
-          : targetWhere["REASON_VIEW"];
-      targetWhere["REASON_INTERACTION"] = _reasons["고독할 수 있어요"] == true
-          ? targetWhere["REASON_INTERACTION"] + 1
-          : targetWhere["REASON_INTERACTION"];
-      targetWhere["REASON_QUITE"] = _reasons["활발히 놀기좋아요"] == true
-          ? targetWhere["REASON_QUITE"] + 1
-          : targetWhere["REASON_QUITE"];
-      targetWhere["REASON_PHOTO"] = _reasons["사진 찍기 좋아요"] == true
-          ? targetWhere["REASON_PHOTO"] + 1
-          : targetWhere["REASON_PHOTO"];
-      targetWhere["REASON_WATCH"] = _reasons["구경할 거 있어요"] == true
-          ? targetWhere["REASON_WATCH"] + 1
-          : targetWhere["REASON_WATCH"];
+      var response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(reviewData),
+      );
 
-      print(targetWhere);
-    } else {
-      // 원하는 WHERE_ID가 없을 경우 처리
-      print('해당 WHERE_ID가 존재하지 않습니다.');
+      if (response.statusCode == 200) {
+        Fluttertoast.showToast(msg: "리뷰가 성공적으로 등록되었습니다.");
+        Navigator.pop(context);
+      } else {
+        print("Failed to submit review: ${response.statusCode}");
+        Fluttertoast.showToast(msg: "리뷰 등록에 실패하였습니다.");
+      }
+    } catch (e) {
+      print("Error submitting review: $e");
+      Fluttertoast.showToast(msg: "리뷰 등록 중 오류가 발생하였습니다.");
     }
-
-    Navigator.pop(context);
   }
 
   @override
@@ -558,7 +477,6 @@ class _NaholloWhereRegisterScreenState
                   if (_result["name"] == "장소를 입력해주세요") {
                     Fluttertoast.showToast(msg: "장소를 입력해주세요!");
                   } else {
-                    _submitWhere(_result);
                     _submitReview();
                   }
                 }

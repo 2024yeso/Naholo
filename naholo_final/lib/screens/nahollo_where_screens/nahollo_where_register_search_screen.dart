@@ -35,7 +35,7 @@ class _NaholloWhereRegisterSearchScreenState
   };
 
   static const String _apiKey =
-      'AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE'; // 실제 API 키를 입력하세요.
+        'AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE';
   final LatLng _initialPosition =
       const LatLng(37.247605, 127.078443); // 초기 위치 설정
 
@@ -107,29 +107,6 @@ class _NaholloWhereRegisterSearchScreenState
     }
   }
 
-  // 주소를 가져오는 함수
-  /* Future<void> _getAddress(LatLng position) async {
-    final String url =
-        'https://maps.googleapis.com/maps/api/geocode/json?latlng=${position.latitude},${position.longitude}&key=$_apiKey&language=ko';
-    final response = await http.get(Uri.parse(url));
-    final data = json.decode(response.body);
-
-    if (data['results'] != null && data['results'].isNotEmpty) {
-      final address = data['results'][0]['formatted_address'];
-      setState(() {
-        _searchedPlaceMarker = Marker(
-          markerId: const MarkerId('selectedPlace'),
-          position: position,
-        );
-        _address = address; // 주소를 저장
-      });
-    } else {
-      setState(() {
-        _address = '주소를 찾을 수 없습니다.';
-      });
-    }
-  }*/
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -190,9 +167,6 @@ class _NaholloWhereRegisterSearchScreenState
                 mapType: MapType.normal,
                 markers:
                     _searchedPlaceMarker != null ? {_searchedPlaceMarker!} : {},
-                /*  onTap: (LatLng position) {
-                  _getAddress(position); // 지도를 클릭할 때 주소 가져오기
-                }, */
               ),
             ),
             Padding(
