@@ -23,7 +23,7 @@ class _NaholloWhereRegisterSearchScreenState
   String _placeName = "";
   String _photoUrl = ""; // 장소 사진 URL을 저장할 변수
   String _placeId = "";
-  double _lat = 1.7;
+  double _lat = 0.0;
   double _lng = 0.0;
   var _locationData = {
     'name': "장소를 입력하세요",
@@ -71,8 +71,8 @@ class _NaholloWhereRegisterSearchScreenState
         _address = address; // 주소를 변수에 저장
         _placeName = placeName;
         _placeId = placeId;
-        _lat = double.parse(lat);
-        _lng = double.parse(lng);
+        _lat = lat;
+        _lng = lng;
       });
 
       _mapController?.animateCamera(CameraUpdate.newLatLngZoom(

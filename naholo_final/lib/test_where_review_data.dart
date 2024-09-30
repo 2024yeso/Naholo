@@ -4,11 +4,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user1@gmail.com",
       "REVIEW_CONTENT": "음식이 맛있어요!",
       "WHERE_LIKE": 10,
-      "WHERE_ID": "1", // String으로 변환
+      "WHERE_ID": "1",
       "WHERE_NAME": "맥도날드",
       "WHERE_LOCATE": "대한민국 서울 은평구",
       "WHERE_RATE": 4.8,
-      "IMAGES": ["https://i.imgur.com/tV71llG.jpeg"],
+      "IMAGES": [
+        [255, 0, 0, 255],
+        [255, 255, 255, 0]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": false,
       "REASON_SAFE": true,
@@ -26,11 +29,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user2@gmail.com",
       "REVIEW_CONTENT": "편안하고 좋아요.",
       "WHERE_LIKE": 5,
-      "WHERE_ID": "2", // String으로 변환
+      "WHERE_ID": "2",
       "WHERE_NAME": "버거킹",
       "WHERE_LOCATE": "대한민국 서울 강남구",
       "WHERE_RATE": 4.5,
-      "IMAGES": ["https://i.imgur.com/yqg4Ovc.jpeg"],
+      "IMAGES": [
+        [0, 0, 0, 255],
+        [128, 128, 128, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -48,11 +54,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user3@gmail.com",
       "REVIEW_CONTENT": "분위기가 좋고 조용해요.",
       "WHERE_LIKE": 8,
-      "WHERE_ID": "3", // String으로 변환
+      "WHERE_ID": "3",
       "WHERE_NAME": "아웃백 스테이크하우스",
       "WHERE_LOCATE": "대한민국 서울 종로구",
       "WHERE_RATE": 4.2,
-      "IMAGES": ["https://i.imgur.com/x8fZoYQ.jpeg"],
+      "IMAGES": [
+        [100, 100, 100, 255],
+        [50, 50, 50, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -70,11 +79,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user4@gmail.com",
       "REVIEW_CONTENT": "커피가 맛있고 쾌적해요.",
       "WHERE_LIKE": 15,
-      "WHERE_ID": "4", // String으로 변환
+      "WHERE_ID": "4",
       "WHERE_NAME": "스타벅스",
       "WHERE_LOCATE": "대한민국 서울 마포구",
       "WHERE_RATE": 4.7,
-      "IMAGES": ["https://i.imgur.com/Ta4T3Eo.jpeg"],
+      "IMAGES": [
+        [255, 100, 0, 255],
+        [255, 255, 0, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": true,
@@ -92,11 +104,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user5@gmail.com",
       "REVIEW_CONTENT": "음식이 정말 맛있네요!",
       "WHERE_LIKE": 20,
-      "WHERE_ID": "5", // String으로 변환
+      "WHERE_ID": "5",
       "WHERE_NAME": "Vapiano",
       "WHERE_LOCATE": "대한민국 서울 강남구",
       "WHERE_RATE": 4.6,
-      "IMAGES": ["https://i.imgur.com/XIq1UM0.jpeg"],
+      "IMAGES": [
+        [120, 200, 255, 255],
+        [255, 100, 50, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": false,
       "REASON_SAFE": false,
@@ -114,11 +129,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user6@gmail.com",
       "REVIEW_CONTENT": "분위기가 좋아요.",
       "WHERE_LIKE": 7,
-      "WHERE_ID": "6", // String으로 변환
+      "WHERE_ID": "6",
       "WHERE_NAME": "이자카야 타마",
       "WHERE_LOCATE": "대한민국 서울 마포구",
       "WHERE_RATE": 4.3,
-      "IMAGES": ["https://i.imgur.com/1q2h3vC.jpeg"],
+      "IMAGES": [
+        [200, 150, 255, 255],
+        [180, 0, 150, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": true,
@@ -136,11 +154,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user7@gmail.com",
       "REVIEW_CONTENT": "안전하고 편리해요.",
       "WHERE_LIKE": 9,
-      "WHERE_ID": "7", // String으로 변환
+      "WHERE_ID": "7",
       "WHERE_NAME": "술익는집",
       "WHERE_LOCATE": "대한민국 서울 종로구",
       "WHERE_RATE": 4.1,
-      "IMAGES": ["https://i.imgur.com/3b6TqjS.jpeg"],
+      "IMAGES": [
+        [90, 200, 200, 255],
+        [255, 100, 100, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": false,
       "REASON_SAFE": true,
@@ -158,11 +179,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user8@gmail.com",
       "REVIEW_CONTENT": "깔끔하고 좋아요.",
       "WHERE_LIKE": 12,
-      "WHERE_ID": "8", // String으로 변환
+      "WHERE_ID": "8",
       "WHERE_NAME": "옥토버페스트",
       "WHERE_LOCATE": "대한민국 서울 강남구",
       "WHERE_RATE": 4.5,
-      "IMAGES": ["https://i.imgur.com/U3a1M9j.jpeg"],
+      "IMAGES": [
+        [50, 150, 255, 255],
+        [200, 50, 200, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -180,11 +204,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user9@gmail.com",
       "REVIEW_CONTENT": "편하고 안전해요.",
       "WHERE_LIKE": 11,
-      "WHERE_ID": "9", // String으로 변환
+      "WHERE_ID": "9",
       "WHERE_NAME": "포차천국",
       "WHERE_LOCATE": "대한민국 서울 서대문구",
       "WHERE_RATE": 4.2,
-      "IMAGES": ["https://i.imgur.com/fQv4qJ3.jpeg"],
+      "IMAGES": [
+        [255, 200, 100, 255],
+        [0, 100, 255, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": false,
       "REASON_SAFE": true,
@@ -202,11 +229,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user10@gmail.com",
       "REVIEW_CONTENT": "조용하고 편안해요.",
       "WHERE_LIKE": 6,
-      "WHERE_ID": "10", // String으로 변환
+      "WHERE_ID": "10",
       "WHERE_NAME": "술마루",
       "WHERE_LOCATE": "대한민국 서울 성북구",
       "WHERE_RATE": 4.4,
-      "IMAGES": ["https://i.imgur.com/aIv2cPi.jpeg"],
+      "IMAGES": [
+        [150, 255, 0, 255],
+        [255, 200, 200, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -224,11 +254,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user11@gmail.com",
       "REVIEW_CONTENT": "활기찬 분위기 좋습니다.",
       "WHERE_LIKE": 13,
-      "WHERE_ID": "11", // String으로 변환
+      "WHERE_ID": "11",
       "WHERE_NAME": "롯데월드",
       "WHERE_LOCATE": "대한민국 서울 송파구",
       "WHERE_RATE": 4.9,
-      "IMAGES": ["https://i.imgur.com/ZqT6GgF.jpeg"],
+      "IMAGES": [
+        [255, 100, 100, 255],
+        [0, 0, 255, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -246,11 +279,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user12@gmail.com",
       "REVIEW_CONTENT": "안전하고 깨끗해요.",
       "WHERE_LIKE": 14,
-      "WHERE_ID": "12", // String으로 변환
+      "WHERE_ID": "12",
       "WHERE_NAME": "에버랜드",
       "WHERE_LOCATE": "대한민국 경기 용인시",
       "WHERE_RATE": 4.7,
-      "IMAGES": ["https://i.imgur.com/fKQh3pv.jpeg"],
+      "IMAGES": [
+        [0, 255, 0, 255],
+        [255, 255, 0, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": true,
@@ -268,11 +304,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user13@gmail.com",
       "REVIEW_CONTENT": "조용하고 안전합니다.",
       "WHERE_LIKE": 4,
-      "WHERE_ID": "13", // String으로 변환
+      "WHERE_ID": "13",
       "WHERE_NAME": "서울랜드",
       "WHERE_LOCATE": "대한민국 경기 과천시",
       "WHERE_RATE": 4.4,
-      "IMAGES": ["https://i.imgur.com/zQwEImc.jpeg"],
+      "IMAGES": [
+        [255, 50, 50, 255],
+        [50, 50, 200, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": false,
       "REASON_SAFE": true,
@@ -290,11 +329,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user14@gmail.com",
       "REVIEW_CONTENT": "음식이 맛있고 분위기가 좋아요.",
       "WHERE_LIKE": 16,
-      "WHERE_ID": "14", // String으로 변환
+      "WHERE_ID": "14",
       "WHERE_NAME": "신라호텔",
       "WHERE_LOCATE": "대한민국 서울 중구",
       "WHERE_RATE": 4.8,
-      "IMAGES": ["https://i.imgur.com/QWvDnKT.jpeg"],
+      "IMAGES": [
+        [255, 200, 50, 255],
+        [100, 100, 255, 255]
+      ],
       "REASON_MENU": true,
       "REASON_MOOD": true,
       "REASON_SAFE": false,
@@ -312,11 +354,14 @@ Map<String, dynamic> whereReview = {
       "USER_ID": "user15@gmail.com",
       "REVIEW_CONTENT": "편안하고 안전한 곳입니다.",
       "WHERE_LIKE": 18,
-      "WHERE_ID": "15", // String으로 변환
+      "WHERE_ID": "15",
       "WHERE_NAME": "롯데호텔",
       "WHERE_LOCATE": "대한민국 서울 중구",
       "WHERE_RATE": 4.9,
-      "IMAGES": ["https://i.imgur.com/j9H74R5.jpeg"],
+      "IMAGES": [
+        [100, 100, 100, 255],
+        [255, 50, 50, 255]
+      ],
       "REASON_MENU": false,
       "REASON_MOOD": true,
       "REASON_SAFE": true,

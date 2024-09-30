@@ -58,6 +58,18 @@ class _NaholloWhereRegisterScreenState
     "구경할 거 있어요": false,
   };
 
+  // 파일들을 바이트 배열로 변환하는 함수    //흠..
+  Future<List<List<int>>> convertFilesToBytes(List<File> files) async {
+    // 각 파일의 읽기 작업을 Future 리스트로 만듭니다.
+    List<Future<List<int>>> readFutures =
+        files.map((file) => file.readAsBytes()).toList();
+
+    // Future 리스트를 기다려 모든 바이트 배열을 얻습니다.
+    List<List<int>> bytesList = await Future.wait(readFutures);
+
+    return bytesList;
+  }
+
   // 새로운 화면을 호출할 때 데이터를 기다리는 코드
   Future<void> _navigateAndGetLocation(BuildContext context) async {
     _result = await Navigator.push(
@@ -101,8 +113,8 @@ class _NaholloWhereRegisterScreenState
       print("중복되지 않은 데이터: 실행 가능");
 
       String placeId = result["placeId"];
-      Double lat = result["lat"];
-      Double lng = result["lng"];
+      double lat = result["lat"];
+      double lng = result["lng"];
 
       // ensure placeId, lat, and lng are valid types
       where["where"].add({
@@ -139,12 +151,18 @@ class _NaholloWhereRegisterScreenState
   Future<void> _submitReview() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.user;
+    List<List<int>> iamges = await convertFilesToBytes(_selectedImages);
+    String userId = user!.userId;
+    String whereId = _result["placeId"];
+    String content = _memoController.text.trim().toString();
+    String name = _result["name"];
+    String locate = _result["address"];
 
     // 데이터 추가 시 null 체크 및 기본값 제공
     whereReview["where_review"].add({
-      "USER_ID": user?.userId ?? 'Unknown', // null일 경우 기본값 제공
-      "WHERE_ID": _result["placeId"],
-      "REVIEW_CONTENT": _memoController.text.trim(),
+      "USER_ID": userId,
+      "WHERE_ID": whereId,
+      "REVIEW_CONTENT": content,
       "WHERE_LIKE": 0,
       "WHERE_RATE": _rating, // null 방지
       "REASON_MENU": _reasons["1인 메뉴가 좋아요"] ?? false,
@@ -159,10 +177,63 @@ class _NaholloWhereRegisterScreenState
       "REASON_QUITE": _reasons["활발히 놀기좋아요"] ?? false,
       "REASON_PHOTO": _reasons["사진 찍기 좋아요"] ?? false,
       "REASON_WATCH": _reasons["구경할 거 있어요"] ?? false,
-      "WHERE_NAME": _result["name"] ?? "Unknown", // null일 경우 기본값 제공
-      "WHERE_LOCATE": _result["address"] ?? "Unknown", // null일 경우 기본값 제공
-      "IMAGE": [],
+      "WHERE_NAME": name,
+      "WHERE_LOCATE": locate,
+      "IMAGES": iamges,
     });
+
+    List<Map<String, dynamic>> filteredList = where["where"]
+        .where((item) => item["WHERE_ID"] == whereId)
+        .cast<Map<String, dynamic>>()
+        .toList();
+
+    if (filteredList.isNotEmpty) {
+      Map<String, dynamic> targetWhere = filteredList.first;
+      // 찾은 데이터 출력
+      print(targetWhere);
+      // 각 REASON 키에 대해 업데이트
+      targetWhere["REASON_MENU"] = _reasons["1인 메뉴가 좋아요"] == true
+          ? targetWhere["REASON_MENU"] + 1
+          : targetWhere["REASON_MENU"];
+      targetWhere["REASON_MOOD"] = _reasons["분위기가 좋아요"] == true
+          ? targetWhere["REASON_MOOD"] + 1
+          : targetWhere["REASON_MOOD"];
+      targetWhere["REASON_SAFE"] = _reasons["위생관리 잘돼요"] == true
+          ? targetWhere["REASON_SAFE"] + 1
+          : targetWhere["REASON_SAFE"];
+      targetWhere["REASON_SEAT"] = _reasons["혼자 즐기 좋은 음식이 있어요"] == true
+          ? targetWhere["REASON_SEAT"] + 1
+          : targetWhere["REASON_SEAT"];
+      targetWhere["REASON_TRANSPORT"] = _reasons["대중교통으로 가기 편해요"] == true
+          ? targetWhere["REASON_TRANSPORT"] + 1
+          : targetWhere["REASON_TRANSPORT"];
+      targetWhere["REASON_PARK"] = _reasons["주차 가능해요"] == true
+          ? targetWhere["REASON_PARK"] + 1
+          : targetWhere["REASON_PARK"];
+      targetWhere["REASON_LONG"] = _reasons["오래 머물기 좋아요"] == true
+          ? targetWhere["REASON_LONG"] + 1
+          : targetWhere["REASON_LONG"];
+      targetWhere["REASON_VIEW"] = _reasons["날씨가 좋아요"] == true
+          ? targetWhere["REASON_VIEW"] + 1
+          : targetWhere["REASON_VIEW"];
+      targetWhere["REASON_INTERACTION"] = _reasons["고독할 수 있어요"] == true
+          ? targetWhere["REASON_INTERACTION"] + 1
+          : targetWhere["REASON_INTERACTION"];
+      targetWhere["REASON_QUITE"] = _reasons["활발히 놀기좋아요"] == true
+          ? targetWhere["REASON_QUITE"] + 1
+          : targetWhere["REASON_QUITE"];
+      targetWhere["REASON_PHOTO"] = _reasons["사진 찍기 좋아요"] == true
+          ? targetWhere["REASON_PHOTO"] + 1
+          : targetWhere["REASON_PHOTO"];
+      targetWhere["REASON_WATCH"] = _reasons["구경할 거 있어요"] == true
+          ? targetWhere["REASON_WATCH"] + 1
+          : targetWhere["REASON_WATCH"];
+
+      print(targetWhere);
+    } else {
+      // 원하는 WHERE_ID가 없을 경우 처리
+      print('해당 WHERE_ID가 존재하지 않습니다.');
+    }
 
     Navigator.pop(context);
   }
@@ -480,12 +551,16 @@ class _NaholloWhereRegisterScreenState
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {
-                if (_result["name"] == "장소를 입력해주세요") {
-                  Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+              onPressed: () async {
+                if (_rating == 0) {
+                  Fluttertoast.showToast(msg: "별점을 입력해주세요!");
                 } else {
-                  _submitWhere(_result);
-                  _submitReview();
+                  if (_result["name"] == "장소를 입력해주세요") {
+                    Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+                  } else {
+                    _submitWhere(_result);
+                    _submitReview();
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
