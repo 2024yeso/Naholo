@@ -15,6 +15,8 @@ import 'package:nahollo/screens/mypage_screens/follow_page.dart';
 import 'package:nahollo/screens/mypage_screens/profile_edit_page.dart';
 import 'package:nahollo/services/network_service.dart';
 import 'package:nahollo/sizeScaler.dart';
+import 'package:nahollo/test_where_data.dart';
+import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/widgets/journal_content.dart';
 import 'package:nahollo/widgets/map_content.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,7 +31,7 @@ class ProfileScaffold extends StatefulWidget {
 
 class _ProfileScaffoldState extends State<ProfileScaffold> {
   int _selectedTab = 0;
-  List<Review> _reviews = [];
+  List<Map<String, dynamic>> _reviews = [];
   bool _isLoading = true;
   Completer<GoogleMapController> _mapController = Completer();
   final Set<Marker> _markers = {};
@@ -51,10 +53,15 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
 
   int follower = 10, following = 30;
 
-  static const CameraPosition _initialPosition = CameraPosition(
-    target: LatLng(37.5665, 126.9780),
-    zoom: 12,
-  );
+  // USER_ID와 일치하는 리뷰를 필터링하여 가져오는 함수
+  void _fetchReviews() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    var user = userProvider.user;
+
+    _reviews = whereReview["where_review"]
+        .where((review) => review["USER_ID"] == user!.userId)
+        .toList();
+  }
 
   void resetMapController() {
     // 새로운 Completer로 초기화
@@ -68,7 +75,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
     super.initState();
     // UserProvider를 통해 현재 로그인된 유저 정보를 가져옵니다.
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-
+    _fetchReviews();
     _requestLocationPermission();
     _fetchMyPageData();
   }
@@ -85,16 +92,16 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   Future<void> _fetchMyPageData() async {
     final userId = _userProfile?.userId ?? '';
     try {
-      final profileFuture = NetworkService.fetchUserProfile(userId);
-      final reviewsFuture = NetworkService.fetchReviews(userId);
-      print(userId);
-      final results = await Future.wait([profileFuture, reviewsFuture]);
+      //  final profileFuture = NetworkService.fetchUserProfile(userId);    태현이형 화이팅 ㅋㅋ
+      //  final reviewsFuture = NetworkService.fetchReviews(userId);
+      //  print(userId);
+      //  final results = await Future.wait([profileFuture, reviewsFuture]);
 
       setState(() {
-        _userProfile = results[0] as UserProfile;
-        _reviews = results[1] as List<Review>;
+        //  _userProfile = results[0] as UserProfile;
+        //  _reviews = results[1] as List<Map<String, dynamic>>;
         _isLoading = false;
-        _addMarkers();
+        _addMarkers(where["where"]);
       });
     } catch (e) {
       setState(() {
@@ -105,24 +112,31 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   }
 
   // 마커 추가 메서드 정의
-  void _addMarkers() {
-    setState(() {
-      _markers.clear();
-      for (var review in _reviews) {
-        if (review.latitude != null && review.longitude != null) {
-          _markers.add(
-            Marker(
-              markerId: MarkerId(review.whereName),
-              position: LatLng(review.latitude!, review.longitude!),
-              infoWindow: InfoWindow(
-                title: review.whereName,
-                snippet: review.reviewContent,
-              ),
-            ),
-          );
+  void _addMarkers(List<Map<String, dynamic>> wheres) {
+    setState(
+      () {
+        _markers.clear();
+        for (var review in _reviews) {
+          for (var where in wheres) {
+            if (where["WHERE_ID"] == review["WHERE_ID"]) {
+              double latitude = where["LATITUDE"];
+              double longitude = where["LONGITUDE"];
+              _markers.add(
+                Marker(
+                  markerId: MarkerId(review["WHERE_NAME"]),
+                  position: LatLng(latitude, longitude),
+                  infoWindow: InfoWindow(
+                    title: review["WHERE_NAME"],
+                    snippet: review["REVIEW_CONTENT"],
+                  ),
+                ),
+              );
+            }
+          }
         }
-      }
-    });
+        print("이거 마커임 ㅋㅋ $_markers");
+      },
+    );
   }
 
   @override
@@ -183,7 +197,6 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                   ? JournalContent(reviews: _reviews, userProfile: _userProfile)
                   : MapContent(
                       markers: _markers,
-                      initialPosition: _initialPosition,
                       mapController: _mapController,
                     ),
             ],
