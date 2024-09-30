@@ -269,7 +269,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                 top:
                                     SizeScaler.scaleSize(context, 18)), // 여백 추가
                             child: Text(
-                              '일지 쓰고 캐릭터 성장시키자!',
+                              '일지 쓰고\n캐릭터 성장시키자!',
                               style: TextStyle(
                                   fontSize: SizeScaler.scaleSize(context, 10),
                                   color: Colors.white),
@@ -371,12 +371,15 @@ class _DiaryMainState extends State<DiaryMain> {
                               SizeScaler.scaleSize(context, 4)), // 버튼 내부 패딩
                       decoration: BoxDecoration(
                         color: _selectedIndex == index
-                            ? const Color(0xFFE7E7E7)
+                            ? const Color(0xFFD8CBFF)
                             : Colors.white, // 선택된 버튼 색상 : 선택되지 않은 버튼 색상
                         border: Border.all(
-                            color: const Color(0xFF9C9C9C)), // 테두리 색상
+                            color: _selectedIndex == index
+                                ? const Color(0xFF794FFF)
+                                : const Color(0xFF9C9C9C), // 테두리 색상
+                            width: SizeScaler.scaleSize(context, 0.3)),
                         borderRadius: BorderRadius.circular(
-                            SizeScaler.scaleSize(context, 12)), // 모서리 둥글게
+                            SizeScaler.scaleSize(context, 6)), // 모서리 둥글게
                       ),
                       child: Center(
                         child: Text(
