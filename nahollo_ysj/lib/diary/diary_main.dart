@@ -271,7 +271,8 @@ class _DiaryMainState extends State<DiaryMain> {
                             child: Text(
                               '일지 쓰고 캐릭터 성장시키자!',
                               style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 10)),
+                                  fontSize: SizeScaler.scaleSize(context, 10),
+                                  color: Colors.white),
                             ),
                           ),
                           SizedBox(
@@ -293,7 +294,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                   '오늘 하루 기록하러 가기 >',
                                   style: TextStyle(
                                       fontSize:
-                                          SizeScaler.scaleSize(context, 6)),
+                                          SizeScaler.scaleSize(context, 6),
+                                      color: Colors.white),
                                 ),
                               )),
                         ],
@@ -537,8 +539,8 @@ class _DiaryMainState extends State<DiaryMain> {
         ),
       ),
       floatingActionButton: Container(
-        width: SizeScaler.scaleSize(context, 60), // 원하는 너비
-        height: SizeScaler.scaleSize(context, 20), // 원하는 높이
+        width: SizeScaler.scaleSize(context, 59), // 원하는 너비
+        height: SizeScaler.scaleSize(context, 21), // 원하는 높이
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFA526FF), Color(0xFF5D5FF4)],
