@@ -9,31 +9,35 @@ import 'package:nahollo/providers/user_provider.dart';
 import 'package:provider/provider.dart'; // Provider 패키지 임포트
 import 'package:nahollo/models/user_model.dart';
 
-
 class DiaryWriting extends StatefulWidget {
   const DiaryWriting({super.key});
 
   @override
   _DiaryWritingState createState() => _DiaryWritingState();
-  
 }
 
 class _DiaryWritingState extends State<DiaryWriting> {
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final List<File> _imageList = []; // 이미지 파일 리스트
-  final List<bool> _subjList = [false, false, false, false, false, false, false]; // 주제 선택 상태
+  final List<bool> _subjList = [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ]; // 주제 선택 상태
   final ImagePicker _picker = ImagePicker(); // ImagePicker 객체 생성
 
   @override
-  
   void dispose() {
-    
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
-  
+
   // 선택된 태그 목록을 반환하는 메서드
   List<String> _getSelectedTags() {
     List<String> selectedTags = [];
@@ -54,9 +58,11 @@ class _DiaryWritingState extends State<DiaryWriting> {
     }
     return selectedTags;
   }
+
   // 이미지 선택 함수
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _imageList.add(File(pickedFile.path)); // 선택한 이미지를 리스트에 추가
@@ -76,76 +82,76 @@ class _DiaryWritingState extends State<DiaryWriting> {
   }
 
 // 서버로 데이터 전송 함수
-Future<void> _uploadData() async {
-  // Provider를 통해 사용자 정보를 가져옴
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
-  UserModel? user = userProvider.user;
+  Future<void> _uploadData() async {
+    // Provider를 통해 사용자 정보를 가져옴
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    UserModel? user = userProvider.user;
 
-  if (user == null) {
-    // 유저 정보가 없을 경우 처리
-    print("유저 정보가 없습니다.");
-    return;
+    if (user == null) {
+      // 유저 정보가 없을 경우 처리
+      print("유저 정보가 없습니다.");
+      return;
+    }
+
+    // 사용자 정보 가져오기
+    final userId = user.userId;
+    final nickname = user.nickName;
+
+    // 제목, 본문 및 이미지 인코딩된 데이터 준비
+    String title = _titleController.text.trim();
+    String content = _contentController.text.trim();
+    List<String> encodedImages = await _encodeImagesToBase64();
+    List<String> selectedTags = _getSelectedTags(); // 선택된 태그 목록
+
+    // 선택된 태그들을 Boolean으로 변환하여 서버로 전달
+    Map<String, dynamic> tags = {
+      '혼캎': selectedTags.contains('# 혼캎'),
+      '혼영': selectedTags.contains('# 혼영'),
+      '혼놀': selectedTags.contains('# 혼놀'),
+      '혼밥': selectedTags.contains('# 혼밥'),
+      '혼박': selectedTags.contains('# 혼박'),
+      '혼술': selectedTags.contains('# 혼술'),
+      '기타': selectedTags.contains('# 기타'),
+    };
+
+    // 서버로 보낼 데이터 구성
+    Map<String, dynamic> data = {
+      'title': title,
+      'content': content,
+      'images': encodedImages,
+      '혼캎': tags['혼캎'],
+      '혼영': tags['혼영'],
+      '혼놀': tags['혼놀'],
+      '혼밥': tags['혼밥'],
+      '혼박': tags['혼박'],
+      '혼술': tags['혼술'],
+      '기타': tags['기타']
+    };
+
+    // user_id를 쿼리 파라미터로 포함시킨 URL
+    var url = Uri.parse('http://10.0.2.2:8000/journal/upload/?user_id=$userId');
+
+    var response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(data),
+    );
+
+    if (response.statusCode == 200) {
+      // 성공적으로 업로드된 경우
+      print('업로드 성공');
+      Navigator.pop(context); // 업로드 후 이전 화면으로 돌아가기
+    } else {
+      // 업로드 실패한 경우
+      print('업로드 실패: ${response.statusCode}');
+      print('서버 응답: ${response.body}');
+    }
   }
-
-  // 사용자 정보 가져오기
-  final userId = user.userId;
-  final nickname = user.nickName;
-
-  // 제목, 본문 및 이미지 인코딩된 데이터 준비
-  String title = _titleController.text.trim();
-  String content = _contentController.text.trim();
-  List<String> encodedImages = await _encodeImagesToBase64();
-  List<String> selectedTags = _getSelectedTags(); // 선택된 태그 목록
-
-  // 선택된 태그들을 Boolean으로 변환하여 서버로 전달
-  Map<String, dynamic> tags = {
-    '혼캎': selectedTags.contains('# 혼캎'),
-    '혼영': selectedTags.contains('# 혼영'),
-    '혼놀': selectedTags.contains('# 혼놀'),
-    '혼밥': selectedTags.contains('# 혼밥'),
-    '혼박': selectedTags.contains('# 혼박'),
-    '혼술': selectedTags.contains('# 혼술'),
-    '기타': selectedTags.contains('# 기타'),
-  };
-
-  // 서버로 보낼 데이터 구성
-  Map<String, dynamic> data = {
-    'title': title,
-    'content': content,
-    'images': encodedImages,
-    '혼캎': tags['혼캎'],
-    '혼영': tags['혼영'],
-    '혼놀': tags['혼놀'],
-    '혼밥': tags['혼밥'],
-    '혼박': tags['혼박'],
-    '혼술': tags['혼술'],
-    '기타': tags['기타']
-  };
-
-  // user_id를 쿼리 파라미터로 포함시킨 URL
-  var url = Uri.parse('http://10.0.2.2:8000/journal/upload/?user_id=$userId');
-
-  var response = await http.post(
-    url,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode(data),
-  );
-
-  if (response.statusCode == 200) {
-    // 성공적으로 업로드된 경우
-    print('업로드 성공');
-    Navigator.pop(context); // 업로드 후 이전 화면으로 돌아가기
-  } else {
-    // 업로드 실패한 경우
-    print('업로드 실패: ${response.statusCode}');
-    print('서버 응답: ${response.body}');
-  }
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 페이지 배경색을 하얀색으로 설정
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         toolbarHeight: SizeScaler.scaleSize(context, 25),
@@ -168,8 +174,7 @@ Future<void> _uploadData() async {
         ),
         actions: [
           Padding(
-            padding:
-                EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
+            padding: EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
             child: Center(
               child: GestureDetector(
                 onTap: _uploadData, // 작성 버튼 눌렀을 때 서버로 데이터 전송 함수 호출
@@ -231,9 +236,11 @@ Future<void> _uploadData() async {
                   style: TextStyle(fontSize: SizeScaler.scaleSize(context, 7)),
                 ),
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(double.infinity, SizeScaler.scaleSize(context, 18)),
+                  minimumSize:
+                      Size(double.infinity, SizeScaler.scaleSize(context, 18)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(SizeScaler.scaleSize(context, 10)),
+                    borderRadius: BorderRadius.circular(
+                        SizeScaler.scaleSize(context, 10)),
                   ),
                 ),
               ),
@@ -241,7 +248,8 @@ Future<void> _uploadData() async {
             // 선택한 이미지 미리보기
             _imageList.isNotEmpty
                 ? SizedBox(
-                    height: SizeScaler.scaleSize(context, 100), // 이미지 미리보기 높이 설정
+                    height:
+                        SizeScaler.scaleSize(context, 100), // 이미지 미리보기 높이 설정
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal, // 수평 스크롤
                       itemCount: _imageList.length,
@@ -249,18 +257,21 @@ Future<void> _uploadData() async {
                         return Stack(
                           children: [
                             Padding(
-                              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 5)),
+                              padding: EdgeInsets.all(
+                                  SizeScaler.scaleSize(context, 5)),
                               child: Image.file(
                                 _imageList[index],
                                 fit: BoxFit.cover,
-                                width: SizeScaler.scaleSize(context, 80), // 이미지 미리보기 너비 설정
+                                width: SizeScaler.scaleSize(
+                                    context, 80), // 이미지 미리보기 너비 설정
                               ),
                             ),
                             Positioned(
                               right: 0,
                               top: 0,
                               child: IconButton(
-                                icon: const Icon(Icons.cancel, color: Colors.red),
+                                icon:
+                                    const Icon(Icons.cancel, color: Colors.red),
                                 onPressed: () {
                                   setState(() {
                                     _imageList.removeAt(index); // 이미지 삭제
@@ -293,10 +304,10 @@ Future<void> _uploadData() async {
                       ),
                     ),
                   ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 8)),
+                  SizedBox(height: SizeScaler.scaleSize(context, 6)),
                   Wrap(
-                    spacing: SizeScaler.scaleSize(context, 5), // 버튼 사이 간격
-                    runSpacing: SizeScaler.scaleSize(context, 5), // 줄 간격
+                    spacing: SizeScaler.scaleSize(context, 3), // 버튼 사이 간격
+                    runSpacing: SizeScaler.scaleSize(context, 3), // 줄 간격
                     children: [
                       '# 혼캎',
                       '# 혼영',
@@ -308,44 +319,44 @@ Future<void> _uploadData() async {
                     ].asMap().entries.map((entry) {
                       int index = entry.key;
                       String topic = entry.value;
-                      return ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _subjList[index] = !_subjList[index];
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: _subjList[index]
-                              ? const Color(0xFFD8CBFF) // 선택된 경우 연보라색
-                              : Colors.white, // 선택되지 않은 경우 흰색
-                          foregroundColor:
-                              const Color(0xFF646464), // 선택되지 않은 경우 회색 텍스트
-                          padding: EdgeInsets.zero, // 내부 패딩 제거
-                          minimumSize: Size(
-                            SizeScaler.scaleSize(context, 40), // 버튼 크기
-                            SizeScaler.scaleSize(context, 18),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              SizeScaler.scaleSize(context, 33), // 둥글기 정도
+                      return SizedBox(
+                        height: SizeScaler.scaleSize(context, 13),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _subjList[index] = !_subjList[index];
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: _subjList[index]
+                                ? const Color(0xFFD8CBFF)
+                                : Colors.white,
+                            foregroundColor: const Color(0xFF646464),
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size(
+                              SizeScaler.scaleSize(context, 33),
+                              SizeScaler.scaleSize(context, 13),
                             ),
-                            side: _subjList[index]
-                                ? BorderSide(
-                                    color: const Color(0xFF794FFF), // 윤곽선 색상
-                                    width: SizeScaler.scaleSize(
-                                        context, 0.3)) // 윤곽선 두께
-                                : BorderSide(
-                                    color: const Color(0xFF646464), // 윤곽선 색상
-                                    width: SizeScaler.scaleSize(
-                                        context, 0.3), // 윤곽선 두께
-                                  ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                SizeScaler.scaleSize(context, 6),
+                              ),
+                              side: _subjList[index]
+                                  ? BorderSide(
+                                      color: const Color(0xFF794FFF),
+                                      width: SizeScaler.scaleSize(context, 0.3))
+                                  : BorderSide(
+                                      color: const Color(0xFF646464),
+                                      width: SizeScaler.scaleSize(context, 0.3),
+                                    ),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          topic,
-                          style: TextStyle(
-                            fontSize: SizeScaler.scaleSize(context, 7),
+                          child: Text(
+                            topic,
+                            style: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 7),
+                            ),
                           ),
                         ),
                       );
@@ -354,15 +365,12 @@ Future<void> _uploadData() async {
                 ],
               ),
             ),
-            // 주제 선택란 아래의 구분선
             Container(
               color: const Color(0xFFBABABA), // 구분선 색상
               height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
             ),
-            // 내용 입력 부분
             Padding(
-              padding:
-                  EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
+              padding: EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
               child: TextField(
                 controller: _contentController,
                 maxLines: null, // 제한 없는 줄 수
@@ -375,6 +383,33 @@ Future<void> _uploadData() async {
                   border: InputBorder.none,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SizedBox(
+        height: SizeScaler.scaleSize(context, 27), // 높이 설정
+        child: Column(
+          children: [
+            Container(
+              color: const Color(0xFFBABABA),
+              height: SizeScaler.scaleSize(context, 0.5),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Container(
+                  height: SizeScaler.scaleSize(context, 26),
+                  alignment: Alignment.topLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.camera_alt,
+                        size: SizeScaler.scaleSize(context, 10)), // 카메라 아이콘
+                    onPressed: () {
+                      // 여기로 이미지 선택 기능 이동
+                    },
+                  ),
+                )
+              ],
             ),
           ],
         ),

@@ -227,7 +227,6 @@ class _DiaryWritingState extends State<DiaryWriting> {
                     icon: Icon(Icons.camera_alt,
                         size: SizeScaler.scaleSize(context, 10)), // 카메라 아이콘
                     onPressed: () {
-                      // 카메라 아이콘 클릭 시 동작
                     },
                   ),
                 )

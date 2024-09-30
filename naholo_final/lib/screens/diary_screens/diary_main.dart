@@ -89,7 +89,8 @@ class _DiaryMainState extends State<DiaryMain> {
             followPosts = [];
 
             // 인기순 포스트 처리
-            if (data['data']['top_10'] != null && data['data']['top_10'].isNotEmpty) {
+            if (data['data']['top_10'] != null &&
+                data['data']['top_10'].isNotEmpty) {
               List<dynamic> topData = data['data']['top_10'];
               topPosts = parsePosts(topData);
               print('Top posts count: ${topPosts.length}');
@@ -101,7 +102,8 @@ class _DiaryMainState extends State<DiaryMain> {
             }
 
             // 최신순 포스트 처리
-            if (data['data']['latest_10'] != null && data['data']['latest_10'].isNotEmpty) {
+            if (data['data']['latest_10'] != null &&
+                data['data']['latest_10'].isNotEmpty) {
               List<dynamic> latestData = data['data']['latest_10'];
               latestPosts = parsePosts(latestData);
               print('Latest posts count: ${latestPosts.length}');
@@ -110,7 +112,8 @@ class _DiaryMainState extends State<DiaryMain> {
             }
 
             // 팔로우 포스트 처리
-            if (data['data']['followers_latest'] != null && data['data']['followers_latest'].isNotEmpty) {
+            if (data['data']['followers_latest'] != null &&
+                data['data']['followers_latest'].isNotEmpty) {
               List<dynamic> followData = data['data']['followers_latest'];
               followPosts = parsePosts(followData);
               print('Follow posts count: ${followPosts.length}');
@@ -309,7 +312,8 @@ class _DiaryMainState extends State<DiaryMain> {
                           size: SizeScaler.scaleSize(context, 9)), // Close icon
                       onPressed: () {
                         setState(() {
-                          visible = false; // Hide the container when X is pressed
+                          visible =
+                              false; // Hide the container when X is pressed
                         });
                       },
                     ),
@@ -324,7 +328,8 @@ class _DiaryMainState extends State<DiaryMain> {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(
-                          left: SizeScaler.scaleSize(context, 12)), // Left padding
+                          left: SizeScaler.scaleSize(
+                              context, 12)), // Left padding
                       child: Text(
                         "오늘의 나홀로 생활은 어땠어?",
                         style: TextStyle(
@@ -334,7 +339,8 @@ class _DiaryMainState extends State<DiaryMain> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(
-                          left: SizeScaler.scaleSize(context, 12)), // Left padding
+                          left: SizeScaler.scaleSize(
+                              context, 12)), // Left padding
                       child: Text(
                         "나홀로일지로 당신의 하루를 기록해 보세요.",
                         style: TextStyle(
@@ -376,11 +382,13 @@ class _DiaryMainState extends State<DiaryMain> {
                           Padding(
                             padding: EdgeInsets.only(
                                 left: SizeScaler.scaleSize(context, 11),
-                                top: SizeScaler.scaleSize(context, 18)), // Padding
+                                top: SizeScaler.scaleSize(
+                                    context, 18)), // Padding
                             child: Text(
                               '일지 쓰고 캐릭터 성장시키자!',
                               style: TextStyle(
-                                  fontSize: SizeScaler.scaleSize(context, 10)),
+                                  fontSize: SizeScaler.scaleSize(context, 10),
+                                  color: Colors.white),
                             ),
                           ),
                           SizedBox(
@@ -388,20 +396,23 @@ class _DiaryMainState extends State<DiaryMain> {
                                   SizeScaler.scaleSize(context, 14)), // Spacing
                           Padding(
                               padding: EdgeInsets.only(
-                                  left: SizeScaler.scaleSize(context, 11)), // Same left padding as above
+                                  left: SizeScaler.scaleSize(context,
+                                      11)), // Same left padding as above
                               child: GestureDetector(
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => const DiaryWriting()),
+                                        builder: (context) =>
+                                            const DiaryWriting()),
                                   );
                                 },
                                 child: Text(
                                   '오늘 하루 기록하러 가기 >',
                                   style: TextStyle(
                                       fontSize:
-                                          SizeScaler.scaleSize(context, 6)),
+                                          SizeScaler.scaleSize(context, 6),
+                                      color: Colors.white),
                                 ),
                               )),
                         ],
@@ -415,9 +426,10 @@ class _DiaryMainState extends State<DiaryMain> {
                           child: Stack(
                             children: [
                               Positioned(
-                                bottom:
-                                    SizeScaler.scaleSize(context, -20), // Overflow
-                                child: Image.asset("assets/images/$userCharacter.png"),
+                                bottom: SizeScaler.scaleSize(
+                                    context, -20), // Overflow
+                                child: Image.asset(
+                                    "assets/images/$userCharacter.png"),
                               ),
                             ],
                           ),
@@ -460,10 +472,11 @@ class _DiaryMainState extends State<DiaryMain> {
                         color: _selectedIndex == index
                             ? const Color(0xFFE7E7E7)
                             : Colors.white,
-                        border:
-                            Border.all(color: const Color(0xFF9C9C9C)), // Border color
+                        border: Border.all(
+                            color: const Color(0xFF9C9C9C)), // Border color
                         borderRadius: BorderRadius.circular(
-                            SizeScaler.scaleSize(context, 12)), // Rounded corners
+                            SizeScaler.scaleSize(
+                                context, 12)), // Rounded corners
                       ),
                       child: Center(
                         child: Text(
@@ -484,7 +497,8 @@ class _DiaryMainState extends State<DiaryMain> {
             Expanded(
               child: isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(), // Show loading indicator
+                      child:
+                          CircularProgressIndicator(), // Show loading indicator
                     )
                   : blogPosts.isEmpty
                       ? Center(
@@ -517,7 +531,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                   // Left column
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         // Profile picture, author, time
                                         GestureDetector(
@@ -526,21 +541,22 @@ class _DiaryMainState extends State<DiaryMain> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DiaryUser(authorID: post.authorID),
+                                                builder: (context) => DiaryUser(
+                                                    authorID: post.authorID),
                                               ),
                                             );
                                           },
                                           child: Row(
                                             children: [
                                               CircleAvatar(
-                                                radius:
-                                                    SizeScaler.scaleSize(context, 10),
+                                                radius: SizeScaler.scaleSize(
+                                                    context, 10),
                                                 backgroundColor: Colors.grey,
                                                 child: Icon(Icons.person,
                                                     color: Colors.white,
                                                     size: SizeScaler.scaleSize(
-                                                        context, 17)), // Default icon
+                                                        context,
+                                                        17)), // Default icon
                                               ),
                                               SizedBox(
                                                   width: SizeScaler.scaleSize(
@@ -556,7 +572,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                                                 .scaleSize(
                                                                     context, 8),
                                                             fontWeight:
-                                                                FontWeight.w600)),
+                                                                FontWeight
+                                                                    .w600)),
                                                     Text(
                                                         _formatDateTime(
                                                             post.createdAt),
@@ -585,7 +602,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) => DiaryText(
-                                                  postid: post.postid, // POST_ID 추가
+                                                  postid:
+                                                      post.postid, // POST_ID 추가
                                                   postTitle: post.title,
                                                   postContent: post.content,
                                                   author: post.author,
@@ -603,46 +621,60 @@ class _DiaryMainState extends State<DiaryMain> {
                                             children: [
                                               Text(post.title,
                                                   style: TextStyle(
-                                                      fontSize: SizeScaler.scaleSize(
-                                                          context, 8))),
+                                                      fontSize:
+                                                          SizeScaler.scaleSize(
+                                                              context, 8))),
                                               SizedBox(
                                                   height: SizeScaler.scaleSize(
                                                       context, 4.5)), // Spacing
                                               Text(post.getContentPreview(38),
                                                   style: TextStyle(
-                                                      fontSize: SizeScaler.scaleSize(
-                                                          context, 6),
-                                                      fontWeight: FontWeight.w200,
-                                                      color: const Color(0xFF7E7E7E))),
+                                                      fontSize:
+                                                          SizeScaler.scaleSize(
+                                                              context, 6),
+                                                      fontWeight:
+                                                          FontWeight.w200,
+                                                      color: const Color(
+                                                          0xFF7E7E7E))),
                                             ],
                                           ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                  SizedBox(width: SizeScaler.scaleSize(context, 8)),
+                                  SizedBox(
+                                      width: SizeScaler.scaleSize(context, 8)),
                                   // Right column (image)
                                   post.images.isNotEmpty
                                       ? Container(
-                                          width: SizeScaler.scaleSize(context, 70),
-                                          height: SizeScaler.scaleSize(context, 70),
+                                          width:
+                                              SizeScaler.scaleSize(context, 70),
+                                          height:
+                                              SizeScaler.scaleSize(context, 70),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[300], // Placeholder color
+                                            color: Colors
+                                                .grey[300], // Placeholder color
                                             borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(context, 4)),
+                                                SizeScaler.scaleSize(
+                                                    context, 4)),
                                           ),
                                           child: ClipRRect(
                                             borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(context, 4)),
+                                                SizeScaler.scaleSize(
+                                                    context, 4)),
                                             child: Image.memory(
-                                              base64Decode(post.images[0]), // 첫 번째 이미지 디코딩
-                                              fit: BoxFit.cover, // 이미지가 컨테이너를 꽉 채우도록 설정
-                                              errorBuilder: (context, error, stackTrace) {
+                                              base64Decode(post
+                                                  .images[0]), // 첫 번째 이미지 디코딩
+                                              fit: BoxFit
+                                                  .cover, // 이미지가 컨테이너를 꽉 채우도록 설정
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
                                                 return Center(
                                                   child: Icon(
                                                     Icons.broken_image,
                                                     color: Colors.red,
-                                                    size: SizeScaler.scaleSize(context, 20),
+                                                    size: SizeScaler.scaleSize(
+                                                        context, 20),
                                                   ),
                                                 );
                                               },
@@ -650,12 +682,16 @@ class _DiaryMainState extends State<DiaryMain> {
                                           ),
                                         )
                                       : Container(
-                                          width: SizeScaler.scaleSize(context, 70),
-                                          height: SizeScaler.scaleSize(context, 70),
+                                          width:
+                                              SizeScaler.scaleSize(context, 70),
+                                          height:
+                                              SizeScaler.scaleSize(context, 70),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey[300], // Placeholder color
+                                            color: Colors
+                                                .grey[300], // Placeholder color
                                             borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(context, 4)),
+                                                SizeScaler.scaleSize(
+                                                    context, 4)),
                                           ),
                                         ),
                                 ],
@@ -668,8 +704,8 @@ class _DiaryMainState extends State<DiaryMain> {
         ),
       ),
       floatingActionButton: Container(
-        width: SizeScaler.scaleSize(context, 60),
-        height: SizeScaler.scaleSize(context, 20),
+        width: SizeScaler.scaleSize(context, 59),
+        height: SizeScaler.scaleSize(context, 21),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [Color(0xFFA526FF), Color(0xFF5D5FF4)],
