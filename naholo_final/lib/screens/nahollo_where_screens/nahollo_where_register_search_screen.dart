@@ -5,6 +5,7 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'dart:typed_data'; // Uint8List 사용
 
 class NaholloWhereRegisterSearchScreen extends StatefulWidget {
   const NaholloWhereRegisterSearchScreen({super.key});
@@ -21,21 +22,20 @@ class _NaholloWhereRegisterSearchScreenState
   Marker? _searchedPlaceMarker;
   String _address = ""; // 주소를 저장할 변수
   String _placeName = "";
-  String _photoUrl = ""; // 장소 사진 URL을 저장할 변수
+  String _photoUrl = ""; // 장소 사진 URL 또는 Base64 데이터를 저장할 변수
   String _placeId = "";
   double _lat = 0.0;
   double _lng = 0.0;
   var _locationData = {
     'name': "장소를 입력하세요",
     'address': "",
-    'photoUrl': "", // 장소 사진 URL 추가
+    'photoUrl': "", // 장소 사진 URL 또는 Base64 데이터를 저장
     'placeId': "",
     'lat': 0.0,
     'lng': 0.0,
   };
 
-  static const String _apiKey =
-        'AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE';
+  static const String _apiKey = 'AIzaSyDzTW8RlqkPNcG5xcQJ9HqDnAeQcIfY1xE';
   final LatLng _initialPosition =
       const LatLng(37.247605, 127.078443); // 초기 위치 설정
 
@@ -54,11 +54,14 @@ class _NaholloWhereRegisterSearchScreenState
       final placeName = place['name'] ?? '이름을 찾을 수 없습니다.';
       final placeId = place['place_id']; // Place ID 추출
 
-      // 사진 URL 구성
+      // 사진 URL 구성 및 Base64로 변환
       if (place['photos'] != null && place['photos'].isNotEmpty) {
         final photoReference = place['photos'][0]['photo_reference'];
-        _photoUrl =
+        final photoUrl =
             'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=$photoReference&key=$_apiKey';
+
+        // 사진을 Base64로 인코딩
+        _photoUrl = await encodeImageToBase64(photoUrl) ?? ''; // Base64 데이터 저장
       } else {
         _photoUrl = ''; // 사진이 없을 경우 빈 문자열로 처리
       }
@@ -86,12 +89,35 @@ class _NaholloWhereRegisterSearchScreenState
     }
   }
 
+  // 이미지 URL을 받아 Base64로 인코딩하는 함수
+  Future<String?> encodeImageToBase64(String imageUrl) async {
+    try {
+      final response = await http.get(Uri.parse(imageUrl));
+
+      // 정상적인 응답일 경우
+      if (response.statusCode == 200) {
+        // 바이트 배열로 변환
+        Uint8List imageBytes = response.bodyBytes;
+
+        // Base64로 인코딩
+        String base64Image = base64Encode(imageBytes);
+        return base64Image; // Base64로 인코딩된 문자열 반환
+      } else {
+        print("이미지를 다운로드하는 데 실패했습니다. 상태 코드: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("이미지를 인코딩하는 중 오류 발생: $e");
+      return null;
+    }
+  }
+
   void _registerLocation() {
     if (_searchedPlaceMarker != null) {
       final locationData = {
         'name': _placeName,
         'address': _address,
-        'photoUrl': _photoUrl, // 사진 URL 추가
+        'photoUrl': _photoUrl, // 사진 Base64 데이터 추가
         'placeId': _placeId,
         "lat": _lat,
         "lng": _lng,
@@ -112,7 +138,6 @@ class _NaholloWhereRegisterSearchScreenState
     return PopScope(
       canPop: false,
       onPopInvoked: (bool didPop) async {
-        //didPop == true , 뒤로가기 제스쳐가 감지되면 호출 된다.
         if (didPop) {
           return;
         }

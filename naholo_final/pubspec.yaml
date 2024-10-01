@@ -83,6 +83,7 @@ flutter:
     - assets/images/
     - assets/glbs/
     - assets/
+    - assets/images/default_image.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

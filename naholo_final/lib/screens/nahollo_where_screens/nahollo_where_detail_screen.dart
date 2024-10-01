@@ -1,112 +1,143 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:nahollo/api/api.dart'; // API 경로를 위한 import 추가
 import 'package:nahollo/sizeScaler.dart';
-import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
+import 'package:http/http.dart' as http; // HTTP 요청을 위한 import 추가
+import 'package:provider/provider.dart'; // Provider를 사용하기 위한 import 추가
+import 'package:fluttertoast/fluttertoast.dart'; // Toast 메시지를 위한 import 추가
+import 'package:nahollo/providers/user_provider.dart'; // UserProvider import 추가
 
 class NaholloWhereDetailScreen extends StatefulWidget {
-  Map<String, dynamic> item;
+  final String whereId;
 
-  NaholloWhereDetailScreen({super.key, required this.item});
+  NaholloWhereDetailScreen({Key? key, required this.whereId}) : super(key: key);
 
   @override
-  State<NaholloWhereDetailScreen> createState() =>
-      _NaholloWhereDetailScreenState();
+  State<NaholloWhereDetailScreen> createState() => _NaholloWhereDetailScreenState();
 }
 
 class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
-  late final info = widget.item;
+  Map<String, dynamic>? info; // 장소 상세 정보를 저장할 변수
   List<Map<String, dynamic>> reviews = []; // 리뷰 리스트
 
-  late final Map<String, int> _reasons = {
-    "1인 메뉴가 좋아요": info["REASON_MENU"],
-    "분위기가 좋아요": info["REASON_MOOD"],
-    "위생관리 잘돼요": info["REASON_SAFE"],
-    "혼자 즐기 좋은 음식이 있어요": info["REASON_SEAT"],
-    "대중교통으로 가기 편해요": info["REASON_TRANSPORT"],
-    "주차 가능해요": info["REASON_PARK"],
-    "오래 머물기 좋아요": info["REASON_LONG"],
-    "날씨가 좋아요": info["REASON_VIEW"],
-    "고독할 수 있어요": info["REASON_INTERACTION"],
-    "활발히 놀기좋아요": info["REASON_QUITE"],
-    "사진 찍기 좋아요": info["REASON_PHOTO"],
-    "구경할 거 있어요": info["REASON_WATCH"],
+  bool isLoading = true; // 데이터 로딩 상태
+
+  // 이유별 카운트를 저장할 맵
+  Map<String, int> _reasonCounts = {};
+
+  // 이유 목록과 대응되는 한글 텍스트 맵
+  final Map<String, String> reasonTextMap = {
+    "MENU": "1인 메뉴가 좋아요",
+    "MOOD": "분위기가 좋아요",
+    "SAFE": "위생관리 잘돼요",
+    "SEAT": "좌석이 편해요",
+    "TRANSPORT": "대중교통으로 가기 편해요",
+    "PARK": "주차 가능해요",
+    "LONG": "오래 머물기 좋아요",
+    "VIEW": "경치가 좋아요",
+    "INTERACTION": "교류하기 좋아요",
+    "QUITE": "조용해요",
+    "PHOTO": "사진 찍기 좋아요",
+    "WATCH": "구경할 거 있어요",
   };
-  String showKoreanText(String reason) {
-    if (reason == "MENU") {
-      return "1인 메뉴가 좋아요";
-    }
-    if (reason == "MOOD") {
-      return "분위기가 좋아요";
-    }
-    if (reason == "SAFE") {
-      return "위생관리 잘돼요";
-    }
-    if (reason == "SEAT") {
-      return "혼자 즐기 좋은 음식이 있어요";
-    }
-    if (reason == "TRANSPORT") {
-      return "대중교통으로 가기 편해요";
-    }
-    if (reason == "PARK") {
-      return "주차 가능해요";
-    }
-    if (reason == "LONG") {
-      return "오래 머물기 좋아요";
-    }
-    if (reason == "VIEW") {
-      return "날씨가 좋아요";
-    }
-    if (reason == "INTERACTION") {
-      return "고독할 수 있어요";
-    }
-    if (reason == "QUITE") {
-      return "활발히 놀기좋아요";
-    }
-    if (reason == "PHOTO") {
-      return "사진 찍기 좋아요";
-    }
-    if (reason == "WATCH") {
-      return "구경할 거 있어요";
-    }
 
-    return "오류"; // 매칭되지 않는 값에 대한 기본 처리
+  @override
+  void initState() {
+    super.initState();
+    fetchData(); // 데이터 가져오기
   }
 
-  // WHERE_ID와 일치하는 리뷰를 필터링하여 가져오는 함수
-  void fetchReviews() {
-    reviews = whereReview["where_review"]
-        .where((review) => review["WHERE_ID"] == info["WHERE_ID"])
-        .toList();
-  }
+  Future<void> fetchData() async {
+    try {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final user = userProvider.user;
+      String userId = user?.userId ?? '';
 
-  // 하트를 눌렀을 때 실행할 함수
-  void toggleLike(int index) {
-    setState(() {
-      if (reviews[index]["isLiked"] == true) {
-        reviews[index]["isLiked"] = false;
-        reviews[index]["WHERE_LIKE"] -= 1;
+      // 장소 상세 정보 가져오기
+      final whereResponse = await http.get(
+        Uri.parse("${Api.baseUrl}/where/${widget.whereId}"),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept-Charset': 'utf-8'
+        },
+      );
+
+      // 리뷰 정보 가져오기 (user_id를 쿼리 파라미터로 전달)
+      final reviewResponse = await http.get(
+        Uri.parse("${Api.baseUrl}/where/${widget.whereId}/reviews?user_id=$userId"),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept-Charset': 'utf-8'
+        },
+      );
+
+      if (whereResponse.statusCode == 200 && reviewResponse.statusCode == 200) {
+        setState(() {
+          info = jsonDecode(utf8.decode(whereResponse.bodyBytes))["data"];
+          reviews = List<Map<String, dynamic>>.from(
+              jsonDecode(utf8.decode(reviewResponse.bodyBytes))["data"]);
+
+          // REVIEW_LIKE와 isLiked 초기화
+          for (var review in reviews) {
+            review["REVIEW_LIKE"] = review["REVIEW_LIKE"] ?? 0;
+
+            var isLikedValue = review["isLiked"] ?? false;
+            // isLikedValue가 int 타입인 경우 bool로 변환
+            if (isLikedValue is int) {
+              review["isLiked"] = isLikedValue == 1;
+            } else {
+              review["isLiked"] = isLikedValue == true;
+            }
+          }
+
+          calculateReasonCounts(); // 이유별 카운트 계산
+          isLoading = false;
+        });
       } else {
-        reviews[index]["isLiked"] = true;
-        reviews[index]["WHERE_LIKE"] += 1;
-        print(reviews);
+        // 에러 처리
+        print("Failed to load data");
+        setState(() {
+          isLoading = false;
+        });
       }
-    });
+    } catch (e) {
+      print("Error fetching data: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
-  Widget showItem(reasons) {
+  // 이유별 카운트를 계산하는 함수
+  void calculateReasonCounts() {
+    _reasonCounts.clear();
+
+    for (var review in reviews) {
+      for (var reasonKey in reasonTextMap.keys) {
+        String reviewReasonKey = 'REASON_$reasonKey';
+        if (review[reviewReasonKey] == true || review[reviewReasonKey] == 1) {
+          _reasonCounts[reasonKey] = (_reasonCounts[reasonKey] ?? 0) + 1;
+        }
+      }
+    }
+  }
+
+  // 이유 칩들을 생성하는 위젯
+  Widget showReasonChips() {
     return Wrap(
       spacing: 8.0, // 아이템들 사이의 간격
-      children: _reasons.entries
+      children: _reasonCounts.entries
           .where((entry) => entry.value > 0) // value가 0 이상인 항목만 필터링
           .map((entry) {
         return Chip(
           label: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(entry.key), // 이유 텍스트
+              Text(reasonTextMap[entry.key] ?? entry.key), // 이유 텍스트
               const SizedBox(width: 5), // 약간의 간격
               Text(
                 entry.value.toString(),
@@ -120,14 +151,189 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
     );
   }
 
-  @override
-  void initState() {
-    super.initState();
-    fetchReviews();
+  // 하트를 눌렀을 때 실행할 함수
+  void toggleLike(int index) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+    String userId = user?.userId ?? '';
+
+    if (userId.isEmpty) {
+      Fluttertoast.showToast(msg: "로그인이 필요합니다.");
+      return;
+    }
+
+    // 현재 좋아요 상태를 가져와서 bool 타입으로 변환
+    bool currentIsLiked;
+    var isLikedValue = reviews[index]["isLiked"] ?? false;
+
+    if (isLikedValue is int) {
+      currentIsLiked = isLikedValue == 1;
+    } else {
+      currentIsLiked = isLikedValue == true;
+    }
+
+    // 좋아요 상태를 토글
+    bool newIsLiked = !currentIsLiked;
+
+    // UI에 즉시 반영
+    setState(() {
+      reviews[index]["isLiked"] = newIsLiked;
+      if (newIsLiked) {
+        reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+      } else {
+        reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+      }
+    });
+
+    // 서버로 좋아요 상태를 전송
+    try {
+      final response = await http.post(
+        Uri.parse("${Api.baseUrl}/reviews/${reviews[index]['REVIEW_ID']}/like"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'like': newIsLiked,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        // 서버 응답이 실패하면 상태를 원래대로 복구
+        setState(() {
+          reviews[index]["isLiked"] = currentIsLiked;
+          if (currentIsLiked) {
+            reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+          } else {
+            reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+          }
+        });
+        Fluttertoast.showToast(msg: "좋아요 처리에 실패했습니다.");
+      } else {
+        // 서버 응답이 성공하면 서버에서 받은 최신 좋아요 수를 업데이트
+        final responseData = jsonDecode(response.body);
+        setState(() {
+          reviews[index]["REVIEW_LIKE"] = responseData["REVIEW_LIKE"] ?? reviews[index]["REVIEW_LIKE"];
+        });
+      }
+    } catch (e) {
+      // 예외 발생 시 상태를 원래대로 복구
+      setState(() {
+        reviews[index]["isLiked"] = currentIsLiked;
+        if (currentIsLiked) {
+          reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+        } else {
+          reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+        }
+      });
+      Fluttertoast.showToast(msg: "좋아요 처리 중 오류가 발생했습니다.");
+    }
+  }
+
+  // 이미지 데이터를 표시하는 위젯
+  Widget buildImage(dynamic imageData, double width, double height) {
+    if (imageData != null) {
+      if (imageData is String && imageData.isNotEmpty) {
+        if (imageData.startsWith('http')) {
+          // 이미지 URL인 경우
+          return Image.network(
+            imageData,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Image.asset(
+                'assets/images/default_image.png',
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+              );
+            },
+          );
+        } else {
+          // Base64 데이터로 처리
+          try {
+            Uint8List imageBytes = base64Decode(imageData);
+            return Image.memory(
+              imageBytes,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.asset(
+                  'assets/images/default_image.png',
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                );
+              },
+            );
+          } catch (e) {
+            return Image.asset(
+              'assets/images/default_image.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            );
+          }
+        }
+      } else if (imageData is Uint8List || imageData is List<int>) {
+        // Uint8List 또는 List<int>인 경우
+        Uint8List imageBytes =
+            imageData is Uint8List ? imageData : Uint8List.fromList(imageData);
+        return Image.memory(
+          imageBytes,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Image.asset(
+              'assets/images/default_image.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            );
+          },
+        );
+      } else {
+        // 지원하지 않는 데이터 타입
+        return Image.asset(
+          'assets/images/default_image.png',
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        );
+      }
+    } else {
+      // 이미지 데이터가 없을 경우 기본 이미지 표시
+      return Image.asset(
+        'assets/images/default_image.png',
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      // 데이터 로딩 중이면 로딩 인디케이터 표시
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (info == null) {
+      // 데이터 로딩 실패 시 에러 메시지 표시
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text("데이터를 불러오지 못했습니다.")),
+      );
+    }
+
     return Scaffold(
       bottomNavigationBar: const CustomBottomNavBar(
         selectedIndex: 0,
@@ -135,28 +341,25 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          info["WHERE_NAME"],
+          info!["WHERE_NAME"],
         ),
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             children: [
+              // 장소 이미지
               Container(
                 width: SizeScaler.scaleSize(context, 197),
                 height: SizeScaler.scaleSize(context, 135),
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: NetworkImage(info["IMAGE"]),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+                child: buildImage(
+                    info!["WHERE_IMAGE"], double.infinity, double.infinity),
               ),
               const SizedBox(
                 height: 10,
               ),
               AutoSizeText(
-                "${info["WHERE_NAME"]}",
+                "${info!["WHERE_NAME"]}",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
@@ -167,15 +370,39 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
               const SizedBox(
                 height: 10,
               ),
-              showItem(_reasons),
+              // 장소 설명
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  info!["WHERE_DESCRIPTION"] ?? "",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              // 이유 칩들 표시
+              showReasonChips(),
+              const SizedBox(height: 20),
+              // 리뷰 리스트
               Column(
                 children: reviews.map((review) {
                   // True인 REASON 값만 필터링
-                  final trueReasons = review.entries
+                  final trueReasons = reasonTextMap.entries
                       .where((entry) =>
-                          entry.key.startsWith('REASON') && entry.value == true)
-                      .map((entry) => entry.key.replaceFirst('REASON_', ''))
+                          review['REASON_${entry.key}'] == true ||
+                          review['REASON_${entry.key}'] == 1)
+                      .map((entry) => entry.value)
                       .toList();
+
+                  // 리뷰의 이미지 리스트 가져오기
+                  List<dynamic> reviewImages = [];
+                  if (review["REVIEW_IMAGE"] != null) {
+                    reviewImages = [review["REVIEW_IMAGE"]];
+                  } else if (review["IMAGES"] != null &&
+                      review["IMAGES"].isNotEmpty) {
+                    reviewImages = review["IMAGES"];
+                  }
 
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -184,83 +411,59 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           // 이미지 스크롤
-                          SizedBox(
-                            height: SizeScaler.scaleSize(context, 147),
-                            width: SizeScaler.scaleSize(context, 147),
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: review["IMAGES"].length,
-                              itemBuilder: (context, imgIndex) {
-                                // 바이트 배열을 가져오기
-                                final imageBytes = review["IMAGES"][imgIndex];
-
-                                try {
-                                  // 바이트 배열을 Uint8List로 변환
-                                  Uint8List byteData =
-                                      Uint8List.fromList(imageBytes);
-
+                          if (reviewImages.isNotEmpty)
+                            SizedBox(
+                              height: SizeScaler.scaleSize(context, 147),
+                              width: SizeScaler.scaleSize(context, 147),
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: reviewImages.length,
+                                itemBuilder: (context, imgIndex) {
+                                  // 이미지 데이터를 가져오기
+                                  final imageData = reviewImages[imgIndex];
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 4.0),
-                                    child: Image.memory(
-                                      byteData,
-                                      height: SizeScaler.scaleSize(
-                                          context, 147), // 정사각형으로 동일한 크기
-                                      width: SizeScaler.scaleSize(context, 147),
-                                      fit: BoxFit.cover, // 이미지를 정사각형 안에 꽉 채움
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        // 이미지 변환 실패 시 에러 아이콘을 보여줌
-                                        return const Icon(
-                                          Icons.error,
-                                          size: 50,
-                                          color: Colors.red,
-                                        );
-                                      },
+                                    child: buildImage(
+                                      imageData,
+                                      SizeScaler.scaleSize(context, 147),
+                                      SizeScaler.scaleSize(context, 147),
                                     ),
                                   );
-                                } catch (e) {
-                                  // 변환 실패 시 실패 아이콘을 표시
-                                  return const Icon(
-                                    Icons.error,
-                                    size: 50,
-                                    color: Colors.red,
-                                  );
-                                }
-                              },
+                                },
+                              ),
+                            ),
+                          const SizedBox(height: 8),
+                          // 리뷰 내용
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              review["REVIEW_CONTENT"],
+                              style: const TextStyle(fontSize: 16),
                             ),
                           ),
                           const SizedBox(height: 8),
-
-                          // 리뷰 내용
-                          Text(
-                            review["REVIEW_CONTENT"],
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-
                           // True인 REASON들 표시
                           Wrap(
                             spacing: 8.0,
                             children: trueReasons
                                 .map((reason) => Chip(
-                                      label: Text(
-                                        showKoreanText(reason),
-                                      ),
+                                      label: Text(reason),
                                       backgroundColor: Colors.purple[50],
                                     ))
                                 .toList(),
                           ),
-
                           // 좋아요 및 하트 이모티콘
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  review["isLiked"] == true
+                                  (review["isLiked"] == true || review["isLiked"] == 1)
                                       ? Icons.favorite
                                       : Icons.favorite_border,
-                                  color: review["isLiked"] == true
+                                  color: (review["isLiked"] == true || review["isLiked"] == 1)
                                       ? Colors.red
                                       : Colors.grey,
                                 ),
@@ -268,7 +471,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                   toggleLike(reviews.indexOf(review));
                                 },
                               ),
-                              Text("${review["WHERE_LIKE"]}"),
+                              Text("${review["REVIEW_LIKE"] ?? 0}"),
                             ],
                           ),
                         ],

@@ -115,6 +115,7 @@ class _NaholloWhereRegisterScreenState
       "where_name": name,
       "where_locate": locate,
       "where_type": whereType,
+      "where_image" : _result["photoUrl"],
       "latitude": lat,
       "longitude": lng,
       "review_content": content,

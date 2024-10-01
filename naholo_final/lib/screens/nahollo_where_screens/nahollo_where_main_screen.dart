@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +10,6 @@ import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_detail_screen.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
-import 'package:nahollo/test_where_data.dart';
-import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -24,10 +23,11 @@ class NaholloWhereMainScreen extends StatefulWidget {
 
 class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   final int _selectedIndex = 0; // 선택된 인덱스
-  Map<String, dynamic> results = {}; // 데이터를 저장할 변수
+  Map<String, dynamic> results = {
+    "by_type": {},
+    "overall_top_8": []
+  }; // 데이터를 저장할 변수
   String _selectedType = "overall"; // 현재 선택된 타입 ("overall"이 기본값)
-  final _whereReview = whereReview;
-  final _where = where;
   final PageController _pageController =
       PageController(viewportFraction: 0.4, initialPage: 1);
   int _currentPage = 1;
@@ -35,55 +35,59 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   String _searchQuery = '';
   List<Map<String, dynamic>> _searchResults = [];
   final TextEditingController _searchController = TextEditingController();
+
   void _updateSearchResults(String query) {
     setState(() {
       _searchQuery = query;
       if (_searchQuery.isEmpty) {
-        //   _searchResults = List<Map<String, dynamic>>.from(byType["play"]);
+        _searchResults = [];
       } else {
-        _searchResults = _where["where"]
-            .where((item) => item["WHERE_NAME"]
-                .toString()
-                .toLowerCase()
-                .contains(_searchQuery.toLowerCase()))
-            .toList()
-            .cast<Map<String, dynamic>>();
+        // 모든 타입의 장소를 합친 리스트 생성
+        List<Map<String, dynamic>> allPlaces = [];
+        results["by_type"].forEach((key, value) {
+          allPlaces.addAll(List<Map<String, dynamic>>.from(value));
+        });
+
+        _searchResults = allPlaces.where((item) {
+          return item["WHERE_NAME"]
+              .toString()
+              .toLowerCase()
+              .contains(_searchQuery.toLowerCase());
+        }).toList();
+        print(_searchResults);
       }
     });
   }
 
   // WHERE_TYPE에 따라 필터링된 리스트를 반환하는 함수
   List<Map<String, dynamic>> filterByType(String type) {
-    // where["where"] 리스트에서 WHERE_TYPE이 주어진 type과 같은 항목들을 필터링하여 반환
-    return where["where"].where((item) => item["WHERE_TYPE"] == type).toList();
+    return List<Map<String, dynamic>>.from(results["by_type"][type] ?? []);
   }
 
-// SAVE 값이 높은 상위 8개의 항목을 반환하는 함수
+  // 전체 상위 8개의 항목을 반환하는 함수
   List<Map<String, dynamic>> filterBySave() {
-    // 데이터를 복사하여 정렬 후 변경되더라도 원본 데이터를 유지
-    List<Map<String, dynamic>> sortedList =
-        List<Map<String, dynamic>>.from(where["where"]);
-
-    // SAVE 값을 기준으로 내림차순 정렬
-    sortedList.sort((a, b) => b["SAVE"].compareTo(a["SAVE"]));
-
-    // 상위 8개 항목을 추출하여 반환
-    return sortedList.take(8).toList();
+    return List<Map<String, dynamic>>.from(results["overall_top_8"] ?? []);
   }
 
   String showAdress(String adress) {
     var list = adress.split(' ');
+    if (list.length < 2) return adress;
     var result = '${list[0]}, ${list[1]}';
     return result;
   }
 
   Future<void> getNaholloWhereTopRated() async {
     try {
-      var response =
-          await http.get(Uri.parse("${Api.baseUrl}/where/top-rated"));
+      var response = await http.get(
+        Uri.parse("${Api.baseUrl}/where/top-rated"),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept-Charset': 'utf-8'
+        },
+      );
       if (response.statusCode == 200) {
         setState(() {
-          results = jsonDecode(response.body)["data"];
+          results = jsonDecode(utf8.decode(response.bodyBytes))["data"];
         });
       }
     } catch (e) {
@@ -108,6 +112,77 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     _searchController.dispose(); // 메모리 누수를 방지하기 위해 컨트롤러를 dispose합니다.
     _pageController.dispose();
     super.dispose();
+  }
+
+  // Base64 문자열을 정리하는 함수
+  String cleanBase64(String base64String) {
+    if (base64String.contains(',')) {
+      base64String = base64String.split(',').last;
+    }
+    base64String = base64String.replaceAll(RegExp(r'\s+'), '');
+    return base64String;
+  }
+
+  // Base64 이미지를 표시하는 위젯
+  Widget buildImage(String? imageString, double width, double height) {
+    if (imageString != null && imageString.isNotEmpty) {
+      if (imageString.startsWith('http')) {
+        // 이미지 URL인 경우
+        return Image.network(
+          imageString,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print("Error loading network image: $error");
+            return Image.asset(
+              'assets/images/default_image.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            );
+          },
+        );
+      } else {
+        // Base64 데이터로 처리
+        try {
+          String cleanedBase64 = cleanBase64(imageString);
+          Uint8List imageBytes = base64Decode(cleanedBase64);
+          return Image.memory(
+            imageBytes,
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              print("Error displaying image: $error");
+              return Image.asset(
+                'assets/images/default_image.png',
+                width: width,
+                height: height,
+                fit: BoxFit.cover,
+              );
+            },
+          );
+        } catch (e) {
+          print("Error decoding image: $e");
+          // 디코딩 오류 시 기본 이미지 표시
+          return Image.asset(
+            'assets/images/default_image.png',
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+          );
+        }
+      }
+    } else {
+      // 이미지 데이터가 없을 경우 기본 이미지 표시
+      return Image.asset(
+        'assets/images/default_image.png',
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
   }
 
   @override
@@ -165,11 +240,12 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                           if (_searchResults.isEmpty) {
                             Fluttertoast.showToast(msg: "검색어가 존재하지 않습니다");
                           } else {
+                            // 리스트가 비어있지 않을 때만 접근
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => NaholloWhereDetailScreen(
-                                    item: _searchResults[0]),
+                                    whereId: _searchResults[0]['WHERE_ID']),
                               ),
                             );
                           }
@@ -182,21 +258,16 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             width: 300,
                             height: 100,
                             child: ListView.builder(
+                              itemCount: _searchResults.length,
                               itemBuilder: (context, index) {
+                                final item = _searchResults[index];
                                 return Row(
                                   children: [
-                                    Image.network(
-                                      _searchResults[0]['IMAGE'],
-                                      width: 50, // 이미지의 적절한 너비 지정
-                                      height: 50, // 이미지의 적절한 높이 지정
-                                      fit: BoxFit.cover, // 이미지가 적절히 맞춰지도록 설정
-                                    ),
+                                    buildImage(item['WHERE_IMAGE'], 50, 50),
                                     Expanded(
                                       child: ListTile(
-                                        title: Text(
-                                            _searchResults[0]['WHERE_NAME']),
-                                        subtitle: Text(
-                                            _searchResults[0]['WHERE_LOCATE']),
+                                        title: Text(item['WHERE_NAME']),
+                                        subtitle: Text(item['WHERE_LOCATE']),
                                         onTap: () {
                                           // 검색 결과 항목 클릭 시 다음 화면으로 이동
                                           Navigator.push(
@@ -204,8 +275,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   NaholloWhereDetailScreen(
-                                                      item: _searchResults[
-                                                          index]),
+                                                      whereId: item['WHERE_ID']),
                                             ),
                                           );
                                         },
@@ -222,7 +292,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       height: 10,
                     ),
                     SingleChildScrollView(
-                      scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
+                      scrollDirection:
+                          Axis.horizontal, // 가로로 스크롤 가능하게 설정
                       child: Row(
                         children: [
                           GradientElevatedButton(
@@ -242,7 +313,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             isSelected: _selectedType == "play",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "play"; // 전체 보기
+                                _selectedType = "play"; // 혼놀 보기
                               });
                             },
                           ),
@@ -254,7 +325,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             isSelected: _selectedType == "eat",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "eat"; // 전체 보기
+                                _selectedType = "eat"; // 혼밥 보기
                               });
                             },
                           ),
@@ -266,7 +337,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             isSelected: _selectedType == "sleep",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "sleep"; // 전체 보기
+                                _selectedType = "sleep"; // 혼박 보기
                               });
                             },
                           ),
@@ -278,7 +349,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                             isSelected: _selectedType == "drink",
                             onPressed: () {
                               setState(() {
-                                _selectedType = "drink"; // 전체 보기
+                                _selectedType = "drink"; // 혼술 보기
                               });
                             },
                           ),
@@ -334,20 +405,6 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                     _selectedType == "overall"
                         ? buildOverallSection()
                         : buildTypeSection(_selectedType, size),
-
-                    /*         results.isEmpty
-                        ? const CircularProgressIndicator() // 데이터를 불러오는 동안 로딩 표시
-                        : SizedBox(
-                            height: 300,
-                            child: _selectedType == "overall"
-                                ? buildOverallSection() // 전체 상위 8개 항목 빌드
-                                : ListView(
-                                    shrinkWrap: true, // 크기 제약을 받을 수 있도록 설정
-                                    physics:
-                                        const NeverScrollableScrollPhysics(), // 내부 스크롤 방지
-                                    children: buildTypeSection(_selectedType),
-                                  ),
-                          ),  */
                   ],
                 ),
               ),
@@ -407,6 +464,10 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   Widget buildTypeSection(String type, Size size) {
     final items = filterByType(type);
 
+    if (items.isEmpty) {
+      return Center(child: Text("해당 타입의 장소가 없습니다."));
+    }
+
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -427,7 +488,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) =>
-                    NaholloWhereDetailScreen(item: item), // 아이템 정보 전달
+                    NaholloWhereDetailScreen(whereId: item['WHERE_ID']), // 아이템 정보 전달
               ),
             );
           },
@@ -443,14 +504,11 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                 // 이미지를 보여주는 부분
                 ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: item["IMAGE"] != null
-                      ? Image.network(
-                          item["IMAGE"],
-                          width: size.width * 0.4,
-                          height: size.width * 0.45,
-                          fit: BoxFit.cover,
-                        )
-                      : const Icon(Icons.image_not_supported, size: 50),
+                  child: buildImage(
+                    item["WHERE_IMAGE"],
+                    size.width * 0.4,
+                    size.width * 0.45,
+                  ),
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -493,6 +551,10 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   Widget buildOverallSection() {
     final items = filterBySave();
 
+    if (items.isEmpty) {
+      return Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -501,14 +563,14 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
           height: 300, // 이미지와 텍스트가 잘 보이도록 높이 설정
           child: PageView.builder(
             controller: _pageController,
-            itemCount: items.isEmpty ? 0 : null,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              final item = items[index % items.length];
+              final item = items[index];
               double scale = _currentPage == index ? 1.0 : 0.8;
               double opacity = _currentPage == index ? 1.0 : 0.5;
 
               return AnimatedBuilder(
-                animation: PageController(viewportFraction: 0.3),
+                animation: _pageController,
                 builder: (context, child) {
                   return Transform.scale(
                     scale: scale, // 이 부분을 조정하여 중간 항목을 확대할 수 있음
@@ -524,30 +586,29 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            NaholloWhereDetailScreen(item: item),
+                            NaholloWhereDetailScreen(whereId: item['WHERE_ID']),
                       ),
                     );
                   },
                   child: Column(
                     children: [
-                      item["IMAGE"] != null
+                      item["WHERE_IMAGE"] != null &&
+                              item["WHERE_IMAGE"] != ''
                           ? Container(
                               decoration: BoxDecoration(boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black
-                                      .withOpacity(0.2), // 그림자 색상 및 투명도
-                                  spreadRadius: 2, // 그림자 퍼지는 정도
-                                  blurRadius: 6, // 그림자의 흐림 정도
-                                  offset: const Offset(6, 5), // 그림자 위치 (x, y)
+                                  color: Colors.black.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 6,
+                                  offset: const Offset(6, 5),
                                 ),
                               ]),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(15),
-                                child: Image.network(
-                                  item["IMAGE"]!,
-                                  width: 100,
-                                  height: 150,
-                                  fit: BoxFit.cover,
+                                child: buildImage(
+                                  item["WHERE_IMAGE"],
+                                  100,
+                                  150,
                                 ),
                               ),
                             )
