@@ -1,5 +1,4 @@
 // diary_comment.dart
-
 import 'package:flutter/material.dart';
 import 'package:nahollo/models/diaryComment_model.dart';
 import 'package:nahollo/sizeScaler.dart'; // 크기 조절
@@ -12,7 +11,8 @@ class DiaryComment extends StatefulWidget {
   final String postTitle;
   final int postId;
 
-  const DiaryComment({super.key, required this.postTitle, required this.postId});
+  const DiaryComment(
+      {super.key, required this.postTitle, required this.postId});
 
   @override
   _DiaryCommentState createState() => _DiaryCommentState();
@@ -30,7 +30,8 @@ class _DiaryCommentState extends State<DiaryComment> {
 
   // 서버로부터 댓글을 가져오는 함수
   Future<void> fetchComments() async {
-    final url = 'http://10.0.2.2:8000/journal/get_comments?post_id=${widget.postId}';
+    final url =
+        'http://10.0.2.2:8000/journal/get_comments?post_id=${widget.postId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -40,7 +41,9 @@ class _DiaryCommentState extends State<DiaryComment> {
         List<dynamic> commentsData = data['comments'];
 
         setState(() {
-          comments = commentsData.map((json) => diaryComment_model.fromJson(json)).toList();
+          comments = commentsData
+              .map((json) => diaryComment_model.fromJson(json))
+              .toList();
           isLoading = false;
         });
       } else {
@@ -108,26 +111,44 @@ class _DiaryCommentState extends State<DiaryComment> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         toolbarHeight: SizeScaler.scaleSize(context, 25),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: Colors.black, size: SizeScaler.scaleSize(context, 10)),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Center(
-          child: Text(
-            '댓글',
-            style: TextStyle(
-              fontSize: SizeScaler.scaleSize(context, 8),
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
+        automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
+        title: Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: Colors.black,
+                    size: SizeScaler.scaleSize(context, 10),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ),
             ),
-          ),
+            Expanded(
+              flex: 10,
+              child: Center(
+                child: Text(
+                  '댓글',
+                  style: TextStyle(
+                    fontSize: SizeScaler.scaleSize(context, 8),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            const Expanded(
+              flex: 1,
+              child: SizedBox(),
+            ),
+          ],
         ),
-        actions: [
-          SizedBox(width: SizeScaler.scaleSize(context, 28))
-        ], // 화면 중앙 맞추기 위한 여백 추가
       ),
       body: Column(
         children: [
@@ -158,17 +179,20 @@ class _DiaryCommentState extends State<DiaryComment> {
                                       ),
                                     ),
                                     SizedBox(
-                                        width: SizeScaler.scaleSize(context, 3)),
+                                        width:
+                                            SizeScaler.scaleSize(context, 3)),
                                     Text(
                                       comments[index].author,
                                       style: TextStyle(
-                                        fontSize: SizeScaler.scaleSize(context, 6),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 6),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: SizeScaler.scaleSize(context, 4)),
+                                SizedBox(
+                                    height: SizeScaler.scaleSize(context, 4)),
                                 Text(
                                   comments[index].content,
                                   style: TextStyle(
@@ -177,12 +201,14 @@ class _DiaryCommentState extends State<DiaryComment> {
                                     color: const Color(0xFF353535),
                                   ),
                                 ),
-                                SizedBox(height: SizeScaler.scaleSize(context, 1)),
+                                SizedBox(
+                                    height: SizeScaler.scaleSize(context, 1)),
                                 Row(
                                   children: [
                                     IconButton(
                                       icon: Icon(Icons.reply,
-                                          size: SizeScaler.scaleSize(context, 10)),
+                                          size: SizeScaler.scaleSize(
+                                              context, 10)),
                                       onPressed: () {
                                         // 답글쓰기 기능 추가 (추후 구현)
                                       },
@@ -190,7 +216,8 @@ class _DiaryCommentState extends State<DiaryComment> {
                                     Text(
                                       '답글쓰기',
                                       style: TextStyle(
-                                        fontSize: SizeScaler.scaleSize(context, 5),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 5),
                                         fontWeight: FontWeight.w500,
                                         color: const Color(0xFF7E7E7E),
                                       ),
@@ -221,15 +248,12 @@ class _DiaryCommentState extends State<DiaryComment> {
             child: Padding(
               padding: EdgeInsets.all(SizeScaler.scaleSize(context, 7)),
               child: Container(
-                  padding: EdgeInsets.all(SizeScaler.scaleSize(context, 2)),
+                  width: SizeScaler.scaleSize(context, 175),
+                  height: SizeScaler.scaleSize(context, 29),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD9D9D9),
-                    border: Border.all(
-                      color: Colors.black,
-                      width: SizeScaler.scaleSize(context, 0.2),
-                    ),
                     borderRadius: BorderRadius.circular(
-                        SizeScaler.scaleSize(context, 27)),
+                        SizeScaler.scaleSize(context, 15)),
                   ),
                   child: Row(
                     children: [

@@ -86,138 +86,143 @@ class _DiaryWritingState extends State<DiaryWriting> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(
-                  left: SizeScaler.scaleSize(context, 11),
-                  top: SizeScaler.scaleSize(context, 3),
-                  bottom: SizeScaler.scaleSize(context, 3)),
-              child: TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  hintText: '제목을 입력하세요.',
-                  hintStyle: TextStyle(
-                      color: const Color(0xFFABABAB),
-                      fontSize: SizeScaler.scaleSize(context, 11),
-                      fontWeight: FontWeight.w400),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            Container(
-              color: const Color(0xFFBABABA),
-              height: SizeScaler.scaleSize(context, 0.5),
-            ),
-            Padding(
-              padding: EdgeInsets.all(SizeScaler.scaleSize(context, 11)),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '주제를 선택하세요!',
-                      style: TextStyle(
-                        fontSize: SizeScaler.scaleSize(context, 5),
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(
+                          left: SizeScaler.scaleSize(context, 11),
+                          top: SizeScaler.scaleSize(context, 3),
+                          bottom: SizeScaler.scaleSize(context, 3)),
+                      child: TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          hintText: '제목을 입력하세요.',
+                          hintStyle: TextStyle(
+                              color: const Color(0xFFABABAB),
+                              fontSize: SizeScaler.scaleSize(context, 11),
+                              fontWeight: FontWeight.w400),
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: SizeScaler.scaleSize(context, 6)),
-                  Wrap(
-                    spacing: SizeScaler.scaleSize(context, 3),
-                    runSpacing: SizeScaler.scaleSize(context, 3),
-                    children: [
-                      '# 혼캎',
-                      '# 혼영',
-                      '# 혼놀',
-                      '# 혼밥',
-                      '# 혼박',
-                      '# 혼술',
-                      '# 기타'
-                    ].asMap().entries.map((entry) {
-                      int index = entry.key;
-                      String topic = entry.value;
-                      return SizedBox(
-                        height: SizeScaler.scaleSize(context, 13),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _subjList[index] = !_subjList[index];
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                            backgroundColor: _subjList[index]
-                                ? const Color(0xFFD8CBFF)
-                                : Colors.white,
-                            foregroundColor: const Color(0xFF646464),
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size(
-                              SizeScaler.scaleSize(context, 33),
-                              SizeScaler.scaleSize(context, 13),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                SizeScaler.scaleSize(context, 6),
+                    Container(
+                      color: const Color(0xFFBABABA),
+                      height: SizeScaler.scaleSize(context, 0.5),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(SizeScaler.scaleSize(context, 11)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              '주제를 선택하세요!',
+                              style: TextStyle(
+                                fontSize: SizeScaler.scaleSize(context, 5),
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
                               ),
-                              side: _subjList[index]
-                                  ? BorderSide(
-                                      color: const Color(0xFF794FFF),
-                                      width: SizeScaler.scaleSize(context, 0.3))
-                                  : BorderSide(
-                                      color: const Color(0xFF646464),
-                                      width: SizeScaler.scaleSize(context, 0.3),
+                            ),
+                          ),
+                          SizedBox(height: SizeScaler.scaleSize(context, 6)),
+                          Wrap(
+                            spacing: SizeScaler.scaleSize(context, 3),
+                            runSpacing: SizeScaler.scaleSize(context, 3),
+                            children: [
+                              '# 혼캎',
+                              '# 혼영',
+                              '# 혼놀',
+                              '# 혼밥',
+                              '# 혼박',
+                              '# 혼술',
+                              '# 기타'
+                            ].asMap().entries.map((entry) {
+                              int index = entry.key;
+                              String topic = entry.value;
+                              return SizedBox(
+                                height: SizeScaler.scaleSize(context, 13),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _subjList[index] = !_subjList[index];
+                                    });
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    elevation: 0,
+                                    backgroundColor: _subjList[index]
+                                        ? const Color(0xFFD8CBFF)
+                                        : Colors.white,
+                                    foregroundColor: const Color(0xFF646464),
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: Size(
+                                      SizeScaler.scaleSize(context, 33),
+                                      SizeScaler.scaleSize(context, 13),
                                     ),
-                            ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        SizeScaler.scaleSize(context, 6),
+                                      ),
+                                      side: _subjList[index]
+                                          ? BorderSide(
+                                              color: const Color(0xFF794FFF),
+                                              width: SizeScaler.scaleSize(context, 0.3))
+                                          : BorderSide(
+                                              color: const Color(0xFF646464),
+                                              width: SizeScaler.scaleSize(context, 0.3),
+                                            ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    topic,
+                                    style: TextStyle(
+                                      fontSize: SizeScaler.scaleSize(context, 7),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
-                          child: Text(
-                            topic,
-                            style: TextStyle(
+                        ],
+                      ),
+                    ),
+                    Container(
+                      color: const Color(0xFFBABABA),
+                      height: SizeScaler.scaleSize(context, 0.5),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
+                      child: TextField(
+                        controller: _contentController,
+                        maxLines: null,
+                        decoration: InputDecoration(
+                          hintText: '내용을 입력하세요.',
+                          hintStyle: TextStyle(
+                              color: const Color(0xFFABABAB),
                               fontSize: SizeScaler.scaleSize(context, 7),
-                            ),
-                          ),
+                              fontWeight: FontWeight.w400),
+                          border: InputBorder.none,
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              color: const Color(0xFFBABABA),
-              height: SizeScaler.scaleSize(context, 0.5),
-            ),
-            Padding(
-              padding: EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
-              child: TextField(
-                controller: _contentController,
-                maxLines: null,
-                decoration: InputDecoration(
-                  hintText: '내용을 입력하세요.',
-                  hintStyle: TextStyle(
-                      color: const Color(0xFFABABAB),
-                      fontSize: SizeScaler.scaleSize(context, 7),
-                      fontWeight: FontWeight.w400),
-                  border: InputBorder.none,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SizedBox(
-        height: SizeScaler.scaleSize(context, 27), // 높이 설정
-        child: Column(
-          children: [
-            Container(
-              color: const Color(0xFFBABABA),
-              height: SizeScaler.scaleSize(context, 0.5),
-            ),
-            Row(
+          ),
+          Container(
+            color: const Color(0xFFBABABA),
+            height: SizeScaler.scaleSize(context, 0.5),
+          ),
+          SizedBox(
+            height: SizeScaler.scaleSize(context, 27), // 높이 설정
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
@@ -227,13 +232,14 @@ class _DiaryWritingState extends State<DiaryWriting> {
                     icon: Icon(Icons.camera_alt,
                         size: SizeScaler.scaleSize(context, 10)), // 카메라 아이콘
                     onPressed: () {
+                      // 카메라 버튼 클릭 시 동작
                     },
                   ),
-                )
+                ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

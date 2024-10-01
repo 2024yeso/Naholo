@@ -78,7 +78,7 @@ class _DiaryMainState extends State<DiaryMain> {
     blogPosts.sort((a, b) => b.likes.compareTo(a.likes)); // 인기순 정렬
   } // 만약 설정으로 기본 정렬을 고를 수 있게 할 경우 이곳을 수정
 
-  bool visible = true; // 상단 일지 작성 안내 보여주기 여부
+  bool visible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +98,7 @@ class _DiaryMainState extends State<DiaryMain> {
         child: Column(
           children: [
             AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: const Color(0xFFF0E8FA),
               toolbarHeight: SizeScaler.scaleSize(context, 25),
               automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
               title: Row(
@@ -148,7 +148,7 @@ class _DiaryMainState extends State<DiaryMain> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const DiarySearch()),
+                                  builder: (context) => DiarySearch()),
                             );
                           },
                         ),
@@ -326,8 +326,8 @@ class _DiaryMainState extends State<DiaryMain> {
               SizedBox(height: SizeScaler.scaleSize(context, 30)), // 간격
             if (visible)
               Container(
-                color: const Color(0xFFD9D9D9), // 구분선
-                height: SizeScaler.scaleSize(context, 4), // 구분선 두께
+                color: const Color(0xFFDCD6E3).withOpacity(0.9), // 구분선
+                height: SizeScaler.scaleSize(context, 3), // 구분선 두께
               ),
             // 정렬 버튼
             Container(
@@ -360,11 +360,12 @@ class _DiaryMainState extends State<DiaryMain> {
                       });
                     },
                     child: Container(
-                      width: SizeScaler.scaleSize(context, 29), // 버튼의 가로 길이 설정
-                      height: SizeScaler.scaleSize(context, 12), // 버튼의 세로 길이 설정
+                      width:
+                          SizeScaler.scaleSize(context, 30.5), // 버튼의 가로 길이 설정
+                      height: SizeScaler.scaleSize(context, 13), // 버튼의 세로 길이 설정
                       margin: EdgeInsets.only(
-                          right:
-                              SizeScaler.scaleSize(context, 2)), // 버튼 사이 간격 설정
+                          right: SizeScaler.scaleSize(
+                              context, 2.5)), // 버튼 사이 간격 설정
                       padding: EdgeInsets.symmetric(
                           vertical: SizeScaler.scaleSize(context, 2),
                           horizontal:
@@ -377,16 +378,16 @@ class _DiaryMainState extends State<DiaryMain> {
                             color: _selectedIndex == index
                                 ? const Color(0xFF794FFF)
                                 : const Color(0xFF9C9C9C), // 테두리 색상
-                            width: SizeScaler.scaleSize(context, 0.3)),
+                            width: SizeScaler.scaleSize(context, 0.25)),
                         borderRadius: BorderRadius.circular(
-                            SizeScaler.scaleSize(context, 6)), // 모서리 둥글게
+                            SizeScaler.scaleSize(context, 7)), // 모서리 둥글게
                       ),
                       child: Center(
                         child: Text(
                           _buttonLabels[index],
                           style: TextStyle(
                             fontSize: SizeScaler.scaleSize(
-                                context, 5), // 버튼 텍스트 폰트 크기 설정
+                                context, 5.5), // 버튼 텍스트 폰트 크기 설정
                             fontWeight: FontWeight.w400,
                             color: Colors.black,
                           ),
@@ -410,7 +411,7 @@ class _DiaryMainState extends State<DiaryMain> {
                   return Container(
                     padding: EdgeInsets.only(
                       left: SizeScaler.scaleSize(context, 13),
-                      top: SizeScaler.scaleSize(context, 15),
+                      top: index == 0 ? 0 : SizeScaler.scaleSize(context, 18),
                       bottom: SizeScaler.scaleSize(context, 18),
                       right: SizeScaler.scaleSize(context, 9),
                     ),
