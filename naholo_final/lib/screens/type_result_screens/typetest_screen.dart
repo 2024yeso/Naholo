@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/analyzing_results_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
 
 class TypetestScreen extends StatefulWidget {
@@ -199,21 +200,22 @@ class _TypetestScreenState extends State<TypetestScreen> {
                 color: Colors.white.withOpacity(0.5), // 컨테이너 배경색
                 borderRadius: BorderRadius.circular(25), // 둥근 모서리 설정
               ),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: screenHeight * 0.01, // 위쪽 여백
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(15.0),
-                    child: Row(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: SizeScaler.scaleSize(context, 15)),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: screenHeight * 0.01, // 위쪽 여백
+                    ),
+                    Row(
                       mainAxisAlignment:
                           MainAxisAlignment.spaceBetween, // 좌우 끝에 배치
                       children: [
                         Text(
                           "Q$count", // 현재 질문 번호 표시
-                          style: const TextStyle(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 18),
                             fontWeight: FontWeight.w900,
                           ),
                         ),
@@ -224,33 +226,33 @@ class _TypetestScreenState extends State<TypetestScreen> {
                         ),
                       ],
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: LinearProgressIndicator(
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 8),
+                    ),
+                    LinearProgressIndicator(
                       value: progress, // 진행률을 설정 (0.0에서 1.0 사이)
-                      backgroundColor: Colors.grey[300], // 진행 바의 배경색
-                      color: darkpurpleColor, // 진행 바의 색상
+                      backgroundColor: const Color(0xffefecfe), // 진행 바의 배경색
+                      color: const Color(0xff534699), // 진행 바의 색상
                       minHeight: 20, // 진행 바의 높이
                       borderRadius:
                           BorderRadius.circular(20), // 진행 바의 모서리 둥글게 설정
                     ),
-                  ),
-                  SizedBox(
-                    height: screenHeight * 0.08, // 질문과 답변 사이의 여백
-                  ),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _pageController, // 페이지 전환을 위한 컨트롤러
-                      physics:
-                          const NeverScrollableScrollPhysics(), // 페이지 스크롤 비활성화
-                      itemCount: _questions.length, // 질문 개수
-                      itemBuilder: (context, index) {
-                        return _buildQuestionPage(index); // 각 질문 페이지 빌드
-                      },
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 45),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController, // 페이지 전환을 위한 컨트롤러
+                        physics:
+                            const NeverScrollableScrollPhysics(), // 페이지 스크롤 비활성화
+                        itemCount: _questions.length, // 질문 개수
+                        itemBuilder: (context, index) {
+                          return _buildQuestionPage(index); // 각 질문 페이지 빌드
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -270,52 +272,54 @@ class _TypetestScreenState extends State<TypetestScreen> {
         children: [
           Text(
             _questions[index], // 질문 텍스트
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                fontSize: SizeScaler.scaleSize(context, 12),
+                fontWeight: FontWeight.w500),
             textAlign: TextAlign.center, // 텍스트 중앙 정렬
           ),
           SizedBox(height: screenHeight * 0.04),
           ElevatedButton(
             onPressed: _outgoingNextQuestion, // 외향적인 답변을 선택했을 때
             style: ElevatedButton.styleFrom(
-                backgroundColor: darkpurpleColor, // 버튼 배경색
+                backgroundColor: const Color(0xffe4defd), // 버튼 배경색
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15), // 버튼 모서리 둥글게 설정
+                  borderRadius: BorderRadius.circular(8), // 버튼 모서리 둥글게 설정
                 )),
             child: SizedBox(
-              width: screenWidth * 0.6,
-              height: screenHeight * 0.12,
+              width: SizeScaler.scaleSize(context, 132),
+              height: SizeScaler.scaleSize(context, 42),
               child: Center(
                 child: Text(
                   _outgoingAnswer[index], // 외향적인 답변 텍스트
-                  style: const TextStyle(
-                    color: lightpurpleColor, // 텍스트 색상
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  style: TextStyle(
+                    color: const Color(0xff4f34a0), // 텍스트 색상
+                    fontSize: SizeScaler.scaleSize(context, 10),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
           ),
           SizedBox(
-            height: screenHeight * 0.02,
+            height: SizeScaler.scaleSize(context, 19),
           ),
           ElevatedButton(
             onPressed: _reservedNextQuestion, // 내향적인 답변을 선택했을 때
             style: ElevatedButton.styleFrom(
-                backgroundColor: darkpurpleColor, // 버튼 배경색
+                backgroundColor: const Color(0xffe4defd), // 버튼 배경색
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15), // 버튼 모서리 둥글게 설정
+                  borderRadius: BorderRadius.circular(8), // 버튼 모서리 둥글게 설정
                 )),
             child: SizedBox(
-              width: screenWidth * 0.6,
-              height: screenHeight * 0.12,
+              width: SizeScaler.scaleSize(context, 132),
+              height: SizeScaler.scaleSize(context, 42),
               child: Center(
                 child: Text(
                   _reservedAnswer[index], // 내향적인 답변 텍스트
-                  style: const TextStyle(
-                    color: lightpurpleColor, // 텍스트 색상
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  style: TextStyle(
+                    color: const Color(0xff4f34a0), // 텍스트 색상
+                    fontSize: SizeScaler.scaleSize(context, 10),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),

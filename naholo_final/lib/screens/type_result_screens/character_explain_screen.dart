@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
 import 'package:o3d/o3d.dart';
 import 'package:nahollo/services/auth_service.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:provider/provider.dart';
-
 
 class CharacterExplainScreen extends StatefulWidget {
   String character;
@@ -21,32 +21,236 @@ class CharacterExplainScreen extends StatefulWidget {
 class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
-  String showcharacter() {
+  void changeCharacter() {
     String character = widget.character;
     if (character == "래서판다") {
-      widget.character = "red_panda";
-      return ('assets/glbs/red_panda.glb');
+      setState(() {
+        widget.character = "red_panda";
+      });
     }
     if (character == "오징어") {
-      widget.character = "squid";
-      return ('assets/glbs/squid.glb');
+      setState(() {
+        widget.character = "squid";
+      });
     }
     if (character == "고양이") {
-      widget.character = "cat";
-      return ('assets/glbs/cat.glb');
+      setState(() {
+        widget.character = "cat";
+      });
     }
     if (character == "코알라") {
-      widget.character = "koala";
-      return ('assets/glbs/koala.glb');
+      setState(() {
+        widget.character = "koala";
+      });
     }
     if (character == "올빼미") {
-      widget.character = "owl";
-      return ('assets/glbs/owl.glb');
+      setState(() {
+        widget.character = "owl";
+      });
     } else {
       //고슴도치
-      widget.character = "hedgehog";
-      return ('assets/glbs/hedgehog.glb');
+      setState(() {
+        widget.character = "hedgehog";
+      });
     }
+  }
+
+  String getKoreanCharacterName(String character) {
+    if (character == "red_panda") {
+      return "래서판다";
+    } else if (character == "squid") {
+      return "오징어";
+    } else if (character == "cat") {
+      return "고양이";
+    } else if (character == "koala") {
+      return "코알라";
+    } else if (character == "owl") {
+      return "올빼미";
+    } else {
+      // hedgehog
+      return "고슴도치";
+    }
+  }
+
+  Color getCharacterColor(String character) {
+    if (character == "red_panda") {
+      return const Color(0xfff6841b); // 주황
+    } else if (character == "squid") {
+      return const Color(0xff6a35ad); // 보라
+    } else if (character == "cat") {
+      return const Color(0xffe89e9e); // 핑크
+    } else if (character == "koala") {
+      return const Color(0xff8c8c8c); // 회색
+    } else if (character == "owl") {
+      return const Color(0xff683f19); // 갈색
+    } else {
+      // hedgehog
+      return const Color(0xffa68614); // 금색
+    }
+  }
+
+  String getKoreanSaid(String character) {
+    if (character == "red_panda") {
+      return "혼자 노는 것도 잘하고\n같이 노는 것도 좋아";
+    } else if (character == "squid") {
+      return "혼자있는 게 좋지만 가끔 외로워";
+    } else if (character == "cat") {
+      return "다꺼져 말걸지마";
+    } else if (character == "koala") {
+      return "모든 게 귀찮아! 그냥 나혼자 할래";
+    } else if (character == "owl") {
+      return "고독을 즐긴다";
+    } else {
+      return "혼자가 좋지만\n사실은 같이 노는 것도 좋아";
+    }
+  }
+
+  Widget characterExplain(String character) {
+    Color textColor = const Color(0xff483d70); // 모든 텍스트의 색상
+    double fontSize = SizeScaler.scaleSize(context, 10); // 모든 텍스트의 폰트 크기
+    FontWeight fontWeight = FontWeight.bold; // 텍스트의 굵기
+
+    if (character == "cat") {
+      return Column(
+        children: [
+          Text(
+            "• 고양이는 독립적인 성향이 강한 동물로, 혼자 사는 생활방식과 잘 맞는 동물이에요. 집에서 기르는 고양이 역시 혼자 있는 시간을 즐기며, 인간의 지속적인 관심이나 보호가 없어도 스트레스를 받지 않는답니다.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 고양이는 혼자 놀거나 조용히 주위를 관찰하는 시간이 많아요. 고양이는 정기적으로 먹이를 제공받고, 필요한 환경만 갖추어지면 외로움을 덜 느끼는 동물이에요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 하지만 고양이는 혼자 있는 것을 좋아하면서도 주인과의 유대감을 무시하지 않아요. 혼자 사는 사람들이 가끔은 외로움을 느낄 때, 고양이는 짧은 시간 동안의 교감을 통해 서로에게 안정감을 줄 수 있어요!",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    } else if (character == "hedgehog") {
+      return Column(
+        children: [
+          Text(
+            "• 고슴도치는 위험을 감지하면 몸을 둥글게 말아 가시를 세우고, 이를 통해 천적들이 쉽게 접근하지 못하게 해요! 가시는 단단하지만 독성은 없으며, 주로 자기를 방어하는 데 사용된답니다.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 고슴도치는 야행성 동물로, 주로 밤에 활동하며 먹이를 찾아요. 그들의 주된 먹이는 곤충, 달팽이, 지렁이, 과일 등으로, 매우 다양한 식성을 가지고 있어요!",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 그들은 온화한 성격을 지니고 있으며, 천적이 없을 때는 느긋하게 행동하는 경우가 많아요. 고슴도치는 오랫동안 인간에게 귀여운 외모로 사랑받아 왔으며, 최근에는 애완동물로도 인기를 얻고 있답니다. ><",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    } else if (character == "owl") {
+      return Column(
+        children: [
+          Text(
+            "• 올빼미는 야행성 맹금류로, 주로 밤에 활동하며 낮에는 휴식을 취하는 독특한 생활 방식을 가지고 있어요. 이들은 놀라운 시력과 청각을 통해 어둠 속에서도 먹이를 찾아내는 능력이 뛰어나요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 넓은 시야각을 확보해 주변을 경계하며 먹이를 추적할 수 있어요. 또한, 그들의 귀는 비대칭으로 배치되어 있어 소리가 나는 방향을 정확히 파악할 수 있어요! 감각이 예민한 동물이에요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 환경 변화에도 잘 적응하는 강한 생존력을 가지고 있어요. 올빼미는 고대부터 지혜와 신비로움의 상징으로 여겨졌으며, 인간 문화에서도 자주 등장하는 동물이랍니다~",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    } else if (character == "koala") {
+      return Column(
+        children: [
+          Text(
+            "• 코알라는 주로 혼자 생활하는 동물이에요. 코알라는 유칼립투스 잎만 먹는데, 이 잎은 영양분이 적고 소화가 어려워 에너지를 많이 쓰지 않기 위해 혼자 조용히 있는 것을 선호해요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 코알라는 자신만의 영역을 가지고 살아가요. 각 코알라는 몇 그루의 나무를 차지하며 다른 코알라와 마주치는 걸 피해요. 이들은 영역을 지키기 위해 나무에 향을 남기거나 소리로 신호를 보내요. 이렇게 혼자 있으면 경쟁 없이 충분한 먹이를 얻을 수 있답니다.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 다만 번식기에는 잠시 다른 코알라와 상호작용할 수 있어요. 수컷은 암컷을 찾기 위해 영역을 넘나들며 교미 활동을 하지만, 번식기가 끝나면 다시 혼자 있는 생활로 돌아간답니다.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    } else if (character == "squid") {
+      return Column(
+        children: [
+          Text(
+            "• 오징어는 주로 혼자 사냥을 하는 독립적인 해양 동물이에요. 그들은 몸의 색을 바꾸거나 먹물을 뿜어내어 포식자들로부터 자신을 보호하고, 사냥할 때도 민첩하게 움직여 먹이를 쉽게 포획할 수 있어요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 오징어는 매우 빠른 속도로 물속을 이동할 수 있으며, 물을 제트처럼 내뿜어 추진력을 얻어요. 이 독특한 이동 방식은 포식자를 피하거나 먹이를 추적하는 데 유용하답니다!.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 일부 오징어 종은 군집 생활을 하기도 하지만, 많은 오징어는 번식과 사냥을 할 때는 혼자서 행동해요. 이들은 짝짓기 후에 많은 알을 낳고, 새끼들은 태어난 후 바로 독립적인 삶을 시작해요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          Text(
+            "• 래서판다는 고산 지대의 숲에서 주로 나무 위에서 생활하며, 혼자서 먹이를 찾고 자신만의 영역을 지켜요. 혼자 있는 것이 자원을 독점하고 에너지를 절약하는 데 유리하기 때문에 다른 개체와 자주 어울리지 않아요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 래서판다는 각자의 영역을 가지고, 서로의 영역에 침범하지 않도록 행동해요. 이들은 냄새를 이용해 자신의 영역을 표시하며, 나무나 바위에 향을 묻히는 방식으로 경계를 표시해요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 5)),
+          Text(
+            "• 번식이 끝난 후 암컷은 홀로 새끼를 기르며, 새끼가 어느 정도 자랄 때까지는 독립 생활을 하지 않지만, 이후에는 다시 고독한 생활을 시작해요.",
+            style: TextStyle(
+                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ],
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    print(widget.character);
+    changeCharacter();
   }
 
   @override
@@ -95,19 +299,23 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                           padding: const EdgeInsets.all(15.0), // 내부 패딩 설정
                           child: Column(
                             children: [
-                              const Text(
-                                "혼자 노는 것도 잘하고\n같이 노는 것도 좋아", // 상단 텍스트
-                                style: TextStyle(
+                              Text(
+                                textAlign: TextAlign.center, // 텍스트 중앙 정렬
+                                getKoreanSaid(widget.character), // 상단 텍스트
+                                style: const TextStyle(
                                   color: darkpurpleColor, // 텍스트 색상
                                   fontSize: 20, // 텍스트 크기
                                   fontWeight: FontWeight.w600, // 텍스트 두께
                                 ),
                               ),
                               Text(
-                                widget.character, // 캐릭터 이름
-                                style: const TextStyle(
-                                  color: Color(0xFFf6841b), // 캐릭터 이름 색상
-                                  fontSize: 40, // 캐릭터 이름 크기
+                                getKoreanCharacterName(
+                                    widget.character), // 캐릭터 이름
+                                style: TextStyle(
+                                  color: getCharacterColor(
+                                      widget.character), // 캐릭터 이름 색상
+                                  fontSize: SizeScaler.scaleSize(
+                                      context, 20), // 캐릭터 이름 크기
                                   fontWeight: FontWeight.w600, // 캐릭터 이름 두께
                                 ),
                               ),
@@ -126,13 +334,15 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                                     // cameraTarget: CameraTarget(20, 20, 5), 하면 작아짐
                                     controller: controller, // 3D 모델 컨트롤러 사용
                                     autoPlay: true, // 자동 재생 설정
-                                    src: showcharacter(), // 3D 모델 파일 경로
+                                    src:
+                                        "assets/glbs/${widget.character}.glb", // 3D 모델 파일 경로
                                   ),
                                 ),
                               ),
                               const Padding(
                                 padding: EdgeInsets.all(8.0),
                                 child: Text(
+                                  textAlign: TextAlign.start, // 텍스트 중앙 정렬
                                   "특징", // 특징 섹션 제목
                                   style: TextStyle(
                                       color: darkpurpleColor, // 텍스트 색상
@@ -140,73 +350,64 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                                       fontWeight: FontWeight.w600), // 텍스트 두께
                                 ),
                               ),
-                              const Text(
-                                '오징어는 위협을 받을 때 먹물을 뿜어내어 자신을 보호하는 행동 특성을 보여요. 이러한 특성은 주변 사람들을 돌보고 보호하는 데 열심인 성격이라고 할 수 있어요.',
-                                style: TextStyle(
-                                  color: darkpurpleColor, // 텍스트 색상
-                                  fontSize: 15, // 텍스트 크기
-                                  fontWeight: FontWeight.w600, // 텍스트 두께
-                                ),
-                              ),
+                              characterExplain(widget.character),
                               SizedBox(
                                 height: screenWidth * 0.1, // 텍스트와 버튼 사이의 여백
                               ),
-                              const Text(
-                                '오징어는 위협을 받을 때 먹물을 뿜어내어 자신을 보호하는 행동 특성을 보여요. 이러한 특성은 주변 사람들을 돌보고 보호하는 데 열심인 성격이라고 할 수 있어요.',
-                                style: TextStyle(
-                                  color: darkpurpleColor, // 텍스트 색상
-                                  fontSize: 15, // 텍스트 크기
-                                  fontWeight: FontWeight.w600, // 텍스트 두께
-                                ),
-                              ),
-                              SizedBox(
-                                height: screenWidth * 0.1, // 텍스트와 버튼 사이의 여백
-                              ),
-                              const Text(
-                                '오징어는 위협을 받을 때 먹물을 뿜어내어 자신을 보호하는 행동 특성을 보여요. 이러한 특성은 주변 사람들을 돌보고 보호하는 데 열심인 성격이라고 할 수 있어요.',
-                                style: TextStyle(
-                                  color: darkpurpleColor, // 텍스트 색상
-                                  fontSize: 15, // 텍스트 크기
-                                  fontWeight: FontWeight.w600, // 텍스트 두께
-                                ),
-                              ),
-                              SizedBox(
-                                height: screenWidth * 0.1, // 텍스트와 버튼 사이의 여백
-                              ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final authService = AuthService();
-                                  final userProvider = Provider.of<UserProvider>(context, listen: false);
-                                  final user = userProvider.user!;
-                                  // 비동기 함수 호출을 위해 onPressed 콜백을 async로 선언
-                                  await authService.updateUser(
-                                    context: context, // 필수 매개변수로 context 전달
-                                    userId: user.userId, 
-                                    userCharacter: widget.character, // 예시로 userCharacter를 widget에서 가져옴
-                                    // 필요한 다른 필드들을 추가로 전달합니다.
-                                  );
+                              Container(
+                                width: SizeScaler.scaleSize(context, 151),
+                                height: SizeScaler.scaleSize(context, 30),
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(30),
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xff2D7FF6),
+                                        Color(0xff7732C2)
+                                      ],
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                    )),
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    final authService = AuthService();
+                                    final userProvider =
+                                        Provider.of<UserProvider>(context,
+                                            listen: false);
+                                    final user = userProvider.user!;
+                                    // 비동기 함수 호출을 위해 onPressed 콜백을 async로 선언
+                                    await authService.updateUser(
+                                      context: context, // 필수 매개변수로 context 전달
+                                      userId: user.userId,
+                                      userCharacter: widget
+                                          .character, // 예시로 userCharacter를 widget에서 가져옴
+                                      // 필요한 다른 필드들을 추가로 전달합니다.
+                                    );
 
-                                  // updateUser 함수가 성공적으로 실행된 후 화면 전환
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          CharacterCreatingScreen(character: widget.character),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: darkpurpleColor, // 버튼 배경색
-                                ),
-                                child: SizedBox(
-                                  width: screenWidth * 0.5,
-                                  height: screenWidth * 0.1,
-                                  child: const Center(
-                                    child: Text(
-                                      "캐릭터로 지정하기", // 버튼 텍스트
-                                      style: TextStyle(
-                                          color: lightpurpleColor,
-                                          fontSize: 12), // 텍스트 색상과 크기
+                                    // updateUser 함수가 성공적으로 실행된 후 화면 전환
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CharacterCreatingScreen(
+                                                character: widget.character),
+                                      ),
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent, // 버튼 배경색
+                                  ),
+                                  child: SizedBox(
+                                    width: screenWidth * 0.5,
+                                    height: screenWidth * 0.1,
+                                    child: Center(
+                                      child: Text(
+                                        "캐릭터로 지정하기", // 버튼 텍스트
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 9)), // 텍스트 색상과 크기
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -214,21 +415,26 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                               SizedBox(
                                 height: screenHeight * 0.02, // 버튼 사이의 여백
                               ),
-                              ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      const Color(0xFFf1f1f1), // 버튼 배경색
-                                ),
-                                child: SizedBox(
-                                  width: screenWidth * 0.5,
-                                  height: screenWidth * 0.1,
-                                  child: const Center(
-                                    child: Text(
-                                      "테스트 공유하기", // 버튼 텍스트
-                                      style: TextStyle(
-                                          color: darkpurpleColor,
-                                          fontSize: 12), // 텍스트 색상과 크기
+                              SizedBox(
+                                width: SizeScaler.scaleSize(context, 151),
+                                height: SizeScaler.scaleSize(context, 30),
+                                child: ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        const Color(0xFFf1f1f1), // 버튼 배경색
+                                  ),
+                                  child: SizedBox(
+                                    width: screenWidth * 0.5,
+                                    height: screenWidth * 0.1,
+                                    child: Center(
+                                      child: Text(
+                                        "테스트 공유하기", // 버튼 텍스트
+                                        style: TextStyle(
+                                            color: darkpurpleColor,
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 9)), // 텍스트 색상과 크기
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -5,6 +5,7 @@ import 'package:nahollo/colors.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/type_result_screens/character_creating_screen.dart';
 import 'package:nahollo/screens/type_result_screens/typetest_logo_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
 
@@ -107,20 +108,34 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
               ),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: SizeScaler.scaleSize(context, 25)),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text(
-                            "${user?.nickName} 님",
-                            style: const TextStyle(
-                              color: darkpurpleColor,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                "${user?.nickName}",
+                                style: const TextStyle(
+                                  color: Color(0xff7839cb),
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Text(
+                                " 님",
+                                style: TextStyle(
+                                  color: Color(0xff7839cb),
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              )
+                            ],
                           ),
                         ],
                       ),
@@ -130,56 +145,80 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
                         style: TextStyle(
                           color: Color(0xff16377e),
                           fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                       SizedBox(
-                        height: size.height * 0.1,
+                        height: SizeScaler.scaleSize(context, 36),
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff9372ff),
-                          foregroundColor: Colors.white,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const TypetestLogoScreen(), // 버튼을 누르면 TypetestlogoScreen으로 이동
-                              ));
-                        },
-                        child: SizedBox(
-                          width: size.width * 0.45,
-                          child: const Center(
-                            child: Text(
-                              "나만의 캐릭터 만들기",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 13),
+                      Container(
+                        width: SizeScaler.scaleSize(context, 117),
+                        height: SizeScaler.scaleSize(context, 27),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(30),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xff8BACFF),
+                                Color(0xffD05AFF),
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            )),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const TypetestLogoScreen(), // 버튼을 누르면 TypetestlogoScreen으로 이동
+                                ));
+                          },
+                          child: SizedBox(
+                            width: size.width * 0.45,
+                            child: const Center(
+                              child: Text(
+                                "나만의 캐릭터 만들기",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 13),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: darkpurpleColor,
-                        ),
-                        onPressed: () {
-                          var character = assignRandomCharacter();
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => CharacterCreatingScreen(
-                                  character: character,
-                                ),
-                              ));
-                        },
-                        child: SizedBox(
-                          width: size.width * 0.45,
-                          child: const Center(
-                            child: Text(
-                              "바로 시작하기",
+                      SizedBox(
+                        height: SizeScaler.scaleSize(context, 13),
+                      ),
+                      SizedBox(
+                        width: SizeScaler.scaleSize(context, 117),
+                        height: SizeScaler.scaleSize(context, 27),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: darkpurpleColor,
+                          ),
+                          onPressed: () {
+                            var character = assignRandomCharacter();
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CharacterCreatingScreen(
+                                    character: character,
+                                  ),
+                                ));
+                          },
+                          child: SizedBox(
+                            width: size.width * 0.45,
+                            child: const Center(
+                              child: Text(
+                                "바로 시작하기",
+                              ),
                             ),
                           ),
                         ),

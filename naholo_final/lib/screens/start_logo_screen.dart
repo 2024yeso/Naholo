@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:video_player/video_player.dart';
 
 class StartLogoScreen extends StatefulWidget {
@@ -10,9 +12,9 @@ class StartLogoScreen extends StatefulWidget {
 }
 
 class _StartLogoScreenState extends State<StartLogoScreen> {
-  late VideoPlayerController _controller;
+  // late VideoPlayerController _controller;
 
-  @override
+  /*@override
   void initState() {
     super.initState();
     _controller =
@@ -33,9 +35,9 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
             ));
       }
     });
-  }
+  }   */
 
-  /* @override
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -50,13 +52,6 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
       );
     });
   }
-*/
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,27 +61,27 @@ class _StartLogoScreenState extends State<StartLogoScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: _controller.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
-              )
-            : const CircularProgressIndicator(),
-        /* Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
               'assets/images/nahollo_logo_purple.svg', // 로컬에 저장된 SVG 파일 경로
-              width: screenWidth * 0.5,
-              height: screenWidth * 0.5,
+              width: SizeScaler.scaleSize(context, 102),
+              height: SizeScaler.scaleSize(context, 67),
             ),
             SvgPicture.asset(
               'assets/images/nahollo_name_purple.svg', // 로컬에 저장된 SVG 파일 경로
-              width: screenWidth * 0.5,
-              height: screenWidth * 0.15,
+              width: SizeScaler.scaleSize(context, 100),
+              height: SizeScaler.scaleSize(context, 22),
             )
           ],
-        ), */
+        ), /* _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : const CircularProgressIndicator(),  */
+        /*  */
       ),
     );
   }

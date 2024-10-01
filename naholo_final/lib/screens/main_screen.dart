@@ -109,8 +109,9 @@ class _MainScreenState extends State<MainScreen> {
                   height: screenHeight * 0.06, // 상단 여백
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 0, horizontal: 20),
+                  padding: EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: SizeScaler.scaleSize(context, 0)),
                   child: Row(
                     mainAxisAlignment:
                         MainAxisAlignment.spaceBetween, // 좌우 끝에 아이콘 배치
@@ -135,10 +136,10 @@ class _MainScreenState extends State<MainScreen> {
                 SizedBox(
                   height: 0.015 * screenHeight, // 알림과 텍스트 사이의 여백
                 ),
-                const Text(
+                Text(
                   "오늘은 혼술 어때?", // 메인 텍스트
                   style: TextStyle(
-                    fontSize: 20, // 텍스트 크기
+                    fontSize: SizeScaler.scaleSize(context, 13), // 텍스트 크기
                     color: Colors.white, // 텍스트 색상
                   ),
                 ),
@@ -156,8 +157,8 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(2), // 3D 모델 주변 패딩 설정
-                  width: screenHeight * 0.35,
-                  height: screenHeight * 0.35,
+                  width: screenHeight * 0.4,
+                  height: screenHeight * 0.4,
                   child: Card(
                     color: Colors.transparent, // 카드 배경 투명
                     elevation: 0, // 그림자 효과 제거
@@ -177,11 +178,14 @@ class _MainScreenState extends State<MainScreen> {
                     fontSize: 10,
                   ), // 텍스트 색상
                 ),
+                SizedBox(
+                  height: SizeScaler.scaleSize(context, 3),
+                ),
                 Text(
                   user!.nickName, // 캐릭터 이름
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white, // 텍스트 색상
-                    fontSize: 20, // 텍스트 크기
+                    fontSize: SizeScaler.scaleSize(context, 15), // 텍스트 크기
                     fontWeight: FontWeight.w800, // 텍스트 두께
                   ),
                 ),
@@ -197,9 +201,10 @@ class _MainScreenState extends State<MainScreen> {
                     Padding(
                       padding: const EdgeInsets.all(10.0), // 진행 바 주변 패딩
                       child: SizedBox(
-                        width: 0.5 * screenWidth,
-                        height: 0.025 * screenHeight,
+                        width: SizeScaler.scaleSize(context, 73),
+                        height: SizeScaler.scaleSize(context, 6),
                         child: LinearProgressIndicator(
+                          borderRadius: BorderRadius.circular(20),
                           color: const Color(0xFFf9747d), // 진행 바 색상
                           value: userExp != null
                               ? userExp / 100
@@ -243,10 +248,10 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                           AutoSizeText(
-                            "어디", // 아이콘 하단의 설명 텍스트
+                            "나홀로어디?", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 8)),
+                                fontSize: SizeScaler.scaleSize(context, 7)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -284,10 +289,10 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                           AutoSizeText(
-                            "일지", // 아이콘 하단의 설명 텍스트
+                            "나홀로일지", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 8)),
+                                fontSize: SizeScaler.scaleSize(context, 7)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -320,7 +325,7 @@ class _MainScreenState extends State<MainScreen> {
                             "홈", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 8)),
+                                fontSize: SizeScaler.scaleSize(context, 7)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -361,7 +366,7 @@ class _MainScreenState extends State<MainScreen> {
                             "출석", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 8)),
+                                fontSize: SizeScaler.scaleSize(context, 7)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -397,11 +402,11 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                           AutoSizeText(
-                            "마이", // 아이콘 하단의 설명 텍스트
+                            "마이페이지", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize:
-                                    SizeScaler.scaleSize(context, 8)), // 텍스트 색상
+                                    SizeScaler.scaleSize(context, 7)), // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
                           ),

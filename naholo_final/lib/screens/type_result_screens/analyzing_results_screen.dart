@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nahollo/colors.dart';
 import 'package:nahollo/screens/type_result_screens/character_explain_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
@@ -66,14 +67,14 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
   ).animate(_animationController);
 
   // 상자 데코레이션 애니메이션 정의 (색상 및 모서리 반경 변경)
-  late final Animation<Decoration> _decoration = DecorationTween(
+  /*late final Animation<Decoration> _decoration = DecorationTween(
           begin: BoxDecoration(
               color: darkpurpleColor, // 시작 색상
               borderRadius: BorderRadius.circular(100)), // 시작 모서리 반경
           end: BoxDecoration(
               color: darkpurpleColor, // 종료 색상
               borderRadius: BorderRadius.circular(150))) // 종료 모서리 반경
-      .animate(_curve);
+      .animate(_curve);   */
 
   @override
   void initState() {
@@ -115,11 +116,11 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                 SizedBox(
                   height: size.height * 0.2, // 상단 여백
                 ),
-                const Text(
+                Text(
                   '결과를 분석중입니다...\n잠시만 기다려주세요',
                   style: TextStyle(
                     color: Colors.white, // 텍스트 색상
-                    fontSize: 15, // 텍스트 크기
+                    fontSize: SizeScaler.scaleSize(context, 10), // 텍스트 크기
                     fontWeight: FontWeight.w600, // 텍스트 두께
                   ),
                 ),
@@ -136,19 +137,19 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                       painter: CircularPathPainter(),
                     ),
                     // 큰 원 (기존의 DecoratedBoxTransition)
-                    DecoratedBoxTransition(
-                      decoration: _decoration, // 데코레이션 애니메이션 적용
-                      child: SizedBox(
-                        height: size.width * 0.75, // 상자의 높이
-                        width: size.width * 0.75, // 상자의 너비
-                        child: const Center(
-                          child: Text(
-                            "?",
-                            style: TextStyle(
-                              color: Colors.white, // 텍스트 색상
-                              fontSize: 80, // 텍스트 크기
-                              fontWeight: FontWeight.w600, // 텍스트 두께
-                            ),
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(300),
+                          color: Colors.white.withOpacity(0.6)),
+                      height: size.width * 0.7, // 상자의 높이
+                      width: size.width * 0.7, // 상자의 너비
+                      child: const Center(
+                        child: Text(
+                          "?",
+                          style: TextStyle(
+                            color: Colors.white, // 텍스트 색상
+                            fontSize: 80, // 텍스트 크기
+                            fontWeight: FontWeight.w600, // 텍스트 두께
                           ),
                         ),
                       ),
@@ -157,7 +158,7 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                     RotationTransition(
                       turns: _turn2, // 회전 애니메이션
                       child: Transform.translate(
-                        offset: Offset(0, -size.width * 0.45), // 큰 원의 경계선으로 이동
+                        offset: Offset(0, -size.width * 0.44), // 큰 원의 경계선으로 이동
                         child: Container(
                           width: 15, // 작은 원의 크기
                           height: 15,
@@ -168,27 +169,12 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                         ),
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.all(2), // 3D 모델 주변 패딩 설정
-                      width: SizeScaler.scaleSize(context, 100),
-                      height: SizeScaler.scaleSize(context, 100),
-                      child: Card(
-                        color: Colors.transparent, // 카드 배경 투명
-                        elevation: 0, // 그림자 효과 제거
-                        child: O3D(
-                          disableTap: true, // 탭 동작 비활성화
-                          disableZoom: true, // 줌 동작 비활성화
-                          controller: controller, // 3D 모델 컨트롤러 사용
-                          autoPlay: true, // 자동 재생 설정
-                          src: 'assets/glbs/cat.glb', // 3D 모델 파일 경로
-                        ),
-                      ),
-                    ),
                   ],
                 ),
 
                 SizedBox(
-                  height: size.height * 0.04, // 애니메이션과 진행 바 사이의 여백
+                  height:
+                      SizeScaler.scaleSize(context, 40), // 애니메이션과 진행 바 사이의 여백
                 ),
                 // 애니메이션 진행률에 따라 업데이트되는 LinearProgressIndicator
                 ValueListenableBuilder(
@@ -213,16 +199,21 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                                     LinearProgressIndicator(
                                       value: value, // 진행률을 설정 (0.0에서 1.0 사이)
                                       backgroundColor:
-                                          Colors.white, // 진행 바의 배경색
-                                      color: lightpurpleColor, // 진행 바의 색상
-                                      minHeight: 25, // 진행 바의 높이
+                                          const Color(0xffd8abdf), // 진행 바의 배경색
+                                      color:
+                                          const Color(0xffe399ff), // 진행 바의 색상
+                                      minHeight: 18, // 진행 바의 높이
                                       borderRadius:
                                           BorderRadius.circular(20), // 모서리 둥글게
                                     ), // 진행률을 %로 표시
+                                    SizedBox(
+                                      height: SizeScaler.scaleSize(context, 4),
+                                    ),
                                     Text(
                                       "${(value * 100).round()}%", // 소수점 없이 정수로 표시
-                                      style: const TextStyle(
-                                          fontSize: 20, // 텍스트 크기
+                                      style: TextStyle(
+                                          fontSize: SizeScaler.scaleSize(
+                                              context, 8), // 텍스트 크기
                                           fontWeight: FontWeight.w600, // 텍스트 두께
                                           color: Colors.white), // 텍스트 색상
                                     ),
@@ -231,16 +222,16 @@ class _AnalyzingResultsScreenState extends State<AnalyzingResultsScreen>
                               ),
                               // 로켓 아이콘의 위치를 설정
                               Positioned(
-                                left: (size.width * 0.05) +
-                                    (value *
-                                        (size.width * 0.9 - size.width * 0.1)),
-                                top: 1,
-                                child: const Icon(
-                                  Icons.rocket,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
+                                  left: (size.width * 0.05) +
+                                      (value *
+                                          (size.width * 0.9 -
+                                              size.width * 0.1)),
+                                  top: 0,
+                                  child: SvgPicture.asset(
+                                    "assets/images/white_rocket.svg",
+                                    width: SizeScaler.scaleSize(context, 13),
+                                    height: SizeScaler.scaleSize(context, 15),
+                                  )),
                             ],
                           ),
                         ),
@@ -262,7 +253,7 @@ class CircularPathPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // 테두리를 그릴 원의 중심점과 반지름 설정
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 1.13;
+    final radius = size.width * 1.1;
 
     // 원 테두리의 페인트 설정
     final paint = Paint()
