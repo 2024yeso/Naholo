@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/screens/login_screens/login_emailverrify_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 
@@ -124,12 +125,21 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
             "회원가입",
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1.0), // 선의 두께 설정
+            child: Container(
+              color: Colors.grey, // 선의 색상 설정
+              height: 1.0, // 선의 두께
+            ),
+          ),
         ),
-        body: Padding(
-          padding: const EdgeInsets.all(15.0),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  vertical: SizeScaler.scaleSize(context, 20),
+                  horizontal: SizeScaler.scaleSize(context, 11)),
               child: Column(
                 children: [
                   // 아이디 입력창
@@ -140,13 +150,14 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                         flex: 5,
                         child: TextFormField(
                           controller: _userIdController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: '아이디(이메일)',
                             labelStyle: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 9),
                               fontWeight: FontWeight.w600,
                             ),
                             hintText: "이메일 주소",
-                            hintStyle: TextStyle(
+                            hintStyle: const TextStyle(
                               color: Colors.grey,
                               fontSize: 10,
                             ),
@@ -169,36 +180,42 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                       ),
                       Flexible(
                         flex: 2,
-                        child: OutlinedButton(
-                          onPressed: () async {
-                            await checkId();
-                            if (isIdExist) {
-                              Fluttertoast.showToast(msg: "이미 존재하는 아이디입니다!");
-                            } else {
-                              isIdCheckClick = true;
-                              Fluttertoast.showToast(msg: "사용 가능한 아이디입니다!");
-                            }
-                          },
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(
-                              color: Color(0xFF36226B), // 테두리 색상 (짙은 남색)
-                              width: 1, // 테두리 두께
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () async {
+                                await checkId();
+                                if (isIdExist) {
+                                  Fluttertoast.showToast(
+                                      msg: "이미 존재하는 아이디입니다!");
+                                } else {
+                                  isIdCheckClick = true;
+                                  Fluttertoast.showToast(msg: "사용 가능한 아이디입니다!");
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: Color(0xFF36226B), // 테두리 색상 (짙은 남색)
+                                  width: 1, // 테두리 두께
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(20), // 둥근 모서리
+                                ),
+
+                                minimumSize:
+                                    const Size(0, 30), // 버튼의 최소 높이를 명시적으로 설정
+                              ),
+                              child: const Text(
+                                '중복확인',
+                                style: TextStyle(
+                                  color: Color(0xFF36226B), // 텍스트 색상 (짙은 남색)
+                                  fontSize: 12, // 폰트  크기
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20), // 둥근 모서리
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 0, horizontal: 10),
-                            minimumSize:
-                                const Size(0, 30), // 버튼의 최소 높이를 명시적으로 설정
-                          ),
-                          child: const Text(
-                            '중복확인',
-                            style: TextStyle(
-                              color: Color(0xFF36226B), // 텍스트 색상 (짙은 남색)
-                              fontSize: 12, // 폰트  크기
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
@@ -209,13 +226,14 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                   // 비밀번호 입력창
                   TextFormField(
                     controller: _userPasswordController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: '비밀번호',
                       labelStyle: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 9),
                         fontWeight: FontWeight.w600,
                       ),
                       hintText: "비밀번호",
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: Colors.grey,
                         fontSize: 10,
                       ),
@@ -238,13 +256,14 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                   // 비밀번호 확인창
                   TextFormField(
                     controller: _confirmPasswordController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: '비밀번호 확인',
                       labelStyle: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 9),
                         fontWeight: FontWeight.w600,
                       ),
                       hintText: "비밀번호 확인",
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: Colors.grey,
                         fontSize: 10,
                       ),
@@ -266,13 +285,14 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
 
                   TextFormField(
                     controller: _userNameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: '이름',
                       labelStyle: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 9),
                         fontWeight: FontWeight.w600,
                       ),
                       hintText: "실명을 입력하세요",
-                      hintStyle: TextStyle(
+                      hintStyle: const TextStyle(
                         color: Colors.grey,
                         fontSize: 10,
                       ),
@@ -289,13 +309,15 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
 
                   TextFormField(
                     controller: _userBrithController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: '생년월일',
                       labelStyle: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontSize: SizeScaler.scaleSize(context, 9),
+                          fontWeight: FontWeight.w600,
                           color: Colors.black), // 라벨 스타일
                       hintText: '8자리 입력',
-                      hintStyle: TextStyle(color: Colors.grey, fontSize: 10),
+                      hintStyle:
+                          const TextStyle(color: Colors.grey, fontSize: 10),
                       floatingLabelBehavior:
                           FloatingLabelBehavior.always, // 라벨이 항상 위에 표시되도록 설정
                     ),
@@ -305,6 +327,19 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                       }
                       return null;
                     },
+                  ),
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 20),
+                  ),
+                  Row(
+                    children: [
+                      Text(
+                        "성별",
+                        style: TextStyle(
+                            fontSize: SizeScaler.scaleSize(context, 7.2),
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
                   ),
                   Row(
                     children: [
@@ -332,7 +367,9 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(width: 20), // 남성과 여성 버튼 사이의 간격 조정
+                      SizedBox(
+                          width: SizeScaler.scaleSize(
+                              context, 12)), // 남성과 여성 버튼 사이의 간격 조정
                       // 여성 라디오 버튼
                       Row(
                         children: [
@@ -359,38 +396,50 @@ class _LocalSignupScreenState extends State<LocalSignupScreen> {
                       ),
                     ],
                   ),
-
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 25),
+                  ),
                   // 회원가입 버튼
-                  ElevatedButton(
-                    onPressed: () async {
-
-                      if (isIdCheckClick) {
-
-                        if (_formKey.currentState!.validate()) {
-                          infoSignup.userId = _userIdController.text.trim();
-                          infoSignup.userPw =
-                              _userPasswordController.text.trim();
-                          infoSignup.userName = _userNameController.text.trim();
-                          infoSignup.birth = _userBrithController.text.trim();
-                          infoSignup.gender = _isMale;
-                          // 회원가입 로직
-                          await _register();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-
-                              builder: (context) => LoginEmailverrifyScreen(
-                                info: infoSignup,
-                              ),
-                              
-                            ),
-                          );
+                  SizedBox(
+                    width: SizeScaler.scaleSize(context, 144),
+                    height: SizeScaler.scaleSize(context, 21),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff794FFF),
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        if (_isMale != null) {
+                          if (isIdCheckClick) {
+                            if (_formKey.currentState!.validate()) {
+                              infoSignup.userId = _userIdController.text.trim();
+                              infoSignup.userPw =
+                                  _userPasswordController.text.trim();
+                              infoSignup.userName =
+                                  _userNameController.text.trim();
+                              infoSignup.birth =
+                                  _userBrithController.text.trim();
+                              infoSignup.gender = _isMale;
+                              // 회원가입 로직
+                              await _register();
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LoginEmailverrifyScreen(
+                                    info: infoSignup,
+                                  ),
+                                ),
+                              );
+                            }
+                          } else {
+                            Fluttertoast.showToast(msg: "중복확인 버튼을 눌러주세요.");
+                          }
+                        } else {
+                          Fluttertoast.showToast(msg: "성별을 선택해주세요.");
                         }
-                      } else {
-                        Fluttertoast.showToast(msg: "중복확인 버튼을 눌러주세요.");
-                      }
-                    },
-                    child: const Text('계속하기'),
+                      },
+                      child: const Text('계속하기'),
+                    ),
                   ),
                 ],
               ),

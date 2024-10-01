@@ -10,11 +10,10 @@ import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_finish_screen.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
-
-
 
 class NicknameSettingScreen extends StatefulWidget {
   Info info;
@@ -38,7 +37,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
     //로그인 스크린에 있는 함수긴 한데 여기서만 재사용될꺼라 일단 걍 복사하긴함..ㅎ
     // Provider를 미리 가져와서 저장
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    
+
     // 로그인 성공
     var res;
     final response = await http.get(
@@ -52,7 +51,7 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
       // UserModel을 생성하여 provider에 저장
       UserModel user = UserModel(
         nickName: res["nickname"],
-        userId : res["user_id"],
+        userId: res["user_id"],
         userCharacter: res["userCharacter"],
         lv: res["lv"],
         introduce: res["introduce"],
@@ -141,19 +140,23 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
           ),
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 25,
+              padding: EdgeInsets.symmetric(
+                horizontal: SizeScaler.scaleSize(context, 25),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    '어플에서 사용하실 닉네임을 설정해주세요!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        '어플에서 사용하실\n닉네임을 설정해주세요!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: SizeScaler.scaleSize(context, 12),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(
                     height: size.height * 0.02,
@@ -191,33 +194,57 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: size.height * 0.08),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF68bdff),
-                      foregroundColor: Colors.white,
+                  SizedBox(height: SizeScaler.scaleSize(context, 53)),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(25),
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xff8AE7ED),
+                          Color(0xff6ABEFF)
+                        ], // 그라데이션 색상 지정
+                        begin: Alignment.topLeft, // 그라데이션 시작 위치
+                        end: Alignment.bottomRight, // 그라데이션 끝 위치
+                      ),
                     ),
-                    onPressed: () async {
-                      _submitNickname();
-                      if (_isNicknameGood) {
-                        await addUser();
-                        await _1st_login();
-                        if (_isLoginSuccess) {
-                          if (context.mounted) {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const LoginFinishScreen(),
-                                ));
+                    width: SizeScaler.scaleSize(context, 94),
+                    height: SizeScaler.scaleSize(context, 24),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.transparent, // 그림자 제거
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(25), // 동일한 둥근 모서리 적용
+                        ),
+                      ),
+                      onPressed: () async {
+                        _submitNickname();
+                        if (_isNicknameGood) {
+                          await addUser();
+                          await _1st_login();
+                          if (_isLoginSuccess) {
+                            if (context.mounted) {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const LoginFinishScreen(),
+                                  ));
+                            }
                           }
                         }
-                      }
-                    },
-                    child: SizedBox(
-                      width: SizeUtil.getScreenWidth(context) * 0.4,
-                      child: const Center(
-                        child: Text('회원가입 완료'),
+                      },
+                      child: SizedBox(
+                        width: SizeUtil.getScreenWidth(context) * 0.4,
+                        child: Center(
+                          child: Text(
+                            '회원가입 완료',
+                            style: TextStyle(
+                                fontSize: SizeScaler.scaleSize(context, 9)),
+                          ),
+                        ),
                       ),
                     ),
                   ),

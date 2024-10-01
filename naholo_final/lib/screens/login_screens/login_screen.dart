@@ -15,6 +15,7 @@ import 'package:nahollo/screens/main_screen.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:nahollo/api/api.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 import 'package:provider/provider.dart';
@@ -29,7 +30,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   var infoLogin = Info();
   LoginPlatform _loginPlatform = LoginPlatform.none;
-
+  bool _isObscure = true; // 비밀번호 가시성 여부를 저장하는 변수
   var isLoginSuccess = false;
 
   // TextEditingController를 생성해서 입력한 값을 제어
@@ -102,43 +103,43 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
- Future<void> login(String id, String pw) async {
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  Future<void> login(String id, String pw) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-  final response = await http.get(
-    Uri.parse('${Api.baseUrl}/login/?user_id=$id&user_pw=$pw'),
-  );
-
-  if (response.statusCode == 200) {
-    var res = jsonDecode(utf8.decode(response.bodyBytes));
-
-    UserModel user = UserModel(
-      userId: res['user_id'],
-      nickName: res["nickname"],
-      userCharacter: res["userCharacter"],
-      lv: res["lv"],
-      introduce: res["introduce"],
-      exp: res["exp"],
+    final response = await http.get(
+      Uri.parse('${Api.baseUrl}/login/?user_id=$id&user_pw=$pw'),
     );
 
-    userProvider.setUser(user);
+    if (response.statusCode == 200) {
+      var res = jsonDecode(utf8.decode(response.bodyBytes));
 
-    Fluttertoast.showToast(msg: res["message"]);
-
-    if (context.mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MainScreen(),
-        ),
+      UserModel user = UserModel(
+        userId: res['user_id'],
+        nickName: res["nickname"],
+        userCharacter: res["userCharacter"],
+        lv: res["lv"],
+        introduce: res["introduce"],
+        exp: res["exp"],
       );
-    }
-  } else {
-    Fluttertoast.showToast(msg: "로그인 실패");
-    print("Login Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
-  }
-}
 
+      userProvider.setUser(user);
+
+      Fluttertoast.showToast(msg: res["message"]);
+
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainScreen(),
+          ),
+        );
+      }
+    } else {
+      Fluttertoast.showToast(msg: "로그인 실패");
+      print(
+          "Login Failed: ${response.statusCode} ${utf8.decode(response.bodyBytes)}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,200 +164,244 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: Center(
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    'assets/images/nahollo_logo_human_white.svg',
-                    width: size.width * 0.4,
-                    height: size.width * 0.4,
-                  ),
-                  SvgPicture.asset(
-                    'assets/images/nahollo_logo_name_white.svg',
-                    width: size.width * 0.3,
-                    height: size.width * 0.1,
-                  ),
-                  SizedBox(
-                    height: size.height * 0.02,
-                  ),
-                  const Text(
-                    'SNS로 빠른 회원가입',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: darkpurpleColor,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: SizeScaler.scaleSize(context, 25),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 59),
                     ),
-                  ),
-                  SizedBox(
-                    height: size.height * 0.02,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          signInWithGoogle();
-                          if (isLoginSuccess) {
+                    SvgPicture.asset(
+                      'assets/images/nahollo_logo_human_white.svg',
+                      width: SizeScaler.scaleSize(context, 45),
+                      height: SizeScaler.scaleSize(context, 45),
+                    ),
+                    SvgPicture.asset(
+                      'assets/images/nahollo_logo_name_white.svg',
+                      width: SizeScaler.scaleSize(context, 52.46),
+                      height: SizeScaler.scaleSize(context, 9.07),
+                    ),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 37),
+                    ),
+                    /* GestureDetector(
+                          onTap: () {
+                            disconnect();
+                          },
+                          child: Container(
+                            child: const Text(
+                              "로그아웃",
+                              style: TextStyle(
+                                color: lightpurpleColor,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ),
+                        ), */
+                    // 아이디 입력창
+                    Container(
+                      width: SizeScaler.scaleSize(context, 147),
+                      height: SizeScaler.scaleSize(context, 26),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: TextField(
+                        textAlign: TextAlign.start,
+                        controller: _idController,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(
+                            Icons.person_outline,
+                            color: Colors.black,
+                            size: SizeScaler.scaleSize(context, 10),
+                          ),
+                          hintText: '아이디 입력',
+                          hintStyle: TextStyle(
+                              color: const Color(0xff6155a5),
+                              fontSize: SizeScaler.scaleSize(context, 8)),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(
+                              vertical: SizeScaler.scaleSize(context, 7.5),
+                              horizontal: SizeScaler.scaleSize(
+                                  context, 5)), // 수직 패딩을 0으로 설정
+                        ),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    SizedBox(height: SizeScaler.scaleSize(context, 9)),
 
+                    // 비밀번호 입력창
+                    Container(
+                      width: SizeScaler.scaleSize(context, 147),
+                      height: SizeScaler.scaleSize(context, 26),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: TextField(
+                        textAlign: TextAlign.start,
+                        controller: _pwController,
+                        obscureText: _isObscure,
+                        decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.lock_outline,
+                              color: Colors.black,
+                              size: SizeScaler.scaleSize(context, 10),
+                            ),
+                            hintText: '비밀번호 입력',
+                            hintStyle: TextStyle(
+                                color: const Color(0xff6155a5),
+                                fontSize: SizeScaler.scaleSize(context, 8)),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: SizeScaler.scaleSize(context, 7.5),
+                              horizontal: SizeScaler.scaleSize(context, 5),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                size: SizeScaler.scaleSize(context, 10),
+                                _isObscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                            )),
+                        style: const TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 13),
+                    ),
+
+                    // 아이디 찾기, 비밀번호 찾기, 회원가입
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(
+                          width: SizeScaler.scaleSize(context, 25),
+                        ),
+                        const Text(
+                          '아이디 찾기',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                        const Text(
+                          "|",
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                        const Text(
+                          '비밀번호 찾기',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                        const Text(
+                          "|",
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                        GestureDetector(
+                          onTap: () {
                             Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const MainScreen()));
-                          }
-                        },
-                        child: Container(
-                          child: SvgPicture.asset(
-                            'assets/images/google_icon.svg',
-                            width: size.width * 0.15,
-                            height: size.width * 0.15,
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      const LocalSignupScreen()),
+                            );
+                          },
+                          child: const Text(
+                            '회원가입',
+                            style: TextStyle(color: Colors.white, fontSize: 10),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: size.height * 0.01,
-                  ),
-                  const Text(
-                    'OR',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.white,
+                        SizedBox(
+                          width: SizeScaler.scaleSize(context, 25),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(
-                    height: size.height * 0.02,
-                  ),
-                  /* GestureDetector(
-                        onTap: () {
-                          disconnect();
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 17),
+                    ),
+
+                    // 로그인 버튼
+                    Container(
+                      decoration: const BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors
+                                .black12, // 투명도 26%로 설정 (0.0에서 1.0 사이의 값 사용 가능)
+                            offset: Offset(1, 1), // 그림자의 위치
+                            blurRadius: 20, // 블러 정도
+                            spreadRadius: 0.5, // 그림자의 퍼짐 정도
+                          ),
+                        ],
+                      ),
+                      width: SizeScaler.scaleSize(context, 117),
+                      height: SizeScaler.scaleSize(context, 27),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          login(
+                            _idController.text.trim(),
+                            _pwController.text.trim(),
+                          );
                         },
-                        child: Container(
-                          child: const Text(
-                            "로그아웃",
-                            style: TextStyle(
-                              color: lightpurpleColor,
-                              fontSize: 20,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white, // 버튼 색
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          '로그인',
+                          style: TextStyle(
+                              color: darkpurpleColor,
+                              fontSize: SizeScaler.scaleSize(context, 9)),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 30),
+                    ),
+                    Text(
+                      'SNS로 빠른 회원가입',
+                      style: TextStyle(
+                        fontSize: SizeScaler.scaleSize(context, 6),
+                        color: darkpurpleColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 17),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            signInWithGoogle();
+                            if (isLoginSuccess) {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const MainScreen()));
+                            }
+                          },
+                          child: Container(
+                            child: SvgPicture.asset(
+                              'assets/images/google_icon.svg',
+                              width: SizeScaler.scaleSize(context, 25),
+                              height: SizeScaler.scaleSize(context, 25),
                             ),
                           ),
                         ),
-                      ), */
-                  // 아이디 입력창
-                  Container(
-                    width: size.width * 0.8,
-                    height: size.width * 0.15,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(30),
+                      ],
                     ),
-                    child: TextField(
-                      textAlign: TextAlign.start,
-                      controller: _idController,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.person, color: Colors.white),
-                        hintText: '아이디 입력',
-                        hintStyle: TextStyle(color: Colors.white, fontSize: 10),
-                        border: InputBorder.none,
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                      ),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  SizedBox(height: size.width * 0.05),
-
-                  // 비밀번호 입력창
-                  Container(
-                    width: size.width * 0.8,
-                    height: size.width * 0.15,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: TextField(
-                      textAlign: TextAlign.start,
-                      controller: _pwController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(
-                          Icons.lock,
-                          color: Colors.white,
-                        ),
-                        hintText: '비밀번호 입력',
-                        hintStyle: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                        ),
-                        border: InputBorder.none,
-                        contentPadding:
-                            EdgeInsets.symmetric(vertical: 4, horizontal: 0),
-                      ),
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 아이디 찾기, 비밀번호 찾기, 회원가입
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("    "),
-                      const Text(
-                        '아이디 찾기',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                      const Text(
-                        "|",
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                      const Text(
-                        '비밀번호 찾기',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                      const Text(
-                        "|",
-                        style: TextStyle(color: Colors.white, fontSize: 10),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const LocalSignupScreen()),
-                          );
-                        },
-                        child: const Text(
-                          '회원가입',
-                          style: TextStyle(color: Colors.white, fontSize: 10),
-                        ),
-                      ),
-                      const Text("    "),
-                    ],
-                  ),
-                  SizedBox(height: size.width * 0.15),
-
-                  // 로그인 버튼
-                  ElevatedButton(
-                    onPressed: () {
-                      login(
-                        _idController.text.trim(),
-                        _pwController.text.trim(),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white, // 버튼 색
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 70),
-                    ),
-                    child: const Text(
-                      '로그인',
-                      style: TextStyle(color: darkpurpleColor),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

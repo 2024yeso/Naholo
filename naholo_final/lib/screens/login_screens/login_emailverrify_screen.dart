@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/screens/login_screens/nickname_setting_screen.dart';
+import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_info.dart';
 import 'package:nahollo/util.dart';
 
@@ -67,22 +68,26 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
               SizedBox(
                 height: width * 0.2,
               ),
-              ElevatedButton(
-                  onPressed: () async {
-                    await checkEmailVerified();
-                    /*if (_isEmailVerify) */{
-                      if (context.mounted) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                NicknameSettingScreen(info: widget.info),
-                          ),
-                        );
+              SizedBox(
+                width: SizeScaler.scaleSize(context, 100),
+                height: SizeScaler.scaleSize(context, 25),
+                child: ElevatedButton(
+                    onPressed: () async {
+                      await checkEmailVerified();
+                      /*if (_isEmailVerify) */ {
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  NicknameSettingScreen(info: widget.info),
+                            ),
+                          );
+                        }
                       }
-                    }
-                  },
-                  child: const Text('이메일 인증 완료'))
+                    },
+                    child: const Text('이메일 인증 완료')),
+              )
             ],
           ),
         ),
