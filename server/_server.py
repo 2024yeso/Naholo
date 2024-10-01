@@ -87,9 +87,14 @@ class Where(BaseModel):
 
 class WhereReview(BaseModel):
     user_id: str
-    where_id: int
+    place_id: str
+    where_name: str
+    where_locate: str
+    where_type: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     review_content: str
-    where_like: int
+    where_like: int = 0
     where_rate: float
     reason_menu: bool
     reason_mood: bool
@@ -103,8 +108,8 @@ class WhereReview(BaseModel):
     reason_quite: bool
     reason_photo: bool
     reason_watch: bool
-    images: List[str]  # 리뷰 이미지 리스트
-
+    images: List[str]  # 리뷰 이미지 리스트 (Base64 인코딩된 문자열)
+    
 class WhereImage(BaseModel):
     WHERE_ID: int
     IMAGE: str
@@ -252,25 +257,101 @@ def login(user_id: str, user_pw: str):
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+from fastapi import FastAPI, HTTPException, Depends
+from pydantic import BaseModel, ValidationError
+import mysql.connector
+import logging
+from typing import List, Optional
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+app = FastAPI()
+
+# MySQL 연결 설정
+db_config = {
+    'user': 'root',
+    'password': '1557',
+    'host': 'localhost',
+    'database': 'naholo_db',
+    'port': 3306
+}
+
+# Pydantic 모델 정의
+class WhereReview(BaseModel):
+    user_id: str
+    where_id: str
+    where_name: str
+    where_locate: str
+    where_type: str
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    review_content: str
+    where_like: int = 0
+    where_rate: float
+    reason_menu: bool
+    reason_mood: bool
+    reason_safe: bool
+    reason_seat: bool
+    reason_transport: bool
+    reason_park: bool
+    reason_long: bool
+    reason_view: bool
+    reason_interaction: bool
+    reason_quite: bool
+    reason_photo: bool
+    reason_watch: bool
+    images: List[str]
+
+# Database 연결 함수
+def get_db():
+    conn = mysql.connector.connect(**db_config)
+    try:
+        yield conn
+    finally:
+        conn.close()
+
 # 리뷰 추가 엔드포인트
-@app.post("/add_review/")   
+@app.post("/add_review/")
 async def add_review(review: WhereReview, db=Depends(get_db)):
     logger.info(f"Adding review for user_id: {review.user_id}, where_id: {review.where_id}")
-    logger.debug(f"Review data: {review.dict()}")
-    insert_review_query = """
-    INSERT INTO WHERE_REVIEW (
-        USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
-        REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
-        REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
-        REASON_PHOTO, REASON_WATCH
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    insert_image_query = """
-    INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
-    """
     try:
+        print(review)
         with db.cursor() as cursor:
+            # 장소 존재 여부 확인
+            check_place_query = "SELECT WHERE_ID FROM `Where` WHERE WHERE_ID = %s"
+            cursor.execute(check_place_query, (review.where_id,))
+            existing_place = cursor.fetchone()
+
+            if not existing_place:
+                # 장소가 없으면 새로 추가
+                insert_place_query = """
+                INSERT INTO `Where` (WHERE_ID, WHERE_NAME, WHERE_LOCATE, WHERE_RATE, WHERE_TYPE, LATITUDE, LONGITUDE)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(insert_place_query, (
+                    review.where_id,
+                    review.where_name,
+                    review.where_locate,
+                    review.where_rate,  # 초기 평점
+                    review.where_type,
+                    review.latitude,
+                    review.longitude
+                ))
+                logger.debug(f"Inserted new place with WHERE_ID: {review.where_id}")
+            else:
+                logger.debug(f"Place with WHERE_ID: {review.where_id} already exists")
+
             # 리뷰 데이터 삽입
+            insert_review_query = """
+            INSERT INTO WHERE_REVIEW (
+                USER_ID, WHERE_ID, REVIEW_CONTENT, WHERE_LIKE, WHERE_RATE,
+                REASON_MENU, REASON_MOOD, REASON_SAFE, REASON_SEAT, REASON_TRANSPORT,
+                REASON_PARK, REASON_LONG, REASON_VIEW, REASON_INTERACTION, REASON_QUITE,
+                REASON_PHOTO, REASON_WATCH
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
             cursor.execute(insert_review_query, (
                 review.user_id, review.where_id, review.review_content, review.where_like, review.where_rate,
                 review.reason_menu, review.reason_mood, review.reason_safe, review.reason_seat, review.reason_transport,
@@ -281,11 +362,30 @@ async def add_review(review: WhereReview, db=Depends(get_db)):
             logger.debug(f"Inserted WHERE_REVIEW with REVIEW_ID: {review_id}")
 
             # 리뷰 이미지 삽입
+            insert_image_query = """
+            INSERT INTO REVIEW_IMAGE (REVIEW_ID, IMAGE) VALUES (%s, %s)
+            """
             for base64_image in review.images:
                 cursor.execute(insert_image_query, (review_id, base64_image))
                 logger.debug(f"Inserted image for REVIEW_ID {review_id}")
 
+            # 평균 평점 업데이트
+            update_rating_query = """
+            UPDATE `Where` w
+            JOIN (
+                SELECT WHERE_ID, AVG(WHERE_RATE) AS avg_rate
+                FROM WHERE_REVIEW
+                WHERE WHERE_ID = %s
+                GROUP BY WHERE_ID
+            ) wr ON w.WHERE_ID = wr.WHERE_ID
+            SET w.WHERE_RATE = wr.avg_rate
+            WHERE w.WHERE_ID = %s;
+            """
+            cursor.execute(update_rating_query, (review.where_id, review.where_id))
+            logger.debug(f"Updated WHERE_RATE for WHERE_ID: {review.where_id}")
+
             db.commit()
+
         logger.info("Review and images added successfully")
         return {"message": "Review and images added successfully"}
     except ValidationError as ve:
@@ -299,6 +399,7 @@ async def add_review(review: WhereReview, db=Depends(get_db)):
         db.rollback()
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 # 리뷰 호출 함수
 def call_review(user_id: str) -> List[Dict]:
@@ -1102,7 +1203,7 @@ if __name__ == "__main__":
     import uvicorn
     logger.info(f"Starting server at http://{HOST}:{PORT}")
     try:
-        uvicorn.run(app, host=HOST, port=PORT, log_level="debug")
+        uvicorn.run(app, host="0.0.0.0", port=8000)
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
