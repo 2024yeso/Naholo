@@ -263,12 +263,6 @@ import mysql.connector
 import logging
 from typing import List, Optional
 
-# 로깅 설정
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
-
-app = FastAPI()
-
 # MySQL 연결 설정
 db_config = {
     'user': 'root',
@@ -1203,7 +1197,7 @@ if __name__ == "__main__":
     import uvicorn
     logger.info(f"Starting server at http://{HOST}:{PORT}")
     try:
-        uvicorn.run(app, host="0.0.0.0", port=8000)
+        uvicorn.run(app, host=HOST, port=8000)
     except Exception as e:
         logger.error(f"Failed to start server: {e}")
         raise
