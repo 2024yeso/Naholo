@@ -1,4 +1,5 @@
 import requests
+import json
 
 # 서버 주소와 포트
 BASE_URL = "http://127.0.0.1:8000"
@@ -59,16 +60,26 @@ def test_login_failure_nonexistent_user():
     }
     response = requests.get(f"{BASE_URL}/login/", params=params)
     print("Login Failure (Nonexistent User) Response:", response.json())
+    
+import urllib.parse    
+BASE_URL = 'http://127.0.0.1:8000'  # Adjust as necessary
+
+def test_get_journal():
+    try:
+        user_id = '1@1.1'
+        response = requests.get(BASE_URL + "/user/journal/", params={'user_id': user_id})
+        print(response.status_code)
+        if response.status_code == 200:
+            print("Request successful!")
+            print("Response Data:")
+            print(json.dumps(response.json(), indent=4))
+        else:
+            print(f"Failed to get data. Status Code: {response.status_code}")
+            print("Response Text:", response.text)
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
 
 # 각 테스트 함수 호출
 if __name__ == "__main__":
     print("=== Testing ID Check ===")
-    check_id()
-    print("\n=== Testing User Registration ===")
-    test_add_user()
-    print("\n=== Testing Login Success ===")
-    test_login_success()
-    print("\n=== Testing Login Failure (Wrong Password) ===")
-    test_login_failure_wrong_password()
-    print("\n=== Testing Login Failure (Nonexistent User) ===")
-    test_login_failure_nonexistent_user()
+    test_get_journal()

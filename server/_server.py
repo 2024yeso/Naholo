@@ -1099,6 +1099,87 @@ class LikePostRequest(BaseModel):
     post_id: int
     user_id: str
 
+@app.get("/user/journal/")
+def get_user_journal_posts(user_id: str, db=Depends(get_db)):
+    results = {"latest": [], "top_likes": []}
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            
+            # 최신순으로 포스트 가져오기
+            latest_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            ORDER BY jp.POST_CREATE DESC;
+            """
+            cursor.execute(latest_query, (user_id,))
+            latest_posts = cursor.fetchall()
+            results["latest"] = latest_posts
+            
+            # 좋아요 순으로 포스트 가져오기
+            top_likes_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC;
+            """
+            cursor.execute(top_likes_query, (user_id,))
+            top_likes_posts = cursor.fetchall()
+            results["top_likes"] = top_likes_posts
+            
+            # 모든 POST_ID 수집
+            all_post_ids = set(post['POST_ID'] for post in latest_posts + top_likes_posts)
+            
+            if all_post_ids:
+                post_ids_list = [str(int(post_id)) for post_id in all_post_ids]
+                post_ids_str = ','.join(post_ids_list)
+                
+                # 각 POST_ID의 이미지 조회
+                images_query = f"""
+                SELECT POST_ID, IMAGE_DATA
+                FROM Journal_image
+                WHERE POST_ID IN ({post_ids_str});
+                """
+                cursor.execute(images_query)
+                images_data = cursor.fetchall()
+                
+                # POST_ID별 이미지 매핑
+                post_images_map: Dict[int, List[str]] = {}
+                for image in images_data:
+                    post_id = image['POST_ID']
+                    post_images_map.setdefault(post_id, []).append(image['IMAGE_DATA'])
+                
+                # 각 게시물에 이미지 추가
+                for key in results:
+                    for post in results[key]:
+                        post_id = post['POST_ID']
+                        post['images'] = post_images_map.get(post_id, [])
+                
+                # 혼캎, 혼영 등의 필드를 bool 리스트로 변환
+                for key in results:
+                    for post in results[key]:
+                        post['subjList'] = [
+                            bool(post.get('혼캎', False)),
+                            bool(post.get('혼영', False)),
+                            bool(post.get('혼놀', False)),
+                            bool(post.get('혼밥', False)),
+                            bool(post.get('혼박', False)),
+                            bool(post.get('혼술', False)),
+                            bool(post.get('기타', False)),
+                        ]
+    
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_user_journal_posts: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_user_journal_posts: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    
+    return {"data": results}
+
 @app.post("/journal/like_post")
 def like_post(payload: LikePostRequest, db=Depends(get_db)):
     post_id = payload.post_id
