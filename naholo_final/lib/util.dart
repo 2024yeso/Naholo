@@ -211,7 +211,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
             icon: Icon(
               Icons.search,
               color: Colors.black,
-              size: SizeScaler.scaleSize(context, 20),
+              size: SizeScaler.scaleSize(context, 18),
             ),
             label: "나홀로어디?",
           ),
@@ -219,30 +219,30 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
               icon: Icon(
                 Icons.book_outlined,
                 color: Colors.black,
-                size: SizeScaler.scaleSize(context, 20),
+                size: SizeScaler.scaleSize(context, 18),
               ),
               label: "나홀로일지"),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home_outlined,
               color: Colors.black,
-              size: SizeScaler.scaleSize(context, 20),
+              size: SizeScaler.scaleSize(context, 18),
             ),
             label: '홈',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.check_box_outlined,
-              color: Colors.black,
-              size: SizeScaler.scaleSize(context, 20),
+              color: const Color(0xff4924bd),
+              size: SizeScaler.scaleSize(context, 18),
             ),
             label: '출석',
           ),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.person_outline_outlined,
-              color: Colors.black,
-              size: SizeScaler.scaleSize(context, 20),
+              color: const Color(0xff4924bd),
+              size: SizeScaler.scaleSize(context, 18),
             ),
             label: '마이페이지',
           ),

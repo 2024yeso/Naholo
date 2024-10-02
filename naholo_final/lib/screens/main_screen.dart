@@ -123,13 +123,6 @@ class _MainScreenState extends State<MainScreen> {
                           color: Colors.white, // 아이콘 색상
                         ),
                       ),
-                      IconButton(
-                        onPressed: () {}, // 체크 버튼 클릭 시 동작 (현재 비어 있음)
-                        icon: const Icon(
-                          Icons.check_circle_outline_outlined,
-                          color: Color(0xFFf9747d), // 아이콘 색상
-                        ),
-                      )
                     ],
                   ),
                 ),
@@ -185,8 +178,8 @@ class _MainScreenState extends State<MainScreen> {
                   user!.nickName, // 캐릭터 이름
                   style: TextStyle(
                     color: Colors.white, // 텍스트 색상
-                    fontSize: SizeScaler.scaleSize(context, 15), // 텍스트 크기
-                    fontWeight: FontWeight.w800, // 텍스트 두께
+                    fontSize: SizeScaler.scaleSize(context, 13.5), // 텍스트 크기
+                    fontWeight: FontWeight.w600, // 텍스트 두께
                   ),
                 ),
                 Row(
@@ -241,9 +234,10 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.search, // 검색 아이콘
                                 color: Colors.white, // 아이콘 색상
+                                size: SizeScaler.scaleSize(context, 21),
                               ),
                             ),
                           ),
@@ -251,7 +245,7 @@ class _MainScreenState extends State<MainScreen> {
                             "나홀로어디?", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 7)),
+                                fontSize: SizeScaler.scaleSize(context, 6)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -282,9 +276,10 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.book_outlined, // 책 아이콘
                                 color: Colors.white, // 아이콘 색상
+                                size: SizeScaler.scaleSize(context, 21),
                               ),
                             ),
                           ),
@@ -292,7 +287,7 @@ class _MainScreenState extends State<MainScreen> {
                             "나홀로일지", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 7)),
+                                fontSize: SizeScaler.scaleSize(context, 6)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -315,9 +310,10 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.home_outlined, // 홈 아이콘
                                 color: Colors.white, // 아이콘 색상
+                                size: SizeScaler.scaleSize(context, 21),
                               ),
                             ),
                           ),
@@ -325,7 +321,7 @@ class _MainScreenState extends State<MainScreen> {
                             "홈", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 7)),
+                                fontSize: SizeScaler.scaleSize(context, 6)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -356,9 +352,11 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.check_box_outlined,
-                                color: Colors.white, // 아이콘 색상
+                                color: Colors.white,
+                                size:
+                                    SizeScaler.scaleSize(context, 21), // 아이콘 색상
                               ),
                             ),
                           ),
@@ -366,7 +364,7 @@ class _MainScreenState extends State<MainScreen> {
                             "출석", // 아이콘 하단의 설명 텍스트
                             style: TextStyle(
                                 color: Colors.white,
-                                fontSize: SizeScaler.scaleSize(context, 7)),
+                                fontSize: SizeScaler.scaleSize(context, 6)),
                             // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
@@ -395,9 +393,10 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.person_outline, // 마이페이지 아이콘
                                 color: Colors.white, // 아이콘 색상
+                                size: SizeScaler.scaleSize(context, 21),
                               ),
                             ),
                           ),
@@ -406,7 +405,7 @@ class _MainScreenState extends State<MainScreen> {
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize:
-                                    SizeScaler.scaleSize(context, 7)), // 텍스트 색상
+                                    SizeScaler.scaleSize(context, 6)), // 텍스트 색상
                             maxLines: 1,
                             minFontSize: 5,
                           ),

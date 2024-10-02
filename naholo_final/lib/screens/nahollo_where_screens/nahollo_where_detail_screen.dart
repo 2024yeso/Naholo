@@ -46,7 +46,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: Colors.grey.withOpacity(0.2),
                 offset: const Offset(2, 2),
                 blurRadius: 2,
                 spreadRadius: 2,
@@ -188,7 +188,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
   Widget showReasonChips() {
     return Wrap(
-      spacing: 8.0, // 아이템들 사이의 간격
+      spacing: 0.0, // 아이템들 사이의 간격
       children: _reasonCounts.entries
           .where((entry) => entry.value > 0) // value가 0 이상인 항목만 필터링
           .map((entry) {
@@ -198,8 +198,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
               vertical: SizeScaler.scaleSize(context, 1.5)),
           child: Container(
             padding: EdgeInsets.symmetric(
-              horizontal: SizeScaler.scaleSize(context, 5),
-              vertical: SizeScaler.scaleSize(context, 4),
+              horizontal: SizeScaler.scaleSize(context, 7),
+              vertical: SizeScaler.scaleSize(context, 3),
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
@@ -219,7 +219,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
               children: [
                 Text(
                   reasonTextMap[entry.key] ?? entry.key, // 이유 텍스트
-                  style: const TextStyle(color: Colors.black), // 텍스트 스타일 설정
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: SizeScaler.scaleSize(context, 6)), // 텍스트 스타일 설정
                 ),
                 const SizedBox(width: 5), // 약간의 간격
                 Text(
@@ -476,7 +478,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                           "${info!["WHERE_NAME"]}",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                            fontSize: 20,
                           ),
                           maxLines: 1,
                           minFontSize: 10,
@@ -487,7 +489,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                           ),
                           style: TextStyle(
                             color: const Color(0xff7f7f7f),
-                            fontSize: SizeScaler.scaleSize(context, 7),
+                            fontSize: SizeScaler.scaleSize(context, 9),
                           ),
                         ),
                         Row(
@@ -498,7 +500,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                   : "${info!["SAVE"]}명이 이 장소를 저장했어요",
                               style: TextStyle(
                                 color: const Color(0xff7f7f7f),
-                                fontSize: SizeScaler.scaleSize(context, 7),
+                                fontSize: SizeScaler.scaleSize(context, 8),
                               ),
                             ),
                             SizedBox(
@@ -580,7 +582,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                 },
                               ),
                             ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 15),
                           // 리뷰 내용
                           Padding(
                             padding:
@@ -594,10 +596,10 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           // True인 REASON들 표시
                           Wrap(
-                            spacing: 8.0,
+                            spacing: 6.0,
                             children: trueReasons
                                 .map((reason) => Padding(
                                       padding: EdgeInsets.only(

@@ -169,7 +169,7 @@ class _NaholloWhereRegisterScreenState
         centerTitle: true,
         title: const Text(
           '나홀로 어디? 등록',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -188,7 +188,7 @@ class _NaholloWhereRegisterScreenState
           children: [
             Text(
               '나홀로 어디? 사진 ${_selectedImages.length}/10',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: SizeScaler.scaleSize(context, 5),
@@ -235,10 +235,10 @@ class _NaholloWhereRegisterScreenState
             ),
             const Text(
               '다녀온 나홀로 어디?',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             SizedBox(
-              height: SizeScaler.scaleSize(context, 10),
+              height: SizeScaler.scaleSize(context, 8),
             ),
             GestureDetector(
               onTap: () {
@@ -277,7 +277,7 @@ class _NaholloWhereRegisterScreenState
             ),
             const Text(
               '혼자 뭐하러?',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             SizedBox(
               height: SizeScaler.scaleSize(context, 5),
@@ -339,13 +339,13 @@ class _NaholloWhereRegisterScreenState
             ),
             const Text(
               '나홀로 가기 좋은 이유',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: SizeScaler.scaleSize(context, 12),
             ),
             Wrap(
-              spacing: 3.0,
+              spacing: 6.0,
               runSpacing: 1.0,
               children: _reasons.keys.map((reason) {
                 return FilterChip(
@@ -403,7 +403,7 @@ class _NaholloWhereRegisterScreenState
                       color: Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withOpacity(0.3),
                           offset: const Offset(2, 2),
                           blurRadius: 2,
                           spreadRadius: 2,
@@ -437,7 +437,7 @@ class _NaholloWhereRegisterScreenState
                   ),
                 ),
                 SizedBox(
-                  width: SizeScaler.scaleSize(context, 15),
+                  width: SizeScaler.scaleSize(context, 9),
                 ),
                 Text(
                   '$_rating',
@@ -464,32 +464,38 @@ class _NaholloWhereRegisterScreenState
                 hintStyle: const TextStyle(
                   fontSize: 12,
                 ),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: SizeScaler.scaleSize(context, 15),
+                    vertical: SizeScaler.scaleSize(context, 10)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                if (_rating == 0) {
-                  Fluttertoast.showToast(msg: "별점을 입력해주세요!");
-                } else {
-                  if (_result["name"] == "장소를 입력해주세요") {
-                    Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+            SizedBox(height: SizeScaler.scaleSize(context, 13)),
+            SizedBox(
+              width: SizeScaler.scaleSize(context, 197),
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (_rating == 0) {
+                    Fluttertoast.showToast(msg: "별점을 입력해주세요!");
                   } else {
-                    _submitReview();
+                    if (_result["name"] == "장소를 입력해주세요") {
+                      Fluttertoast.showToast(msg: "장소를 입력해주세요!");
+                    } else {
+                      _submitReview();
+                    }
                   }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: const Color(0xff7a4fff),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xff7a4fff),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
+                child: const Text('나홀로 어디? 등록'),
               ),
-              child: const Text('나홀로 어디? 등록'),
             ),
           ],
         ),

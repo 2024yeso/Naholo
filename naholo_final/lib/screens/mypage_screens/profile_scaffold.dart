@@ -212,7 +212,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(
-                height: SizeScaler.scaleSize(context, 8),
+                height: SizeScaler.scaleSize(context, 6),
               ),
               // 프로필 섹션
               _buildProfileSection(),
@@ -250,9 +250,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   Widget _buildProfileSection() {
     return Row(
       children: [
+        SizedBox(
+          width: SizeScaler.scaleSize(context, 6),
+        ),
         CircleAvatar(
           radius: SizeScaler.scaleSize(context, 15),
-          backgroundColor: Colors.purple,
+          backgroundColor: Colors.grey.withOpacity(0.5),
           child: _userProfile != null && _userProfile!.image != null
               ? ClipOval(
                   child: Image.memory(
@@ -264,11 +267,11 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 )
               : Icon(
                   Icons.person,
-                  size: SizeScaler.scaleSize(context, 15),
+                  size: SizeScaler.scaleSize(context, 18),
                   color: Colors.white,
                 ),
         ),
-        SizedBox(width: SizeScaler.scaleSize(context, 12)),
+        SizedBox(width: SizeScaler.scaleSize(context, 8)),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +296,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                   ),
                 ],
               ),
-              SizedBox(height: SizeScaler.scaleSize(context, 1)),
+              SizedBox(height: SizeScaler.scaleSize(context, 0)),
               Text(
                 _userProfile?.introduce ?? '자기소개가 없습니다.',
                 style: TextStyle(
@@ -328,7 +331,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 child: Text(
                   '팔로워 $follower',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 6),
+                    fontSize: SizeScaler.scaleSize(context, 7),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -344,7 +347,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 child: Text(
                   '팔로잉 $following',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 6),
+                    fontSize: SizeScaler.scaleSize(context, 7),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -352,8 +355,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             ],
           ),
           SizedBox(
-            width: SizeScaler.scaleSize(context, 42), // 버튼 너비
-            height: SizeScaler.scaleSize(context, 14), // 버튼 높이
+            width: SizeScaler.scaleSize(context, 48), // 버튼 너비
+            height: SizeScaler.scaleSize(context, 15), // 버튼 높이
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -376,7 +379,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 '프로필 수정',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: SizeScaler.scaleSize(context, 5),
+                  fontSize: SizeScaler.scaleSize(context, 7),
                   fontWeight: FontWeight.w600,
                 ),
               ),

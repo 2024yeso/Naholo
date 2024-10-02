@@ -214,7 +214,8 @@ class _DiaryMainState extends State<DiaryMain> {
           children: [
             AppBar(
               backgroundColor: const Color(0xFFF0E8FA),
-              toolbarHeight: SizeScaler.scaleSize(context, 25),
+              toolbarHeight: SizeScaler.scaleSize(context, 35),
+
               automaticallyImplyLeading: false, // Remove default back arrow
               title: Row(
                 children: [
@@ -242,7 +243,10 @@ class _DiaryMainState extends State<DiaryMain> {
                       child: Text(
                         '나홀로일지',
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 8),
+                          fontSize: SizeScaler.scaleSize(
+                            context,
+                            SizeScaler.scaleSize(context, 5),
+                          ),
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -273,8 +277,7 @@ class _DiaryMainState extends State<DiaryMain> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    DiaryUser(),
+                                builder: (context) => DiaryUser(),
                               ),
                             );
                           },
@@ -420,20 +423,24 @@ class _DiaryMainState extends State<DiaryMain> {
                     ),
                     // Right area
                     Expanded(
-                        flex: 68,
-                        child: OverflowBox(
-                          maxHeight: SizeScaler.scaleSize(context, 100),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                bottom: SizeScaler.scaleSize(
-                                    context, -20), // Overflow
-                                child: Image.asset(
-                                    "assets/images/$userCharacter.png"),
+                      flex: 68,
+                      child: OverflowBox(
+                        maxHeight: SizeScaler.scaleSize(context, 100),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              right: SizeScaler.scaleSize(context, 0),
+                              bottom:
+                                  SizeScaler.scaleSize(context, 0), // Overflow
+                              child: Image.asset(
+                                "assets/images/$userCharacter.png",
+                                scale: 4.5,
                               ),
-                            ],
-                          ),
-                        )),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -547,7 +554,8 @@ class _DiaryMainState extends State<DiaryMain> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => DiaryUser(),
+                                                builder: (context) =>
+                                                    DiaryUser(),
                                               ),
                                             );
                                           },

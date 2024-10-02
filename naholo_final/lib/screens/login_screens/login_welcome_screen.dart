@@ -186,7 +186,7 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    fontSize: 13),
+                                    fontSize: 15),
                               ),
                             ),
                           ),
@@ -218,6 +218,7 @@ class _LoginWelcomeScreenState extends State<LoginWelcomeScreen>
                             child: const Center(
                               child: Text(
                                 "바로 시작하기",
+                                style: TextStyle(fontSize: 15),
                               ),
                             ),
                           ),

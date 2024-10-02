@@ -175,8 +175,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     SvgPicture.asset(
                       'assets/images/nahollo_logo_human_white.svg',
-                      width: SizeScaler.scaleSize(context, 45),
-                      height: SizeScaler.scaleSize(context, 45),
+                      width: SizeScaler.scaleSize(context, 50),
+                      height: SizeScaler.scaleSize(context, 50),
                     ),
                     SvgPicture.asset(
                       'assets/images/nahollo_logo_name_white.svg',

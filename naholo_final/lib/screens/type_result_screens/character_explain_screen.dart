@@ -107,30 +107,34 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
 
   Widget characterExplain(String character) {
     Color textColor = const Color(0xff483d70); // 모든 텍스트의 색상
-    double fontSize = SizeScaler.scaleSize(context, 10); // 모든 텍스트의 폰트 크기
-    FontWeight fontWeight = FontWeight.bold; // 텍스트의 굵기
+    double fontSize = SizeScaler.scaleSize(context, 9); // 모든 텍스트의 폰트 크기
+    FontWeight fontWeight = FontWeight.w400; // 텍스트의 굵기
 
     if (character == "cat") {
-      return Column(
-        children: [
-          Text(
-            "• 고양이는 독립적인 성향이 강한 동물로, 혼자 사는 생활방식과 잘 맞는 동물이에요. 집에서 기르는 고양이 역시 혼자 있는 시간을 즐기며, 인간의 지속적인 관심이나 보호가 없어도 스트레스를 받지 않는답니다.",
-            style: TextStyle(
-                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
-          ),
-          SizedBox(height: SizeScaler.scaleSize(context, 5)),
-          Text(
-            "• 고양이는 혼자 놀거나 조용히 주위를 관찰하는 시간이 많아요. 고양이는 정기적으로 먹이를 제공받고, 필요한 환경만 갖추어지면 외로움을 덜 느끼는 동물이에요.",
-            style: TextStyle(
-                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
-          ),
-          SizedBox(height: SizeScaler.scaleSize(context, 5)),
-          Text(
-            "• 하지만 고양이는 혼자 있는 것을 좋아하면서도 주인과의 유대감을 무시하지 않아요. 혼자 사는 사람들이 가끔은 외로움을 느낄 때, 고양이는 짧은 시간 동안의 교감을 통해 서로에게 안정감을 줄 수 있어요!",
-            style: TextStyle(
-                color: textColor, fontSize: fontSize, fontWeight: fontWeight),
-          ),
-        ],
+      return Padding(
+        padding:
+            EdgeInsets.symmetric(horizontal: SizeScaler.scaleSize(context, 8)),
+        child: Column(
+          children: [
+            Text(
+              "• 고양이는 독립적인 성향이 강한 동물로, 혼자 사는 생활방식과 잘 맞는 동물이에요. 집에서 기르는 고양이 역시 혼자 있는 시간을 즐기며, 인간의 지속적인 관심이나 보호가 없어도 스트레스를 받지 않는답니다.",
+              style: TextStyle(
+                  color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+            ),
+            SizedBox(height: SizeScaler.scaleSize(context, 5)),
+            Text(
+              "• 고양이는 혼자 놀거나 조용히 주위를 관찰하는 시간이 많아요. 고양이는 정기적으로 먹이를 제공받고, 필요한 환경만 갖추어지면 외로움을 덜 느끼는 동물이에요.",
+              style: TextStyle(
+                  color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+            ),
+            SizedBox(height: SizeScaler.scaleSize(context, 5)),
+            Text(
+              "• 하지만 고양이는 혼자 있는 것을 좋아하면서도 주인과의 유대감을 무시하지 않아요. 혼자 사는 사람들이 가끔은 외로움을 느낄 때, 고양이는 짧은 시간 동안의 교감을 통해 서로에게 안정감을 줄 수 있어요!",
+              style: TextStyle(
+                  color: textColor, fontSize: fontSize, fontWeight: fontWeight),
+            ),
+          ],
+        ),
       );
     } else if (character == "hedgehog") {
       return Column(

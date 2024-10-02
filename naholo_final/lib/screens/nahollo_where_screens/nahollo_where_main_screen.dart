@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/colors.dart';
@@ -71,7 +72,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
 
   String showAdress(String adress) {
     var list = adress.split(' ');
-    if (list.length < 2) return adress;
+    if (list.length < 3) return adress;
     var result = '${list[1]}, ${list[2]}';
     return result;
   }
@@ -363,6 +364,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                     _selectedType == "overall"
                         ? Column(
                             children: [
+                              SizedBox(
+                                height: SizeScaler.scaleSize(context, 6),
+                              ),
                               SingleChildScrollView(
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
@@ -374,7 +378,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "${user!.nickName}를 위한\n장소를 추천해줄께-!",
+                                          "${user!.nickName}를 위한\n장소를 추천해줄게-!",
                                           style: TextStyle(
                                             fontSize: SizeScaler.scaleSize(
                                                 context, 12),
@@ -452,7 +456,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                     ],
                   ),
                   SizedBox(
-                    height: SizeScaler.scaleSize(context, 20),
+                    height: SizeScaler.scaleSize(context, 15),
                   )
                 ],
               ),
@@ -713,6 +717,11 @@ class GradientElevatedButton extends StatelessWidget {
       width: SizeScaler.scaleSize(context, 33),
       height: SizeScaler.scaleSize(context, 13),
       decoration: BoxDecoration(
+        border: Border.all(
+          color: const Color(0xff4924bd).withOpacity(0.8),
+          width: 0.1,
+        ),
+
         gradient: isSelected
             ? const LinearGradient(
                 colors: [Color(0xff4722BC), Color(0xffC17AFF)],

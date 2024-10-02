@@ -233,7 +233,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                     // 이미지 추가 버튼
                     Padding(
                       padding: EdgeInsets.symmetric(
-                          vertical: SizeScaler.scaleSize(context, 8),
+                          vertical: SizeScaler.scaleSize(context, 11),
                           horizontal: SizeScaler.scaleSize(context, 11)),
                       child: ElevatedButton.icon(
                         onPressed: _pickImage, // 버튼 클릭 시 이미지 선택 함수 호출
@@ -241,11 +241,12 @@ class _DiaryWritingState extends State<DiaryWriting> {
                         label: Text(
                           '사진 추가',
                           style: TextStyle(
-                              fontSize: SizeScaler.scaleSize(context, 7)),
+                              fontSize: SizeScaler.scaleSize(context, 8)),
                         ),
                         style: ElevatedButton.styleFrom(
+                          elevation: 0,
                           minimumSize: Size(double.infinity,
-                              SizeScaler.scaleSize(context, 18)),
+                              SizeScaler.scaleSize(context, 25)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(
                                 SizeScaler.scaleSize(context, 10)),
@@ -307,7 +308,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                             child: Text(
                               '주제를 선택하세요!',
                               style: TextStyle(
-                                fontSize: SizeScaler.scaleSize(context, 5),
+                                fontSize: SizeScaler.scaleSize(context, 7),
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black,
                               ),
@@ -380,7 +381,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       ),
                     ),
                     Container(
-                      color: const Color(0xFFBABABA), // 구분선 색상
+                      color: const Color(0xFFBABABA).withOpacity(0.5), // 구분선 색상
                       height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
                     ),
                     Padding(
@@ -404,11 +405,11 @@ class _DiaryWritingState extends State<DiaryWriting> {
               ),
             ),
           ),
-          Container(
+          /* Container(
             color: const Color(0xFFBABABA),
             height: SizeScaler.scaleSize(context, 0.5),
-          ),
-          SizedBox(
+          ), */
+          /*   SizedBox(
             height: SizeScaler.scaleSize(context, 27), // 높이 설정
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -426,7 +427,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
                 ),
               ],
             ),
-          ),
+          ), */
         ],
       ),
     );
