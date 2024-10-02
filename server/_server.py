@@ -10,6 +10,14 @@ from uuid import uuid4
 import base64
 import logging
 from datetime import datetime
+from fastapi import FastAPI, HTTPException, Body
+from pydantic import BaseModel, Field
+from typing import List
+from pathlib import Path
+import json
+from datetime import date
+import logging
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -1399,6 +1407,67 @@ def like_review(review_id: int, like_data: dict = Body(...), db=Depends(get_db))
         db.rollback()
         logger.error(f"Unexpected error in like_review: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+class AttendanceCheck(BaseModel):
+    username: str
+
+class AttendanceResponse(BaseModel):
+    message: str
+    attendance_dates: List[str]
+
+# 출석 체크 엔드포인트
+@app.post("/attendance/check", response_model=AttendanceResponse)
+def check_attendance(attendance: AttendanceCheck = Body(...)):
+    userid = attendance.username
+    
+    user_file = f"./json/{userid}.json"
+    today_str = date.today().isoformat()
+    logger.info(f"Processing attendance for user: {userid} on {today_str}")
+
+    try:
+        # 파일 존재 여부를 os.path.exists로 확인
+        if os.path.exists(user_file):
+            logger.debug(f"Found existing file for user: {userid}")
+            with open(user_file, "r", encoding="utf-8") as f:
+                user_data = json.load(f)
+            
+            if "attendance_dates" not in user_data:
+                user_data["attendance_dates"] = []
+                logger.debug("Initialized 'attendance_dates' list.")
+
+            if today_str in user_data["attendance_dates"]:
+                return AttendanceResponse(
+                    message="already", 
+                    attendance_dates=user_data["attendance_dates"]
+                )
+            else:
+                user_data["attendance_dates"].append(today_str)
+
+                with open(user_file, "w", encoding="utf-8") as f:
+                    json.dump(user_data, f, ensure_ascii=False, indent=4)
+        else:
+            logger.debug(f"No existing file for user: {userid}. Creating new file.")
+            user_data = {
+                "username": userid,
+                "attendance_dates": [today_str]
+            }
+            with open(user_file, "w", encoding="utf-8") as f:
+                json.dump(user_data, f, ensure_ascii=False, indent=4)
+
+        # 응답 객체를 생성하여 반환
+        return AttendanceResponse(
+            message="attendance.",
+            attendance_dates=user_data["attendance_dates"]
+        )
+    
+    except json.JSONDecodeError:
+        logger.error(f"JSON decode error for file: {user_file}")
+        raise HTTPException(status_code=500, detail="Corrupted attendance record.")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 
 # 서버 실행
 if __name__ == "__main__":
