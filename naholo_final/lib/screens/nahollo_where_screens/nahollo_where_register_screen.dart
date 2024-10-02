@@ -90,7 +90,7 @@ class _NaholloWhereRegisterScreenState
   }
 
   Future<void> _submitReview() async {
-
+    print('아녕어어어녕');
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final user = userProvider.user;
     // 이미지들을 Base64로 인코딩
@@ -115,7 +115,7 @@ class _NaholloWhereRegisterScreenState
       "where_name": name,
       "where_locate": locate,
       "where_type": whereType,
-      "where_image" : _result["photoUrl"],
+      "where_image": _result["photoUrl"],
       "latitude": lat,
       "longitude": lng,
       "review_content": content,
@@ -137,7 +137,7 @@ class _NaholloWhereRegisterScreenState
     };
 
     try {
-      var url = Uri.parse('http://10.0.2.2:8000/add_review/');
+      var url = Uri.parse('${Api.baseUrl}/add_review/');
 
       var response = await http.post(
         url,

@@ -1,6 +1,7 @@
 // main.dart
 
 import 'package:flutter/material.dart';
+import 'package:nahollo/api/api.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/diary_screens/diary_search.dart';
 import 'package:nahollo/screens/diary_screens/diary_writing.dart';
@@ -72,7 +73,7 @@ class _DiaryMainState extends State<DiaryMain> {
   }
 
   void fetchData(String userId) async {
-    const url = 'http://10.0.2.2:8000/journal/main'; // 서버 URL
+    const url = '${Api.baseUrl}/journal/main'; // 서버 URL
     try {
       final response = await http.get(Uri.parse('$url?user_id=$userId'));
 

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert'; // base64 인코딩을 위한 패키지
 import 'dart:io'; // 파일 관련
 import 'package:http/http.dart' as http; // 서버 요청을 위한 패키지
+import 'package:nahollo/api/api.dart';
 // 나홀로일지 글 상세보기
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/providers/user_provider.dart';
@@ -129,7 +130,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
     };
 
     // user_id를 쿼리 파라미터로 포함시킨 URL
-    var url = Uri.parse('http://10.0.2.2:8000/journal/upload/?user_id=$userId');
+    var url = Uri.parse('${Api.baseUrl}/journal/upload/?user_id=$userId');
 
     var response = await http.post(
       url,

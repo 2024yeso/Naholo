@@ -1,5 +1,6 @@
 // diary_comment.dart
 import 'package:flutter/material.dart';
+import 'package:nahollo/api/api.dart';
 import 'package:nahollo/models/diaryComment_model.dart';
 import 'package:nahollo/sizeScaler.dart'; // 크기 조절
 import 'dart:convert';
@@ -30,8 +31,7 @@ class _DiaryCommentState extends State<DiaryComment> {
 
   // 서버로부터 댓글을 가져오는 함수
   Future<void> fetchComments() async {
-    final url =
-        'http://10.0.2.2:8000/journal/get_comments?post_id=${widget.postId}';
+    final url = '${Api.baseUrl}/journal/get_comments?post_id=${widget.postId}';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -52,7 +52,7 @@ class _DiaryCommentState extends State<DiaryComment> {
           isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('댓글을 가져오는데 실패했습니다.')),
+          const SnackBar(content: Text('댓글을 가져오는데 실패했습니다.')),
         );
       }
     } catch (e) {
@@ -61,14 +61,14 @@ class _DiaryCommentState extends State<DiaryComment> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('댓글을 가져오는데 오류가 발생했습니다.')),
+        const SnackBar(content: Text('댓글을 가져오는데 오류가 발생했습니다.')),
       );
     }
   }
 
   // 댓글을 추가하는 함수 (추가 기능 구현 필요)
   Future<void> addComment(String content) async {
-    final url = 'http://10.0.2.2:8000/journal/add_comments';
+    const url = '${Api.baseUrl}/journal/add_comments';
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.user?.userId ?? 'unknown';
     final userName = userProvider.user?.nickName ?? 'Unknown';
@@ -88,18 +88,18 @@ class _DiaryCommentState extends State<DiaryComment> {
         // 댓글 추가 성공 시, 다시 댓글을 가져옵니다.
         await fetchComments();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('댓글이 추가되었습니다!')),
+          const SnackBar(content: Text('댓글이 추가되었습니다!')),
         );
       } else {
         print('Failed to add comment: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('댓글을 추가하는데 실패했습니다.')),
+          const SnackBar(content: Text('댓글을 추가하는데 실패했습니다.')),
         );
       }
     } catch (e) {
       print('Error adding comment: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('댓글을 추가하는데 오류가 발생했습니다.')),
+        const SnackBar(content: Text('댓글을 추가하는데 오류가 발생했습니다.')),
       );
     }
   }
@@ -154,9 +154,9 @@ class _DiaryCommentState extends State<DiaryComment> {
         children: [
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator()) // 로딩 중 표시
+                ? const Center(child: CircularProgressIndicator()) // 로딩 중 표시
                 : comments.isEmpty
-                    ? Center(child: Text('댓글이 없습니다.'))
+                    ? const Center(child: Text('댓글이 없습니다.'))
                     : ListView.builder(
                         itemCount: comments.length,
                         itemBuilder: (context, index) {
@@ -175,7 +175,8 @@ class _DiaryCommentState extends State<DiaryComment> {
                                       backgroundColor: Colors.grey,
                                       child: Text(
                                         comments[index].author[0], // 첫 글자 표시
-                                        style: TextStyle(color: Colors.white),
+                                        style: const TextStyle(
+                                            color: Colors.white),
                                       ),
                                     ),
                                     SizedBox(
@@ -224,7 +225,7 @@ class _DiaryCommentState extends State<DiaryComment> {
                                     ),
                                   ],
                                 ),
-                                Divider(), // 각 댓글 구분선
+                                const Divider(), // 각 댓글 구분선
                               ],
                             ),
                           );

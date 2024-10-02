@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷
+import 'package:nahollo/api/api.dart';
 import 'diary_comment.dart'; // 나홀로일지 댓글
 import 'diary_writing.dart';
 import 'diary_user.dart';
@@ -69,47 +70,47 @@ class _DiaryTextState extends State<DiaryText> {
   }
 
 // 서버로부터 좋아요 수와 댓글 수를 가져오는 함수
-Future<void> fetchPostDetails() async {
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
-  final userId = userProvider.user?.userId ?? 'unknown'; // 현재 사용자 ID 가져오기
+  Future<void> fetchPostDetails() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.userId ?? 'unknown'; // 현재 사용자 ID 가져오기
 
-  final url = 'http://10.0.2.2:8000/journal/post_details?post_id=${widget.postid}&user_id=$userId';
+    final url =
+        '${Api.baseUrl}/journal/post_details?post_id=${widget.postid}&user_id=$userId';
 
-  try {
-    final response = await http.get(Uri.parse(url));
+    try {
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(utf8.decode(response.bodyBytes));
-      setState(() {
-        likeCount = data['likes'] ?? 0;
-        commentCount = data['comments'] ?? 0;
-        isLiked = data['liked'] ?? false; // 서버에서 좋아요 상태 반영
-        isLoading = false;
-      });
-    } else {
-      print('Failed to fetch post details: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        setState(() {
+          likeCount = data['likes'] ?? 0;
+          commentCount = data['comments'] ?? 0;
+          isLiked = data['liked'] ?? false; // 서버에서 좋아요 상태 반영
+          isLoading = false;
+        });
+      } else {
+        print('Failed to fetch post details: ${response.statusCode}');
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('게시물 정보를 가져오는데 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      print('Error fetching post details: $e');
       setState(() {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('게시물 정보를 가져오는데 실패했습니다.')),
+        const SnackBar(content: Text('게시물 정보를 가져오는데 오류가 발생했습니다.')),
       );
     }
-  } catch (e) {
-    print('Error fetching post details: $e');
-    setState(() {
-      isLoading = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('게시물 정보를 가져오는데 오류가 발생했습니다.')),
-    );
   }
-}
-
 
   // 좋아요 추가 요청
   Future<void> likePost() async {
-    final url = 'http://10.0.2.2:8000/journal/like_post';
+    const url = '${Api.baseUrl}/journal/like_post';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -123,25 +124,25 @@ Future<void> fetchPostDetails() async {
           isLiked = true;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('좋아요를 눌렀습니다!')),
+          const SnackBar(content: Text('좋아요를 눌렀습니다!')),
         );
       } else {
         print('Failed to like post: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('좋아요를 누르는데 실패했습니다.')),
+          const SnackBar(content: Text('좋아요를 누르는데 실패했습니다.')),
         );
       }
     } catch (e) {
       print('Error liking post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('좋아요를 누르는데 오류가 발생했습니다.')),
+        const SnackBar(content: Text('좋아요를 누르는데 오류가 발생했습니다.')),
       );
     }
   }
 
   // 좋아요 취소 요청
   Future<void> unlikePost() async {
-    final url = 'http://10.0.2.2:8000/journal/unlike_post';
+    const url = '${Api.baseUrl}/journal/unlike_post';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -155,25 +156,25 @@ Future<void> fetchPostDetails() async {
           isLiked = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('좋아요를 취소했습니다.')),
+          const SnackBar(content: Text('좋아요를 취소했습니다.')),
         );
       } else {
         print('Failed to unlike post: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('좋아요를 취소하는데 실패했습니다.')),
+          const SnackBar(content: Text('좋아요를 취소하는데 실패했습니다.')),
         );
       }
     } catch (e) {
       print('Error unliking post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('좋아요를 취소하는데 오류가 발생했습니다.')),
+        const SnackBar(content: Text('좋아요를 취소하는데 오류가 발생했습니다.')),
       );
     }
   }
 
   // 게시물 삭제 요청
   Future<void> _deletePost() async {
-    final url = 'http://10.0.2.2:8000/journal/delete_post';
+    const url = '${Api.baseUrl}/journal/delete_post';
     try {
       final response = await http.post(
         Uri.parse(url),
@@ -183,19 +184,19 @@ Future<void> fetchPostDetails() async {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('게시물이 삭제되었습니다.')),
+          const SnackBar(content: Text('게시물이 삭제되었습니다.')),
         );
         Navigator.pop(context); // 이전 페이지로 돌아가기
       } else {
         print('Failed to delete post: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('게시물 삭제에 실패했습니다.')),
+          const SnackBar(content: Text('게시물 삭제에 실패했습니다.')),
         );
       }
     } catch (e) {
       print('Error deleting post: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('게시물 삭제에 오류가 발생했습니다.')),
+        const SnackBar(content: Text('게시물 삭제에 오류가 발생했습니다.')),
       );
     }
   }
@@ -206,17 +207,17 @@ Future<void> fetchPostDetails() async {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('게시물 삭제'),
-          content: Text('정말 이 게시물을 삭제하시겠습니까?'),
+          title: const Text('게시물 삭제'),
+          content: const Text('정말 이 게시물을 삭제하시겠습니까?'),
           actions: [
             TextButton(
-              child: Text('취소'),
+              child: const Text('취소'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('삭제'),
+              child: const Text('삭제'),
               onPressed: () async {
                 Navigator.of(context).pop();
                 await _deletePost();
@@ -371,7 +372,8 @@ Future<void> fetchPostDetails() async {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DiaryUser(authorID: widget.authorID),
+                                builder: (context) =>
+                                    DiaryUser(authorID: widget.authorID),
                               ),
                             );
                           },
@@ -380,9 +382,12 @@ Future<void> fetchPostDetails() async {
                               CircleAvatar(
                                 radius: SizeScaler.scaleSize(context, 10),
                                 backgroundColor: Colors.grey,
-                                child: const Icon(Icons.person, color: Colors.white),
+                                child: const Icon(Icons.person,
+                                    color: Colors.white),
                               ),
-                              SizedBox(width: SizeScaler.scaleSize(context, 4)), // 글쓴이 프로필의 사진과 이름 간격
+                              SizedBox(
+                                  width: SizeScaler.scaleSize(
+                                      context, 4)), // 글쓴이 프로필의 사진과 이름 간격
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,14 +395,16 @@ Future<void> fetchPostDetails() async {
                                     Text(
                                       widget.author,
                                       style: TextStyle(
-                                        fontSize: SizeScaler.scaleSize(context, 8),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 8),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
                                     Text(
                                       _formatDateTimeRelative(widget.createdAt),
                                       style: TextStyle(
-                                        fontSize: SizeScaler.scaleSize(context, 6),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 6),
                                         fontWeight: FontWeight.w300,
                                         color: const Color(0xFF7E7E7E),
                                       ),
@@ -480,7 +487,8 @@ Future<void> fetchPostDetails() async {
                                 ),
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Padding(
                                     padding: EdgeInsets.only(
@@ -490,7 +498,8 @@ Future<void> fetchPostDetails() async {
                                       "일지쓰고 캐릭터 성장시키자!",
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: SizeScaler.scaleSize(context, 6),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 6),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -503,7 +512,8 @@ Future<void> fetchPostDetails() async {
                                       "오늘 하루 기록하러 가기 >",
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: SizeScaler.scaleSize(context, 4),
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 4),
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -518,23 +528,29 @@ Future<void> fetchPostDetails() async {
                         // 이미지 슬라이더 추가
                         if (widget.images.isNotEmpty) ...[
                           SizedBox(
-                            height: SizeScaler.scaleSize(context, 100), // 높이를 고정하여 슬라이더 높이 일정
+                            height: SizeScaler.scaleSize(
+                                context, 100), // 높이를 고정하여 슬라이더 높이 일정
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
                               itemCount: widget.images.length,
                               itemBuilder: (context, index) {
                                 try {
-                                  final decodedImage = base64Decode(widget.images[index]);
+                                  final decodedImage =
+                                      base64Decode(widget.images[index]);
                                   return Padding(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: SizeScaler.scaleSize(context, 5),
+                                      horizontal:
+                                          SizeScaler.scaleSize(context, 5),
                                     ),
                                     child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(SizeScaler.scaleSize(context, 7)),
+                                      borderRadius: BorderRadius.circular(
+                                          SizeScaler.scaleSize(context, 7)),
                                       child: Image.memory(
                                         decodedImage,
-                                        width: SizeScaler.scaleSize(context, 100), // 고정된 너비 설정
-                                        fit: BoxFit.contain, // 이미지 비율을 유지하며 잘리지 않게 표시
+                                        width: SizeScaler.scaleSize(
+                                            context, 100), // 고정된 너비 설정
+                                        fit: BoxFit
+                                            .contain, // 이미지 비율을 유지하며 잘리지 않게 표시
                                       ),
                                     ),
                                   );
@@ -542,16 +558,20 @@ Future<void> fetchPostDetails() async {
                                   print('Error decoding image: $e');
                                   return Padding(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: SizeScaler.scaleSize(context, 5),
+                                      horizontal:
+                                          SizeScaler.scaleSize(context, 5),
                                     ),
                                     child: Container(
                                       width: SizeScaler.scaleSize(context, 100),
-                                      height: SizeScaler.scaleSize(context, 100),
+                                      height:
+                                          SizeScaler.scaleSize(context, 100),
                                       decoration: BoxDecoration(
                                         color: Colors.grey[300],
-                                        borderRadius: BorderRadius.circular(SizeScaler.scaleSize(context, 7)),
+                                        borderRadius: BorderRadius.circular(
+                                            SizeScaler.scaleSize(context, 7)),
                                       ),
-                                      child: Icon(Icons.broken_image, color: Colors.red),
+                                      child: const Icon(Icons.broken_image,
+                                          color: Colors.red),
                                     ),
                                   );
                                 }
@@ -587,20 +607,25 @@ Future<void> fetchPostDetails() async {
                               left: SizeScaler.scaleSize(context, 5),
                             ),
                             child: Wrap(
-                              spacing: SizeScaler.scaleSize(context, -5), // 태그 간의 가로 간격
-                              runSpacing: SizeScaler.scaleSize(context, 2), // 태그 간의 세로 간격
+                              spacing: SizeScaler.scaleSize(
+                                  context, -5), // 태그 간의 가로 간격
+                              runSpacing: SizeScaler.scaleSize(
+                                  context, 2), // 태그 간의 세로 간격
                               children: widget.subjList
                                   .asMap()
                                   .entries
-                                  .where((entry) => entry.value) // `true`인 인덱스만 필터링
+                                  .where((entry) =>
+                                      entry.value) // `true`인 인덱스만 필터링
                                   .map((entry) => Padding(
                                         padding: EdgeInsets.symmetric(
-                                          horizontal: SizeScaler.scaleSize(context, 4),
+                                          horizontal:
+                                              SizeScaler.scaleSize(context, 4),
                                         ),
                                         child: Text(
                                           subjects[entry.key], // 해당 인덱스의 태그 출력
                                           style: TextStyle(
-                                            fontSize: SizeScaler.scaleSize(context, 7),
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 7),
                                             fontWeight: FontWeight.w500,
                                             color: const Color(0xFFA3A3A3),
                                           ),
@@ -624,8 +649,11 @@ Future<void> fetchPostDetails() async {
                                     iconSize: SizeScaler.scaleSize(context, 10),
                                     padding: EdgeInsets.zero,
                                     icon: Icon(
-                                      isLiked ? Icons.favorite : Icons.favorite_border,
-                                      color: isLiked ? Colors.red : Colors.black,
+                                      isLiked
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color:
+                                          isLiked ? Colors.red : Colors.black,
                                       size: SizeScaler.scaleSize(context, 10),
                                     ),
                                     onPressed: () async {
@@ -639,7 +667,8 @@ Future<void> fetchPostDetails() async {
                                   Text(
                                     '$likeCount',
                                     style: TextStyle(
-                                      fontSize: SizeScaler.scaleSize(context, 5),
+                                      fontSize:
+                                          SizeScaler.scaleSize(context, 5),
                                       fontWeight: FontWeight.w300,
                                     ),
                                   ),
@@ -663,7 +692,8 @@ Future<void> fetchPostDetails() async {
                                   Text(
                                     '$commentCount', // 댓글 수 표시
                                     style: TextStyle(
-                                      fontSize: SizeScaler.scaleSize(context, 5),
+                                      fontSize:
+                                          SizeScaler.scaleSize(context, 5),
                                       fontWeight: FontWeight.w300,
                                     ),
                                   ),

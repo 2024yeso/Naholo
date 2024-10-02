@@ -39,6 +39,22 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
       },
     );
 
+  String getKoreanSaid(String character) {
+    if (character == "red_panda") {
+      return "혼자 노는 것도 잘하고\n같이 노는 것도 좋아";
+    } else if (character == "squid") {
+      return "혼자있는 게 좋지만 가끔 외로워";
+    } else if (character == "cat") {
+      return "다꺼져 말걸지마";
+    } else if (character == "koala") {
+      return "모든 게 귀찮아! 그냥 나혼자 할래";
+    } else if (character == "owl") {
+      return "고독을 즐긴다";
+    } else {
+      return "혼자가 좋지만\n사실은 같이 노는 것도 좋아";
+    }
+  }
+
   String changeToKoreanName(String English) {
     switch (English) {
       case 'squid':
@@ -106,9 +122,9 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
                 SizedBox(
                   height: screenHeight * 0.2,
                 ),
-                const Text(
-                  '혼자 노는 것도 잘하고 \n같이 노는 것도 좋아',
-                  style: TextStyle(
+                Text(
+                  getKoreanSaid(widget.character),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w400,

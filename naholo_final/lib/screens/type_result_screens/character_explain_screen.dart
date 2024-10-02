@@ -398,8 +398,6 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
                                     shadowColor: Colors.transparent, // 버튼 배경색
                                   ),
                                   child: SizedBox(
-                                    width: screenWidth * 0.5,
-                                    height: screenWidth * 0.1,
                                     child: Center(
                                       child: Text(
                                         "캐릭터로 지정하기", // 버튼 텍스트
