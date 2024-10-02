@@ -10,6 +10,8 @@ class UserProfile {
   final String introduce;
   final Uint8List? image;
   final String? userCharacter;
+  String? follower_count="0";
+  String? following_count="0";
 
   UserProfile({
     required this.userId,
@@ -18,6 +20,8 @@ class UserProfile {
     required this.introduce,
     this.image,
     this.userCharacter,
+    this.follower_count,
+    this.following_count,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {

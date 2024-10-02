@@ -6,19 +6,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 import 'package:nahollo/api/api.dart';
-import 'package:nahollo/models/review.dart';
-import 'package:nahollo/models/user_model.dart';
 import 'package:nahollo/models/user_profile.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/mypage_screens/follow_page.dart';
-
 import 'package:nahollo/screens/mypage_screens/profile_edit_page.dart';
 import 'package:nahollo/services/network_service.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_where_data.dart';
-import 'package:nahollo/test_where_review_data.dart';
 import 'package:nahollo/util.dart';
 import 'package:nahollo/widgets/journal_content.dart';
 import 'package:nahollo/widgets/map_content.dart';
@@ -40,59 +35,9 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   Completer<GoogleMapController> _mapController = Completer();
   final Set<Marker> _markers = {};
   UserProfile? _userProfile;
-  bool isLoading = true;
 
-  final UserModel user = UserModel(
-    userId: "user123",
-    userPw: "password",
-    name: "홍길동",
-    phone: "010-1234-5678",
-    birth: "1990-01-01",
-    gender: "남",
-    nickName: "얼뚱이",
-    userCharacter: "오징어",
-    lv: 10,
-    introduce: "다이어트 실패하고 얼렁뚱땅 넘어간 사람 댓글에  누가 얼렁뚱땡이 이렇게 달아놨는데 그게 나임",
-    image: "sfsdf",
-  );
-
-  int follower = 10, following = 30;
-
-  /* Future<void> fetchData() async {
-    try {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final user = userProvider.user;
-      String userId = user?.userId ?? '';
-
-      // 리뷰 정보 가져오기 (user_id를 쿼리 파라미터로 전달)
-      final reviewResponse = await http.get(
-        Uri.parse("${Api.baseUrl}/where/${widget.whereId}/reviews?user_id=$userId"),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept-Charset': 'utf-8'
-        },
-      );
-
-    } catch (e) {
-      print("Error fetching data: $e");
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }  */
-
-  // USER_ID와 일치하는 리뷰를 필터링하여 가져오는 함수
-  void _fetchReviews() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    var user = userProvider.user;
-
-    _reviews = whereReview["where_review"]
-        .where((review) => review["USER_ID"] == user!.userId)
-        .toList();
-  }
 
   void resetMapController() {
-    // 새로운 Completer로 초기화
     if (_mapController.isCompleted) {
       _mapController = Completer<GoogleMapController>();
     }
@@ -101,14 +46,10 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   @override
   void initState() {
     super.initState();
-    // UserProvider를 통해 현재 로그인된 유저 정보를 가져옵니다.
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    // _fetchReviews();
     _requestLocationPermission();
     _fetchMyPageData();
   }
 
-  // 위치 권한 요청 메서드 정의
   void _requestLocationPermission() async {
     var status = await Permission.location.status;
     if (status.isDenied) {
@@ -116,29 +57,51 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
     }
   }
 
-  // 마이페이지 데이터 가져오기 메서드 정의
   Future<void> _fetchMyPageData() async {
-    print("되냐?");
-    final userId = _userProfile?.userId ?? '';
-    try {
-      final profileFuture = NetworkService.fetchUserProfile(userId);
-      final reviewsFuture = NetworkService.fetchReviews(userId);
-      print(userId);
-      final results = await Future.wait([profileFuture, reviewsFuture]);
+  print("데이터 가져오기 시작");
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final userId = userProvider.user?.userId ?? '';
+  
+  try {
+    print("사용자 ID: $userId");
+    final response = await http.get(
+      Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
 
       setState(() {
-        _userProfile = results[0] as UserProfile;
-        _reviews = results[1] as List<Map<String, dynamic>>;
+        // Null 체크를 통해 안전하게 데이터를 처리
+        _userProfile = data['user_info'] != null 
+          ? UserProfile.fromJson(data['user_info']) 
+          : null;
+
+        // _reviews에 데이터가 없을 때 빈 리스트 할당
+        _reviews = data['reviews'] != null 
+          ? List<Map<String, dynamic>>.from(data['reviews']) 
+          : [];
+        
+
+        print(data['user_info']);
         _isLoading = false;
-        _addMarkers(where["where"]);
+        _addMarkers(where["where"]); // 필요에 따라 수정
       });
-    } catch (e) {
+    } else {
+      print('서버 응답 에러: ${response.statusCode}');
       setState(() {
         _isLoading = false;
       });
-      print('데이터 가져오기 에러: $e');
     }
+  } catch (e) {
+    setState(() {
+      _isLoading = false;
+    });
+    print('데이터 가져오기 에러: $e');
   }
+}
+
 
   // 마커 추가 메서드 정의
   void _addMarkers(List<Map<String, dynamic>> wheres) {
@@ -163,7 +126,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             }
           }
         }
-        print("이거 마커임 ㅋㅋ $_markers");
+        print("마커 목록: $_markers");
       },
     );
   }
@@ -176,10 +139,10 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
       ),
       appBar: AppBar(
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0), // 선의 두께 설정
+          preferredSize: const Size.fromHeight(1.0),
           child: Container(
-            color: Colors.grey, // 선의 색상 설정
-            height: 1.0, // 선의 두께
+            color: Colors.grey,
+            height: 1.0,
           ),
         ),
         title: Text(
@@ -202,47 +165,46 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         ),
       ),
       backgroundColor: Colors.white,
-      body: /* _isLoading
-          ? const Center(child: CircularProgressIndicator())  
-          : */
-          SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(SizeScaler.scaleSize(context, 10)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: SizeScaler.scaleSize(context, 6),
-              ),
-              // 프로필 섹션
-              _buildProfileSection(),
-              SizedBox(
-                height: SizeScaler.scaleSize(context, 12),
-              ),
-
-              // 팔로워, 팔로잉, 프로필 수정 버튼
-              _buildProfileActions(context),
-              // 가고 싶어요 버튼
-              _buildWishlistButton(context),
-              const Divider(),
-              // 탭 전환 버튼 (일지/지도)
-              Row(
-                children: [
-                  _buildTabButton(Icons.apps, '일지', 0),
-                  _buildTabButton(Icons.map_outlined, '지도', 1),
-                ],
-              ),
-              SizedBox(height: SizeScaler.scaleSize(context, 8)),
-              _selectedTab == 0
-                  ? JournalContent(reviews: _reviews, userProfile: _userProfile)
-                  : MapContent(
-                      markers: _markers,
-                      mapController: _mapController,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(SizeScaler.scaleSize(context, 10)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 6),
                     ),
-            ],
-          ),
-        ),
-      ),
+                    // 프로필 섹션
+                    _buildProfileSection(),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 12),
+                    ),
+                    // 팔로워, 팔로잉, 프로필 수정 버튼
+                    _buildProfileActions(context),
+                    // 가고 싶어요 버튼
+                    _buildWishlistButton(context),
+                    const Divider(),
+                    // 탭 전환 버튼 (일지/지도)
+                    Row(
+                      children: [
+                        _buildTabButton(Icons.apps, '일지', 0),
+                        _buildTabButton(Icons.map_outlined, '지도', 1),
+                      ],
+                    ),
+                    SizedBox(height: SizeScaler.scaleSize(context, 8)),
+                    _selectedTab == 0
+                        ? JournalContent(
+                            reviews: _reviews, userProfile: _userProfile)
+                        : MapContent(
+                            markers: _markers,
+                            mapController: _mapController,
+                          ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -259,7 +221,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           child: _userProfile != null && _userProfile!.image != null
               ? ClipOval(
                   child: Image.memory(
-                    _userProfile!.image!, // Uint8List 이미지를 표시
+                    _userProfile!.image!,
                     width: SizeScaler.scaleSize(context, 32),
                     height: SizeScaler.scaleSize(context, 32),
                     fit: BoxFit.cover,
@@ -268,7 +230,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : Icon(
                   Icons.person,
                   size: SizeScaler.scaleSize(context, 18),
-                  color: Colors.white,
+                  color: Colors.white
                 ),
         ),
         SizedBox(width: SizeScaler.scaleSize(context, 8)),
@@ -313,6 +275,10 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
 
   // 팔로워, 팔로잉, 프로필 수정 버튼 빌드 메서드
   Widget _buildProfileActions(BuildContext context) {
+    // 서버에서 팔로워, 팔로잉 수를 받아왔다면 해당 값으로 대체하세요.
+    final follower = _userProfile?.follower_count;
+    final following = _userProfile?.following_count;
+
     return Padding(
       padding:
           EdgeInsets.symmetric(horizontal: SizeScaler.scaleSize(context, 16)),
@@ -326,7 +292,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          const FollowPage(selectedIndex: 0), // 팔로워 탭 선택(),
+                          const FollowPage(selectedIndex: 0),
                     )),
                 child: Text(
                   '팔로워 $follower',
@@ -336,7 +302,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                   ),
                 ),
               ),
-              SizedBox(width: SizeScaler.scaleSize(context, 16)), // 간격
+              SizedBox(width: SizeScaler.scaleSize(context, 16)),
               GestureDetector(
                 onTap: () => Navigator.push(
                   context,
@@ -355,8 +321,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             ],
           ),
           SizedBox(
-            width: SizeScaler.scaleSize(context, 48), // 버튼 너비
-            height: SizeScaler.scaleSize(context, 15), // 버튼 높이
+            width: SizeScaler.scaleSize(context, 48),
+            height: SizeScaler.scaleSize(context, 15),
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -364,14 +330,14 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                   MaterialPageRoute(
                     builder: (context) => const ProfileEditPage(),
                   ),
-                ); // 프로필 수정 버튼 클릭 시 동작
+                );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF794FFF), // 버튼 색상
-                elevation: 0, // 그림자 제거
+                backgroundColor: const Color(0xFF794FFF),
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(
-                      SizeScaler.scaleSize(context, 4)), // 모서리 둥글게
+                      SizeScaler.scaleSize(context, 4)),
                 ),
                 padding: EdgeInsets.zero,
               ),
@@ -399,8 +365,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           horizontal: 5,
         ),
         child: SizedBox(
-          width: SizeScaler.scaleSize(context, 168), // 버튼 너비
-          height: SizeScaler.scaleSize(context, 23), // 버튼 높이
+          width: SizeScaler.scaleSize(context, 168),
+          height: SizeScaler.scaleSize(context, 23),
           child: ElevatedButton(
             onPressed: () {
               // 버튼 클릭 시 동작
@@ -409,21 +375,20 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-
               backgroundColor:
-                  const Color(0xFFEFBDFF).withOpacity(0.1), // 버튼 색상
+                  const Color(0xFFEFBDFF).withOpacity(0.1),
               side:
-                  const BorderSide(color: Color(0xFF7320BC), width: 0.5), // 수정
+                  const BorderSide(color: Color(0xFF7320BC), width: 0.5),
               elevation: 0,
-              padding: EdgeInsets.zero, // 패딩 제거
+              padding: EdgeInsets.zero,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center, // 텍스트 및 아이콘 중앙 정렬
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.flag_outlined,
                     size: SizeScaler.scaleSize(context, 12)),
-                SizedBox(width: SizeScaler.scaleSize(context, 4)), // 간격
+                SizedBox(width: SizeScaler.scaleSize(context, 4)),
                 Text(
                   '가고 싶어요',
                   style: TextStyle(
@@ -447,7 +412,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           setState(() {
             _selectedTab = tabIndex;
             if (_selectedTab == 1) {
-              resetMapController(); // 지도 탭을 눌렀을 때 지도 컨트롤러 초기화
+              resetMapController();
             }
           });
         },

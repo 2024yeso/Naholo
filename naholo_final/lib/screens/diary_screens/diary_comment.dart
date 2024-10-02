@@ -66,43 +66,42 @@ class _DiaryCommentState extends State<DiaryComment> {
     }
   }
 
-  // 댓글을 추가하는 함수 (추가 기능 구현 필요)
-  Future<void> addComment(String content) async {
-    const url = '${Api.baseUrl}/journal/add_comments';
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.user?.userId ?? 'unknown';
-    final userName = userProvider.user?.nickName ?? 'Unknown';
+Future<void> addComment(String content) async {
+  const url = '${Api.baseUrl}/journal/add_comment'; // 올바른 엔드포인트
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final userId = userProvider.user?.userId ?? 'unknown';
+  
+  try {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'POST_ID': widget.postId,            // 서버에서 기대하는 'POST_ID'
+        'USER_ID': userId,                   // 서버에서 기대하는 'USER_ID'
+        'COMMENT_CONTENT': content,          // 서버에서 기대하는 'COMMENT_CONTENT'
+      }),
+    );
 
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'post_id': widget.postId,
-          'user_id': userId,
-          'content': content,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        // 댓글 추가 성공 시, 다시 댓글을 가져옵니다.
-        await fetchComments();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('댓글이 추가되었습니다!')),
-        );
-      } else {
-        print('Failed to add comment: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('댓글을 추가하는데 실패했습니다.')),
-        );
-      }
-    } catch (e) {
-      print('Error adding comment: $e');
+    if (response.statusCode == 200) {
+      // 댓글 추가 성공 시, 다시 댓글을 가져옵니다.
+      await fetchComments();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('댓글을 추가하는데 오류가 발생했습니다.')),
+        const SnackBar(content: Text('댓글이 추가되었습니다!')),
+      );
+    } else {
+      print('Failed to add comment: ${response.statusCode}');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('댓글을 추가하는데 실패했습니다.')),
       );
     }
+  } catch (e) {
+    print('Error adding comment: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('댓글을 추가하는데 오류가 발생했습니다.')),
+    );
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

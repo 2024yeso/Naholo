@@ -167,10 +167,10 @@ class _JournalContentState extends State<JournalContent> {
                     width: SizeScaler.scaleSize(context, 147),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: review["IMAGES"].length,
+                      itemCount: review["REVIEW_IMAGE"].length,
                       itemBuilder: (context, imgIndex) {
                         // 바이트 배열을 가져오기
-                        final imageBytes = review["IMAGES"][imgIndex];
+                        final imageBytes = review["REVIEW_IMAGE"][imgIndex];
 
                         try {
                           // 바이트 배열을 Uint8List로 변환
@@ -218,29 +218,29 @@ class _JournalContentState extends State<JournalContent> {
                     spacing: 8,
                     runSpacing: 4,
                     children: [
-                      if (review["REASON_MENU"])
+                      if (review["REASON_MENU"] == 1)
                         _buildTag("메뉴가 좋아요", Icons.restaurant_menu),
-                      if (review["REASON_MOOD"])
+                      if (review["REASON_MOOD"] == 1)
                         _buildTag("분위기 좋아요", Icons.thumb_up),
-                      if (review["REASON_SAFE"])
+                      if (review["REASON_SAFE"] == 1)
                         _buildTag("안전해요", Icons.security),
-                      if (review["REASON_SEAT"])
+                      if (review["REASON_SEAT"] == 1)
                         _buildTag("자리 여유 있어요", Icons.event_seat),
-                      if (review["REASON_TRANSPORT"])
+                      if (review["REASON_TRANSPORT"] == 1)
                         _buildTag("교통이 편리해요", Icons.directions_transit),
-                      if (review["REASON_PARK"])
+                      if (review["REASON_PARK"] == 1)
                         _buildTag("주차 가능해요", Icons.local_parking),
-                      if (review["REASON_LONG"])
+                      if (review["REASON_LONG"] == 1)
                         _buildTag("오래 머물기 좋아요", Icons.hourglass_empty),
-                      if (review["REASON_VIEW"])
+                      if (review["REASON_VIEW"] == 1)
                         _buildTag("전망이 좋아요", Icons.visibility),
-                      if (review["REASON_INTERACTION"])
+                      if (review["REASON_INTERACTION"] == 1)
                         _buildTag("상호작용이 좋아요", Icons.people),
-                      if (review["REASON_QUITE"])
+                      if (review["REASON_QUITE"] == 1)
                         _buildTag("조용해요", Icons.volume_off),
-                      if (review["REASON_PHOTO"])
+                      if (review["REASON_PHOTO"] == 1)
                         _buildTag("사진 찍기 좋아요", Icons.camera_alt),
-                      if (review["REASON_WATCH"])
+                      if (review["REASON_WATCH"] == 1)
                         _buildTag("볼거리 많아요", Icons.theaters),
                     ],
                   ),

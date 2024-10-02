@@ -67,13 +67,6 @@ class UsersImage(BaseModel):
     USER_ID: str
     IMAGE: str
 
-class JournalComment(BaseModel):
-    COMMENT_ID: Optional[int] = None  # COMMENT_ID 필드 추가
-    POST_ID: int
-    COMMENT_CONTENT: str
-    USER_ID: str
-    COMMENT_CREATE: Optional[datetime] = None  # COMMENT_CREATE 필드 추가
-
 class ReviewImage(BaseModel):
     REVIEW_ID: int
     IMAGE: str
@@ -504,16 +497,17 @@ def call_review(user_id: str) -> List[Dict]:
                 reviews = cursor.fetchall()
                 logger.debug(f"Fetched {len(reviews)} reviews")
 
-                # REVIEW_IMAGE가 없을 경우 None으로 설정
+                # REVIEW_IMAGE가 None이거나 존재하지 않으면 빈 리스트로 설정
                 for review in reviews:
                     if not review.get('REVIEW_IMAGE'):
-                        review['REVIEW_IMAGE'] = None
+                        review['REVIEW_IMAGE'] = []  # 빈 리스트로 설정
     except mysql.connector.Error as err:
         logger.error(f"Database error in call_review: {err}")
     except Exception as e:
         logger.error(f"Unexpected error in call_review: {e}")
     finally:
         return reviews
+
 
 # 좋아요 호출 함수
 def call_wanted(user_id: str) -> List[Dict]:
@@ -565,6 +559,20 @@ def my_page(user_id: str, db=Depends(get_db)):
             logger.warning(f"User with user_id {user_id} not found")
             raise HTTPException(status_code=404, detail="User not found")
 
+        # 팔로잉 수 가져오기 (해당 사용자가 팔로우하는 유저 수)
+        with db.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
+            following_count = cursor.fetchone()["following_count"]
+            if(following_count==False):
+                following_count = 0 
+
+        # 팔로워 수 가져오기 (해당 사용자를 팔로우하는 유저 수)
+        with db.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
+            follower_count = cursor.fetchone()["follower_count"]
+            if(follower_count==False):
+                follower_count = 0 
+        print(follower_count)
         return {
             "user_info": {
                 "USER_ID": user_info["USER_ID"],
@@ -572,11 +580,15 @@ def my_page(user_id: str, db=Depends(get_db)):
                 "LV": user_info["LV"],
                 "EXP": user_info["EXP"],
                 "INTRODUCE": user_info["INTRODUCE"],
-                "IMAGE": user_info["IMAGE"]
+                "IMAGE": user_info["IMAGE"],
+                "userCharacter": user_info["USER_CHARACTER"],
+                "follower_count": follower_count,       # 팔로워 수 추가
+                "following_count": following_count      # 팔로잉 수 추가
             },
             "reviews": reviews,
             "liked_places": liked_places
         }
+        
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -945,9 +957,16 @@ def get_journal(user_id: str, db=Depends(get_db)):
         logger.debug(f"Final Results with Images: {results}")
     return {"data": results}
     
+class JournalComment(BaseModel):
+    
+    POST_ID: int
+    COMMENT_CONTENT: str
+    USER_ID: str
+
 # 저널 댓글 추가 엔드포인트
 @app.post("/journal/add_comment")
 def add_comment(comment: JournalComment, db=Depends(get_db)):
+    print(comment)
     logger.info(f"Adding comment to POST_ID: {comment.POST_ID} by USER_ID: {comment.USER_ID}")
     logger.debug(f"Comment data: {comment.dict()}")
     insert_comment_query = """
@@ -980,6 +999,54 @@ class Comment(BaseModel):
 
 class CommentsResponse(BaseModel):
     comments: List[Comment]
+
+class PostDetailsResponse(BaseModel):
+    likes: int
+    comments: int
+    liked: bool
+@app.get("/journal/post_details", response_model=PostDetailsResponse)
+def get_post_details(
+    post_id: int = Query(..., description="게시물의 ID"),
+    user_id: Optional[str] = Query(None, description="현재 사용자의 ID"),
+    db=Depends(get_db)
+):
+    logger.info(f"Fetching details for post_id: {post_id} by user_id: {user_id}")
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            # 좋아요 수 조회
+            likes_query = "SELECT COUNT(*) AS likes FROM Post_like WHERE POST_ID = %s;"
+            cursor.execute(likes_query, (post_id,))
+            likes_result = cursor.fetchone()
+            likes = likes_result['likes'] if likes_result else 0
+            logger.debug(f"Likes count: {likes}")
+
+            # 댓글 수 조회
+            comments_query = "SELECT COUNT(*) AS comments FROM Journal_comment WHERE POST_ID = %s;"
+            cursor.execute(comments_query, (post_id,))
+            comments_result = cursor.fetchone()
+            comments = comments_result['comments'] if comments_result else 0
+            logger.debug(f"Comments count: {comments}")
+
+            # 현재 사용자가 좋아요 했는지 여부 조회
+            if user_id:
+                liked_query = "SELECT * FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+                cursor.execute(liked_query, (post_id, user_id))
+                liked_result = cursor.fetchone()
+                liked = bool(liked_result)
+                logger.debug(f"User liked: {liked}")
+            else:
+                liked = False
+                logger.debug("User ID not provided, defaulting liked to False.")
+
+        return PostDetailsResponse(likes=likes, comments=comments, liked=liked)
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_post_details: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_post_details: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
 
 @app.get("/journal/get_comments", response_model=CommentsResponse)
 def get_comments(post_id: int = Query(..., description="댓글을 가져올 게시물의 ID"), db=Depends(get_db)):
@@ -1126,6 +1193,7 @@ def unlike_post(payload: UnlikePostRequest, db=Depends(get_db)):
         db.rollback()
         logger.error(f"Unexpected error in unlike_post: {e}")
         raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+    
 @app.post("/reviews/{review_id}/like")
 def like_review(review_id: int, like_data: dict = Body(...), db=Depends(get_db)):
     user_id = like_data.get('user_id')
