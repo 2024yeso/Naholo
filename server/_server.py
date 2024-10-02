@@ -257,6 +257,7 @@ def login(user_id: str, user_pw: str):
 
 # 서버 코드에서 추가 또는 수정해야 할 부분
 
+from collections import defaultdict
 @app.post("/add_review/")
 def add_review(review_data: dict, db=Depends(get_db)):
     try:
@@ -700,26 +701,59 @@ def get_place_info(where_id: str, db=Depends(get_db)):
         logger.error(f"Unexpected error in get_place_info: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+
 @app.get("/where/{where_id}/reviews")
 def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_db)):
     logger.info(f"Fetching reviews for WHERE_ID: {where_id}")
-    review_query = """
-    SELECT wr.*, ri.IMAGE AS REVIEW_IMAGE,
-    CASE WHEN rl.USER_ID IS NOT NULL THEN TRUE ELSE FALSE END AS isLiked
-    FROM WHERE_REVIEW wr
-    LEFT JOIN REVIEW_IMAGE ri ON wr.REVIEW_ID = ri.REVIEW_ID
-    LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
-    WHERE wr.WHERE_ID = %s;
-    """
     try:
         with db.cursor(dictionary=True) as cursor:
+            # 1. 리뷰 데이터 가져오기
+            review_query = """
+                SELECT wr.*, 
+                CASE WHEN rl.USER_ID IS NOT NULL THEN TRUE ELSE FALSE END AS isLiked
+                FROM WHERE_REVIEW wr
+                LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
+                WHERE wr.WHERE_ID = %s;
+            """
             cursor.execute(review_query, (user_id, where_id))
             reviews = cursor.fetchall()
 
-        # REVIEW_LIKE로 매핑
-        for review in reviews:
-            review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
-            del review["WHERE_LIKE"]  # 클라이언트에 불필요한 필드 제거
+            # 2. REVIEW_ID 수집
+            review_ids = [review['REVIEW_ID'] for review in reviews]
+
+            # 3. 리뷰 이미지 가져오기
+            if review_ids:
+                format_strings = ','.join(['%s'] * len(review_ids))
+                images_query = f"""
+                    SELECT REVIEW_ID, IMAGE AS REVIEW_IMAGE
+                    FROM REVIEW_IMAGE
+                    WHERE REVIEW_ID IN ({format_strings});
+                """
+                cursor.execute(images_query, tuple(review_ids))
+                images_data = cursor.fetchall()
+            else:
+                images_data = []
+
+            # 4. 리뷰별로 이미지를 매핑
+            images_map = defaultdict(list)
+            for image in images_data:
+                # 이미지 데이터를 Base64 문자열로 인코딩
+                if isinstance(image['REVIEW_IMAGE'], bytes):
+                    image_base64 = base64.b64encode(image['REVIEW_IMAGE']).decode('utf-8')
+                else:
+                    image_base64 = image['REVIEW_IMAGE']  # 이미 Base64인 경우
+
+                images_map[image['REVIEW_ID']].append(image_base64)
+
+            # 리뷰 데이터에 이미지 추가
+            for review in reviews:
+                review_id = review['REVIEW_ID']
+                review['REVIEW_IMAGES'] = images_map.get(review_id, [])
+
+                # REVIEW_LIKE로 매핑 및 불필요한 필드 제거
+                review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
+                if "WHERE_LIKE" in review:
+                    del review["WHERE_LIKE"]
 
         return {
             "data": reviews
@@ -729,7 +763,7 @@ def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
         logger.error(f"Unexpected error in get_place_reviews: {e}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 
 
@@ -748,58 +782,74 @@ class JournalPost(BaseModel):
     created_at: Optional[datetime] = None  # 작성 시간 필드 추가
 
 # 저널 업로드 엔드포인트
-@app.post("/journal/upload/")
-async def add_journal(
-    user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
-    journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
-    db=Depends(get_db)
-):
-    logger.info(f"Uploading journal post for user_id: {user_id}")
-    logger.debug(f"JournalPost data: {journal_post.dict()}")
-
-    insert_post_query = """
-    INSERT INTO Journal_post 
-    (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    insert_image_query = "INSERT INTO Journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
+@app.get("/where/{where_id}/reviews")
+def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_db)):
+    logger.info(f"Fetching reviews for WHERE_ID: {where_id}, USER_ID: {user_id}")
     try:
-        with db.cursor() as cursor:
-            # 현재 시간을 기본값으로 설정
-            created_at = journal_post.created_at or datetime.now()
+        with db.cursor(dictionary=True) as cursor:
+            # 1. 리뷰 데이터 가져오기
+            review_query = """
+                SELECT wr.*, 
+                COUNT(rl.USER_ID) > 0 AS isLiked
+                FROM WHERE_REVIEW wr
+                LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
+                WHERE wr.WHERE_ID = %s
+                GROUP BY wr.REVIEW_ID;
+            """
+            cursor.execute(review_query, (user_id, where_id))
+            reviews = cursor.fetchall()
 
-            # Journal_post 테이블에 일지 내용 삽입
-            cursor.execute(insert_post_query, (
-                user_id, 
-                journal_post.title, 
-                journal_post.content,
-                journal_post.혼캎, 
-                journal_post.혼영, 
-                journal_post.혼놀, 
-                journal_post.혼밥,
-                journal_post.혼박, 
-                journal_post.혼술, 
-                journal_post.기타, 
-                created_at
-            ))
-            post_id = cursor.lastrowid
-            logger.debug(f"Inserted Journal_post with POST_ID: {post_id}")
+            logger.debug(f"Fetched Reviews: {reviews}")
 
-            # Journal_image 테이블에 이미지 데이터 삽입
-            for image in journal_post.images:
-                cursor.execute(insert_image_query, (post_id, image))
-                logger.debug(f"Inserted image for POST_ID {post_id}")
+            # 2. REVIEW_ID 수집
+            review_ids = [review['REVIEW_ID'] for review in reviews]
 
-            db.commit()
-        logger.info(f"Journal post and images added successfully for POST_ID: {post_id}")
-        return {"message": "Journal post and images added successfully", "post_id": post_id}
+            # 3. 리뷰 이미지 가져오기
+            if review_ids:
+                format_strings = ','.join(['%s'] * len(review_ids))
+                images_query = f"""
+                    SELECT REVIEW_ID, IMAGE AS REVIEW_IMAGE
+                    FROM REVIEW_IMAGE
+                    WHERE REVIEW_ID IN ({format_strings});
+                """
+                cursor.execute(images_query, tuple(review_ids))
+                images_data = cursor.fetchall()
+                logger.debug(f"Fetched Images: {images_data}")
+            else:
+                images_data = []
+                logger.debug("No images found for the reviews.")
+
+            # 4. 리뷰별로 이미지를 매핑
+            images_map = defaultdict(list)
+            for image in images_data:
+                # 이미지 데이터를 Base64 문자열로 인코딩
+                if isinstance(image['REVIEW_IMAGE'], bytes):
+                    image_base64 = base64.b64encode(image['REVIEW_IMAGE']).decode('utf-8')
+                else:
+                    image_base64 = image['REVIEW_IMAGE']  # 이미 Base64인 경우
+
+                images_map[image['REVIEW_ID']].append(image_base64)
+                logger.debug(f"Encoded Image for REVIEW_ID {image['REVIEW_ID']}: {image_base64[:30]}...")  # 일부만 출력
+
+            # 리뷰 데이터에 이미지 추가
+            for review in reviews:
+                review_id = review['REVIEW_ID']
+                review['REVIEW_IMAGES'] = images_map.get(review_id, [])
+
+                # REVIEW_LIKE로 매핑 및 불필요한 필드 제거
+                review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
+                if "WHERE_LIKE" in review:
+                    del review["WHERE_LIKE"]
+
+            logger.info(f"Returning {len(reviews)} reviews with images.")
+        return {
+            "data": reviews
+        }
     except mysql.connector.Error as err:
-        db.rollback()
-        logger.error(f"Database error in add_journal: {err}")
+        logger.error(f"Database error in get_place_reviews: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        db.rollback()
-        logger.error(f"Unexpected error in add_journal: {e}")
+        logger.error(f"Unexpected error in get_place_reviews: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 저널 메인 엔드포인트 수정본
