@@ -280,9 +280,7 @@ class _DiarySearchState extends State<DiarySearch> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DiaryUser(
-                                          authorID:
-                                              post.authorID), // DiaryUser로 이동
+                                      builder: (context) => DiaryUser(), // DiaryUser로 이동
                                     ),
                                   );
                                 },

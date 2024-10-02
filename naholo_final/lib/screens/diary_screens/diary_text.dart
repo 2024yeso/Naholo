@@ -373,7 +373,7 @@ class _DiaryTextState extends State<DiaryText> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    DiaryUser(authorID: widget.authorID),
+                                    DiaryUser(),
                               ),
                             );
                           },

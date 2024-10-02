@@ -9,6 +9,7 @@ class UserModel {
   String userCharacter;
   int lv;
   String introduce;
+  String introduceDiary;
   String image;
   int exp;
 
@@ -23,6 +24,7 @@ class UserModel {
     this.userCharacter = "hedgehog",
     this.lv = 0,
     this.introduce = "introduce",
+    this.introduceDiary = 'introduceDiary',
     this.image = "image",
     this.exp = 0
   });

@@ -91,7 +91,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
           Expanded(
             child: SingleChildScrollView(
               child: Padding(
-                padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
                 child: Column(
                   children: [
                     Padding(
@@ -116,7 +117,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       height: SizeScaler.scaleSize(context, 0.5),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(SizeScaler.scaleSize(context, 11)),
+                      padding:
+                          EdgeInsets.all(SizeScaler.scaleSize(context, 11)),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -172,17 +174,20 @@ class _DiaryWritingState extends State<DiaryWriting> {
                                       side: _subjList[index]
                                           ? BorderSide(
                                               color: const Color(0xFF794FFF),
-                                              width: SizeScaler.scaleSize(context, 0.3))
+                                              width: SizeScaler.scaleSize(
+                                                  context, 0.3))
                                           : BorderSide(
                                               color: const Color(0xFF646464),
-                                              width: SizeScaler.scaleSize(context, 0.3),
+                                              width: SizeScaler.scaleSize(
+                                                  context, 0.3),
                                             ),
                                     ),
                                   ),
                                   child: Text(
                                     topic,
                                     style: TextStyle(
-                                      fontSize: SizeScaler.scaleSize(context, 7),
+                                      fontSize:
+                                          SizeScaler.scaleSize(context, 7),
                                     ),
                                   ),
                                 ),
@@ -197,7 +202,8 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       height: SizeScaler.scaleSize(context, 0.5),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: SizeScaler.scaleSize(context, 11)),
+                      padding: EdgeInsets.only(
+                          left: SizeScaler.scaleSize(context, 11)),
                       child: TextField(
                         controller: _contentController,
                         maxLines: null,

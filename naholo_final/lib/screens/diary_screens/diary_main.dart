@@ -274,7 +274,7 @@ class _DiaryMainState extends State<DiaryMain> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                    DiaryUser(authorID: userId),
+                                    DiaryUser(),
                               ),
                             );
                           },
@@ -547,8 +547,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => DiaryUser(
-                                                    authorID: post.authorID),
+                                                builder: (context) => DiaryUser(),
                                               ),
                                             );
                                           },

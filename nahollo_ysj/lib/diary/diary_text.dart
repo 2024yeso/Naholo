@@ -100,8 +100,7 @@ class _DiaryTextState extends State<DiaryText> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DiaryUser(
-                              authorID: widget.authorID), // DiaryUser로 이동
+                          builder: (context) => DiaryUser(), // DiaryUser로 이동
                         ),
                       );
                     },

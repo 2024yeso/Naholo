@@ -158,9 +158,7 @@ class _DiaryMainState extends State<DiaryMain> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DiaryUser(
-                                    authorID:
-                                        '클라이언트 ID 가져오기'), // '유저이름'은 실제 유저 이름으로 변경해야 함
+                                builder: (context) => DiaryUser(), // '유저이름'은 실제 유저 이름으로 변경해야 함
                               ),
                             );
                           },
@@ -398,7 +396,6 @@ class _DiaryMainState extends State<DiaryMain> {
                 }),
               ),
             ),
-            // ...
             Expanded(
               child: ListView.separated(
                 itemCount: blogPosts.length,
@@ -433,9 +430,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => DiaryUser(
-                                          authorID:
-                                              post.authorID), // DiaryUser로 이동
+                                      builder: (context) => DiaryUser(), // DiaryUser로 이동
                                     ),
                                   );
                                 },
