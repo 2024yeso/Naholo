@@ -283,7 +283,7 @@ class _MainScreenState extends State<MainScreen> {
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
                               child: const Icon(
-                                Icons.menu_book_rounded, // 책 아이콘
+                                Icons.book_outlined, // 책 아이콘
                                 color: Colors.white, // 아이콘 색상
                               ),
                             ),
@@ -316,7 +316,7 @@ class _MainScreenState extends State<MainScreen> {
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
                               child: const Icon(
-                                Icons.home_filled, // 홈 아이콘
+                                Icons.home_outlined, // 홈 아이콘
                                 color: Colors.white, // 아이콘 색상
                               ),
                             ),
@@ -357,7 +357,7 @@ class _MainScreenState extends State<MainScreen> {
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
                               child: const Icon(
-                                Icons.check_box,
+                                Icons.check_box_outlined,
                                 color: Colors.white, // 아이콘 색상
                               ),
                             ),
@@ -396,7 +396,7 @@ class _MainScreenState extends State<MainScreen> {
                               height: screenWidth * 0.15,
                               width: screenWidth * 0.15,
                               child: const Icon(
-                                Icons.person, // 마이페이지 아이콘
+                                Icons.person_outline, // 마이페이지 아이콘
                                 color: Colors.white, // 아이콘 색상
                               ),
                             ),

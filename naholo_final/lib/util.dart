@@ -196,9 +196,11 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
       child: BottomNavigationBar(
         backgroundColor: Colors.white,
         selectedLabelStyle: TextStyle(
+          color: Colors.black,
           fontSize: MediaQuery.of(context).size.width * 0.035, // 화면 너비의 4%
         ),
         unselectedLabelStyle: TextStyle(
+          color: Colors.black,
           fontSize: MediaQuery.of(context).size.width * 0.03, // 화면 너비의 3.5%
         ),
         type: BottomNavigationBarType.fixed,
@@ -208,33 +210,38 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
+              color: Colors.black,
               size: SizeScaler.scaleSize(context, 20),
             ),
             label: "나홀로어디?",
           ),
           BottomNavigationBarItem(
               icon: Icon(
-                Icons.book,
+                Icons.book_outlined,
+                color: Colors.black,
                 size: SizeScaler.scaleSize(context, 20),
               ),
               label: "나홀로일지"),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.home,
+              Icons.home_outlined,
+              color: Colors.black,
               size: SizeScaler.scaleSize(context, 20),
             ),
             label: '홈',
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.check_box,
+              Icons.check_box_outlined,
+              color: Colors.black,
               size: SizeScaler.scaleSize(context, 20),
             ),
             label: '출석',
           ),
           BottomNavigationBarItem(
             icon: Icon(
-              Icons.person,
+              Icons.person_outline_outlined,
+              color: Colors.black,
               size: SizeScaler.scaleSize(context, 20),
             ),
             label: '마이페이지',

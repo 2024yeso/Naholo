@@ -1,22 +1,31 @@
 // widgets/journal_content.dart
 
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:nahollo/api/api.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_where_review_data.dart';
+import 'package:provider/provider.dart';
 import '../models/review.dart';
 import '../models/user_profile.dart';
 
-class JournalContent extends StatelessWidget {
+class JournalContent extends StatefulWidget {
   final List<Map<String, dynamic>> reviews;
   final UserProfile? userProfile;
 
   const JournalContent({super.key, required this.reviews, this.userProfile});
 
+  @override
+  State<JournalContent> createState() => _JournalContentState();
+}
+
+class _JournalContentState extends State<JournalContent> {
   String getLocationParts(Map<String, dynamic> review) {
     String location = review["WHERE_LOCATE"];
     List<String> locationParts = location.split(' ');
@@ -30,24 +39,28 @@ class JournalContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (reviews.isEmpty) {
+    if (widget.reviews.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
+            SizedBox(
+              height: SizeScaler.scaleSize(context, 40),
+            ),
+            Text(
               '아직 등록한 장소가 없어요.',
               style: TextStyle(
-                  fontSize: 10,
+                  fontSize: SizeScaler.scaleSize(context, 9),
                   fontWeight: FontWeight.bold,
-                  color: Color(0xff000B83)),
+                  color: const Color(0xff000B83)),
             ),
-            const Text(
+            Text(
               '나만 아는 혼놀 장소를 등록해보세요!',
               style: TextStyle(
-                  fontSize: 10,
+                  fontSize: SizeScaler.scaleSize(context, 9),
                   fontWeight: FontWeight.bold,
-                  color: Color(0xff000B83)),
+                  color: const Color(0xff000B83)),
             ),
             SizedBox(
               height: SizeScaler.scaleSize(context, 15),
@@ -91,9 +104,9 @@ class JournalContent extends StatelessWidget {
       return ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: reviews.length,
+        itemCount: widget.reviews.length,
         itemBuilder: (context, index) {
-          final review = reviews[index];
+          final review = widget.reviews[index];
 
           // 디버그 출력: 각 리뷰의 reason 값 출력
           /*
@@ -126,7 +139,7 @@ class JournalContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userProfile?.nickname ?? '닉네임 없음',
+                            widget.userProfile?.nickname ?? '닉네임 없음',
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),

@@ -3,12 +3,13 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:nahollo/api/api.dart';
 import '../models/review.dart';
 import '../models/user_profile.dart';
 
 class NetworkService {
   static Future<UserProfile> fetchUserProfile(String userId) async {
-    final url = Uri.parse('http://10.0.2.2:8000/get_user_profile/?user_id=$userId');
+    final url = Uri.parse('${Api.baseUrl}/get_user_profile/?user_id=$userId');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -19,7 +20,7 @@ class NetworkService {
   }
 
   static Future<List<Review>> fetchReviews(String userId) async {
-    final url = Uri.parse('http://10.0.2.2:8000/my_page/?user_id=$userId');
+    final url = Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -30,10 +31,10 @@ class NetworkService {
       throw Exception('리뷰 로드 실패');
     }
   }
-  
+
   static Future<UserProfile> login(String userId, String password) async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/login/?user_id=$userId&user_pw=$password'),
+      Uri.parse('${Api.baseUrl}/login/?user_id=$userId&user_pw=$password'),
     );
 
     if (response.statusCode == 200) {

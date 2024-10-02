@@ -101,31 +101,46 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 horizontal: SizeScaler.scaleSize(context, 10),
                 vertical: SizeScaler.scaleSize(context, 15),
               ),
-              child: TextField(
-                controller: _nickname,
-                decoration: InputDecoration(
-                  labelText: "닉네임",
-                  labelStyle: const TextStyle(color: Color(0xff4b0066)),
-                  floatingLabelAlignment: FloatingLabelAlignment.start,
-                  floatingLabelBehavior: FloatingLabelBehavior.always,
-                  hintText: "한글,영문,숫자 2-15 자로 작성해 주세요",
-                  hintStyle: TextStyle(
-                    color: const Color(0xff843ff9),
-                    fontSize: SizeScaler.scaleSize(context, 6),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
-                    borderSide: const BorderSide(
-                      color: Color(0xff843ff9),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "닉네임",
+                    style: TextStyle(
+                      color: const Color(0xff4b0066),
+                      fontWeight: FontWeight.bold,
+                      fontSize: SizeScaler.scaleSize(context, 8),
                     ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5), // 활성 상태의 테두리 모양
-                    borderSide: const BorderSide(
-                      color: Color(0xff843ff9), // 활성 상태의 테두리 색상
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 3),
+                  ),
+                  TextField(
+                    controller: _nickname,
+                    decoration: InputDecoration(
+                      labelStyle: const TextStyle(color: Color(0xff4b0066)),
+                      floatingLabelAlignment: FloatingLabelAlignment.start,
+                      floatingLabelBehavior: FloatingLabelBehavior.always,
+                      hintText: "한글,영문,숫자 2-15 자로 작성해 주세요",
+                      hintStyle: TextStyle(
+                        color: const Color(0xff843ff9),
+                        fontSize: SizeScaler.scaleSize(context, 6),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5),
+                        borderSide: const BorderSide(
+                          color: Color(0xff843ff9),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5), // 활성 상태의 테두리 모양
+                        borderSide: const BorderSide(
+                          color: Color(0xff843ff9), // 활성 상태의 테두리 색상
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
             Padding(
@@ -161,7 +176,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
             ),
             SizedBox(
-              height: SizeScaler.scaleSize(context, 50),
+              height: SizeScaler.scaleSize(context, 70),
             ),
             GestureDetector(
               onTap: _saveButton,
@@ -170,7 +185,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 width: SizeScaler.scaleSize(context, 180),
                 height: SizeScaler.scaleSize(context, 35),
                 decoration: BoxDecoration(
-                  color: Colors.grey,
+                  color: const Color(0xff494949),
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: const Text(

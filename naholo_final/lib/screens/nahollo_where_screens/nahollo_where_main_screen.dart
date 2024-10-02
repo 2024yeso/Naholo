@@ -275,7 +275,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                             MaterialPageRoute(
                                               builder: (context) =>
                                                   NaholloWhereDetailScreen(
-                                                      whereId: item['WHERE_ID']),
+                                                      whereId:
+                                                          item['WHERE_ID']),
                                             ),
                                           );
                                         },
@@ -292,8 +293,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       height: 10,
                     ),
                     SingleChildScrollView(
-                      scrollDirection:
-                          Axis.horizontal, // 가로로 스크롤 가능하게 설정
+                      scrollDirection: Axis.horizontal, // 가로로 스크롤 가능하게 설정
                       child: Row(
                         children: [
                           GradientElevatedButton(
@@ -465,7 +465,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     final items = filterByType(type);
 
     if (items.isEmpty) {
-      return Center(child: Text("해당 타입의 장소가 없습니다."));
+      return const Center(child: Text("해당 타입의 장소가 없습니다."));
     }
 
     return GridView.builder(
@@ -487,8 +487,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    NaholloWhereDetailScreen(whereId: item['WHERE_ID']), // 아이템 정보 전달
+                builder: (context) => NaholloWhereDetailScreen(
+                    whereId: item['WHERE_ID']), // 아이템 정보 전달
               ),
             );
           },
@@ -552,7 +552,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     final items = filterBySave();
 
     if (items.isEmpty) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Column(
@@ -592,8 +592,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                   },
                   child: Column(
                     children: [
-                      item["WHERE_IMAGE"] != null &&
-                              item["WHERE_IMAGE"] != ''
+                      item["WHERE_IMAGE"] != null && item["WHERE_IMAGE"] != ''
                           ? Container(
                               decoration: BoxDecoration(boxShadow: [
                                 BoxShadow(
