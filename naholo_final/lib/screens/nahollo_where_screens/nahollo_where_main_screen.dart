@@ -72,7 +72,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   String showAdress(String adress) {
     var list = adress.split(' ');
     if (list.length < 2) return adress;
-    var result = '${list[0]}, ${list[1]}';
+    var result = '${list[1]}, ${list[2]}';
     return result;
   }
 
@@ -212,6 +212,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                       width: SizeScaler.scaleSize(context, 175),
                       height: SizeScaler.scaleSize(context, 24),
                       child: TextField(
+                        textAlign: TextAlign.start,
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: '장소를 검색해 보세요',
@@ -219,6 +220,9 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                           prefixIcon: const Icon(
                             Icons.search,
                             color: Color(0xff5357df),
+                          ),
+                          contentPadding: EdgeInsets.only(
+                            top: SizeScaler.scaleSize(context, 1),
                           ),
                           border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -359,42 +363,41 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                     _selectedType == "overall"
                         ? Column(
                             children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${user!.nickName}를 위한\n장소를 추천해줄께-!",
-                                        style: TextStyle(
-                                          fontSize:
-                                              SizeScaler.scaleSize(context, 12),
-                                          fontWeight: FontWeight.w600,
-                                          color: darkpurpleColor,
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "${user!.nickName}를 위한\n장소를 추천해줄께-!",
+                                          style: TextStyle(
+                                            fontSize: SizeScaler.scaleSize(
+                                                context, 12),
+                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xff2e2186),
+                                          ),
                                         ),
-                                      ),
-                                      const Text(
-                                        "전국 핫플 혼놀 장소",
-                                        style: TextStyle(
-                                          color: Colors.blueGrey,
-                                          fontWeight: FontWeight.w600,
+                                        const Text(
+                                          "전국 핫플 혼놀 장소",
+                                          style: TextStyle(
+                                            color: Color(0xff4165b4),
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  Image.asset(
-                                    "assets/images/${user.userCharacter}.png",
-                                    width: SizeScaler.scaleSize(context, 80),
-                                    height:
-                                        SizeScaler.scaleSize(context, 800 / 9),
-                                  )
-                                ],
-                              ),
-                              SizedBox(
-                                height: size.width * 0.05,
+                                      ],
+                                    ),
+                                    Image.asset(
+                                      "assets/images/${user.userCharacter}.png",
+                                      width: SizeScaler.scaleSize(context, 70),
+                                      height: SizeScaler.scaleSize(context, 75),
+                                    )
+                                  ],
+                                ),
                               ),
                             ],
                           )
@@ -569,94 +572,124 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
               double scale = _currentPage == index ? 1.0 : 0.8;
               double opacity = _currentPage == index ? 1.0 : 0.5;
 
+              // translateX로 카드의 좌우 위치를 살짝 조정
+              double translateX = _currentPage == index
+                  ? 0.0
+                  : (_currentPage - index) * 15; // 가운데 카드와 차이를 두어 겹침 효과
+
               return AnimatedBuilder(
                 animation: _pageController,
                 builder: (context, child) {
                   return Transform.scale(
-                    scale: scale, // 이 부분을 조정하여 중간 항목을 확대할 수 있음
+                    scale: scale,
                     child: Opacity(
                       opacity: opacity,
                       child: child,
                     ),
                   );
                 },
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            NaholloWhereDetailScreen(whereId: item['WHERE_ID']),
-                      ),
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      item["WHERE_IMAGE"] != null && item["WHERE_IMAGE"] != ''
-                          ? Container(
-                              decoration: BoxDecoration(boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  spreadRadius: 2,
-                                  blurRadius: 6,
-                                  offset: const Offset(6, 5),
-                                ),
-                              ]),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: buildImage(
-                                  item["WHERE_IMAGE"],
-                                  100,
-                                  150,
-                                ),
-                              ),
-                            )
-                          : const Icon(Icons.image_not_supported, size: 50),
-                      if (_currentPage == index)
-                        Column(
-                          children: [
-                            const SizedBox(
-                              height: 2,
-                            ),
-                            const AutoSizeText(
-                              "장소를 더 보려면 탭 하세요",
-                              style: TextStyle(
-                                fontSize: 12,
-                              ),
-                              maxLines: 1, // 최대 줄 수 설정
-                              minFontSize: 8, // 최소 폰트 크기 설정
-                            ),
-                            Text(
-                              item["WHERE_NAME"] ?? "Unknown",
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.location_on_sharp,
-                                  size: 13,
-                                ),
-                                Text(
-                                  showAdress(item["WHERE_LOCATE"]),
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w200),
-                                ),
-                              ],
-                            ),
-                          ],
+                child: Stack(
+                  children: [
+                    // 뒤쪽 이미지 (왼쪽 및 오른쪽 이미지가 겹치도록 표시)
+                    if (_currentPage != index)
+                      Positioned.fill(
+                        child: Transform.translate(
+                          offset: Offset(translateX, 0),
+                          child: buildItem(item, context, index),
                         ),
-                    ],
-                  ),
+                      ),
+                    // 현재 페이지 이미지 (맨 앞에 보이도록 설정)
+                    if (_currentPage == index)
+                      Positioned.fill(
+                        child: buildItem(item, context, index),
+                      ),
+                  ],
                 ),
               );
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget buildItem(item, BuildContext context, int index) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                NaholloWhereDetailScreen(whereId: item['WHERE_ID']),
+          ),
+        );
+      },
+      child: Column(
+        children: [
+          item["WHERE_IMAGE"] != null && item["WHERE_IMAGE"] != ''
+              ? Container(
+                  decoration: BoxDecoration(boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.02), // 더 연하게 설정
+                      spreadRadius: 3, // 조금만 확산되도록 설정
+                      blurRadius: 4, // 블러 크기를 작게 설정
+                      offset: const Offset(2, 2), // 그림자의 위치를 약간만 아래로 이동
+                    ),
+                  ]),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(15),
+                    child: buildImage(
+                      item["WHERE_IMAGE"],
+                      SizeScaler.scaleSize(context, 79),
+                      SizeScaler.scaleSize(context, 110),
+                    ),
+                  ),
+                )
+              : const Icon(Icons.image_not_supported, size: 50),
+          if (_currentPage == index)
+            Column(
+              children: [
+                SizedBox(
+                  height: SizeScaler.scaleSize(context, 4),
+                ),
+                const AutoSizeText(
+                  "장소를 더 보려면 탭 하세요",
+                  style: TextStyle(
+                    fontSize: 10,
+                  ),
+                  maxLines: 1, // 최대 줄 수 설정
+                  minFontSize: 8, // 최소 폰트 크기 설정
+                ),
+                Text(
+                  textAlign: TextAlign.center,
+                  item["WHERE_NAME"] ?? "Unknown",
+                  style: TextStyle(
+                      fontSize: SizeScaler.scaleSize(context, 11),
+                      fontWeight: FontWeight.bold),
+                ),
+                SizedBox(
+                  height: SizeScaler.scaleSize(context, 2),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.location_on_sharp,
+                      size: 13,
+                    ),
+                    Text(
+                      showAdress(item["WHERE_LOCATE"]),
+                      style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black,
+                          fontWeight: FontWeight.w200),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 }

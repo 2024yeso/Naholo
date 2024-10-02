@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:nahollo/api/api.dart'; // API 경로를 위한 import 추가
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
@@ -14,10 +15,11 @@ import 'package:nahollo/providers/user_provider.dart'; // UserProvider import �
 class NaholloWhereDetailScreen extends StatefulWidget {
   final String whereId;
 
-  NaholloWhereDetailScreen({Key? key, required this.whereId}) : super(key: key);
+  const NaholloWhereDetailScreen({super.key, required this.whereId});
 
   @override
-  State<NaholloWhereDetailScreen> createState() => _NaholloWhereDetailScreenState();
+  State<NaholloWhereDetailScreen> createState() =>
+      _NaholloWhereDetailScreenState();
 }
 
 class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
@@ -26,8 +28,65 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
   bool isLoading = true; // 데이터 로딩 상태
 
+  String showAdress(String adress) {
+    var list = adress.split(' ');
+    if (list.length < 2) return adress;
+    var result = '${list[1]}, ${list[2]}';
+    return result;
+  }
+
+  Widget buildRatingBar(BuildContext context, double rating) {
+    return Row(
+      children: [
+        Container(
+          width: SizeScaler.scaleSize(context, 39),
+          height: SizeScaler.scaleSize(context, 9),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                offset: const Offset(2, 2),
+                blurRadius: 2,
+                spreadRadius: 2,
+              )
+            ],
+          ),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: RatingBarIndicator(
+                itemSize: 8,
+                rating: rating, // 전달받은 평점 값 사용
+                direction: Axis.horizontal,
+                itemCount: 5,
+                itemPadding: EdgeInsets.symmetric(
+                  horizontal: SizeScaler.scaleSize(context, 1),
+                ), // 별 사이의 간격 조정
+                itemBuilder: (context, _) => Image.asset(
+                  "assets/images/star.png",
+                  height: SizeScaler.scaleSize(context, 20),
+                  width: SizeScaler.scaleSize(context, 20),
+                ),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: SizeScaler.scaleSize(context, 6),
+        ),
+        Text(
+          '$rating', // 평점 숫자 표시
+          style: TextStyle(
+              color: Colors.grey, fontSize: SizeScaler.scaleSize(context, 5)),
+        ),
+      ],
+    );
+  }
+
   // 이유별 카운트를 저장할 맵
-  Map<String, int> _reasonCounts = {};
+  final Map<String, int> _reasonCounts = {};
 
   // 이유 목록과 대응되는 한글 텍스트 맵
   final Map<String, String> reasonTextMap = {
@@ -68,7 +127,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
       // 리뷰 정보 가져오기 (user_id를 쿼리 파라미터로 전달)
       final reviewResponse = await http.get(
-        Uri.parse("${Api.baseUrl}/where/${widget.whereId}/reviews?user_id=$userId"),
+        Uri.parse(
+            "${Api.baseUrl}/where/${widget.whereId}/reviews?user_id=$userId"),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
           'Accept-Charset': 'utf-8'
@@ -126,26 +186,51 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
     }
   }
 
-  // 이유 칩들을 생성하는 위젯
   Widget showReasonChips() {
     return Wrap(
       spacing: 8.0, // 아이템들 사이의 간격
       children: _reasonCounts.entries
           .where((entry) => entry.value > 0) // value가 0 이상인 항목만 필터링
           .map((entry) {
-        return Chip(
-          label: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(reasonTextMap[entry.key] ?? entry.key), // 이유 텍스트
-              const SizedBox(width: 5), // 약간의 간격
-              Text(
-                entry.value.toString(),
-                style: TextStyle(color: Colors.grey[600]), // 숫자는 약간 다르게 스타일링
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: SizeScaler.scaleSize(context, 1),
+              vertical: SizeScaler.scaleSize(context, 1.5)),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: SizeScaler.scaleSize(context, 5),
+              vertical: SizeScaler.scaleSize(context, 4),
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xffFFD6F9).withOpacity(0.4),
+                  const Color(0xff9389FF).withOpacity(0.4),
+                  const Color(0xffEAC5FF).withOpacity(0.5),
+                  const Color(0xffFFF1C5).withOpacity(0.5),
+                ],
+                begin: Alignment.bottomRight,
+                end: Alignment.topLeft,
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  reasonTextMap[entry.key] ?? entry.key, // 이유 텍스트
+                  style: const TextStyle(color: Colors.black), // 텍스트 스타일 설정
+                ),
+                const SizedBox(width: 5), // 약간의 간격
+                Text(
+                  entry.value.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ), // 숫자는 약간 다르게 스타일링
+                ),
+              ],
+            ),
           ),
-          backgroundColor: Colors.purple[50], // 칩의 배경색
         );
       }).toList(),
     );
@@ -179,9 +264,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
     setState(() {
       reviews[index]["isLiked"] = newIsLiked;
       if (newIsLiked) {
-        reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+        reviews[index]["REVIEW_LIKE"] =
+            (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
       } else {
-        reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+        reviews[index]["REVIEW_LIKE"] =
+            (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
       }
     });
 
@@ -204,9 +291,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         setState(() {
           reviews[index]["isLiked"] = currentIsLiked;
           if (currentIsLiked) {
-            reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+            reviews[index]["REVIEW_LIKE"] =
+                (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
           } else {
-            reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+            reviews[index]["REVIEW_LIKE"] =
+                (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
           }
         });
         Fluttertoast.showToast(msg: "좋아요 처리에 실패했습니다.");
@@ -214,7 +303,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         // 서버 응답이 성공하면 서버에서 받은 최신 좋아요 수를 업데이트
         final responseData = jsonDecode(response.body);
         setState(() {
-          reviews[index]["REVIEW_LIKE"] = responseData["REVIEW_LIKE"] ?? reviews[index]["REVIEW_LIKE"];
+          reviews[index]["REVIEW_LIKE"] =
+              responseData["REVIEW_LIKE"] ?? reviews[index]["REVIEW_LIKE"];
         });
       }
     } catch (e) {
@@ -222,9 +312,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
       setState(() {
         reviews[index]["isLiked"] = currentIsLiked;
         if (currentIsLiked) {
-          reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+          reviews[index]["REVIEW_LIKE"] =
+              (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
         } else {
-          reviews[index]["REVIEW_LIKE"] = (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+          reviews[index]["REVIEW_LIKE"] =
+              (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
         }
       });
       Fluttertoast.showToast(msg: "좋아요 처리 중 오류가 발생했습니다.");
@@ -322,7 +414,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
       // 데이터 로딩 중이면 로딩 인디케이터 표시
       return Scaffold(
         appBar: AppBar(),
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -330,17 +422,23 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
       // 데이터 로딩 실패 시 에러 메시지 표시
       return Scaffold(
         appBar: AppBar(),
-        body: Center(child: Text("데이터를 불러오지 못했습니다.")),
+        body: const Center(child: Text("데이터를 불러오지 못했습니다.")),
       );
     }
 
     return Scaffold(
+      backgroundColor: Colors.white,
       bottomNavigationBar: const CustomBottomNavBar(
         selectedIndex: 0,
       ),
       appBar: AppBar(
+        backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: SizeScaler.scaleSize(context, 9),
+          ),
           info!["WHERE_NAME"],
         ),
       ),
@@ -349,33 +447,80 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           child: Column(
             children: [
               // 장소 이미지
-              Container(
+              SizedBox(
                 width: SizeScaler.scaleSize(context, 197),
                 height: SizeScaler.scaleSize(context, 135),
                 child: buildImage(
                     info!["WHERE_IMAGE"], double.infinity, double.infinity),
               ),
-              const SizedBox(
-                height: 10,
+              SizedBox(
+                height: SizeScaler.scaleSize(context, 10),
               ),
-              AutoSizeText(
-                "${info!["WHERE_NAME"]}",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-                maxLines: 1,
-                minFontSize: 10,
+              Row(
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(
+                        left: SizeScaler.scaleSize(context, 10)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          textAlign: TextAlign.start,
+                          "혼자 놀기 좋아요!",
+                          style: TextStyle(
+                              color: Color(0xff7f7f7f),
+                              fontWeight: FontWeight.bold),
+                        ),
+                        AutoSizeText(
+                          textAlign: TextAlign.start,
+                          "${info!["WHERE_NAME"]}",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          minFontSize: 10,
+                        ),
+                        Text(
+                          showAdress(
+                            info!["WHERE_LOCATE"],
+                          ),
+                          style: TextStyle(
+                            color: const Color(0xff7f7f7f),
+                            fontSize: SizeScaler.scaleSize(context, 7),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              info!["SAVE"] == null
+                                  ? "8명이 이 장소를 저장했어요"
+                                  : "${info!["SAVE"]}명이 이 장소를 저장했어요",
+                              style: TextStyle(
+                                color: const Color(0xff7f7f7f),
+                                fontSize: SizeScaler.scaleSize(context, 7),
+                              ),
+                            ),
+                            SizedBox(
+                              width: SizeScaler.scaleSize(context, 6),
+                            ),
+                            buildRatingBar(context, info!["WHERE_RATE"])
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(
-                height: 10,
+              SizedBox(
+                height: SizeScaler.scaleSize(context, 2),
               ),
               // 장소 설명
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Text(
                   info!["WHERE_DESCRIPTION"] ?? "",
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
               const SizedBox(
@@ -407,6 +552,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Card(
+                      color: Colors.white,
+                      elevation: 0,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -440,7 +587,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Text(
                               review["REVIEW_CONTENT"],
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Color(0xff7e7e7e),
+                                fontWeight: FontWeight.w400,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -448,22 +599,48 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                           Wrap(
                             spacing: 8.0,
                             children: trueReasons
-                                .map((reason) => Chip(
-                                      label: Text(reason),
-                                      backgroundColor: Colors.purple[50],
+                                .map((reason) => Padding(
+                                      padding: EdgeInsets.only(
+                                        bottom:
+                                            SizeScaler.scaleSize(context, 3),
+                                      ),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12.0,
+                                            vertical: 8.0), // Chip의 패딩과 유사하게 설정
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          border: Border.all(
+                                            color: const Color(
+                                                0xff7e7e7e), // 검정색 테두리 추가
+                                            width: 1.0, // 테두리 두께 설정
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                              20), // Chip과 같은 둥근 모서리
+                                        ),
+                                        child: Text(reason,
+                                            style: TextStyle(
+                                                fontSize: SizeScaler.scaleSize(
+                                                    context, 6),
+                                                color: const Color(
+                                                    0xff7e7e7e))), // 텍스트 스타일
+                                      ),
                                     ))
                                 .toList(),
                           ),
+
                           // 좋아요 및 하트 이모티콘
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               IconButton(
                                 icon: Icon(
-                                  (review["isLiked"] == true || review["isLiked"] == 1)
+                                  (review["isLiked"] == true ||
+                                          review["isLiked"] == 1)
                                       ? Icons.favorite
                                       : Icons.favorite_border,
-                                  color: (review["isLiked"] == true || review["isLiked"] == 1)
+                                  color: (review["isLiked"] == true ||
+                                          review["isLiked"] == 1)
                                       ? Colors.red
                                       : Colors.grey,
                                 ),
@@ -471,7 +648,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                   toggleLike(reviews.indexOf(review));
                                 },
                               ),
-                              Text("${review["REVIEW_LIKE"] ?? 0}"),
+                              Text(
+                                "${review["REVIEW_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
+                                style:
+                                    const TextStyle(color: Color(0xff7e7e7e)),
+                              ),
                             ],
                           ),
                         ],
