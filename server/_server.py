@@ -148,6 +148,7 @@ class UserUpdate(BaseModel):
     IMAGE: Optional[str] = None
     EXP: Optional[int] = None  # EXP 필드 추가
 
+
 # 유저 정보 업데이트 엔드포인트
 @app.put("/update_user/{user_id}")
 async def update_user(user_id: str, user_update: UserUpdate, db=Depends(get_db)):
@@ -512,6 +513,7 @@ def call_review(user_id: str) -> List[Dict]:
                     if review_id not in reviews:
                         # 첫 번째 리뷰 항목이므로 새로운 리뷰 추가
                         reviews[review_id] = {
+                            "REVIEW_ID" : row["REVIEW_ID"],
                             "WHERE_NAME": row["WHERE_NAME"],
                             "WHERE_LOCATE": row["WHERE_LOCATE"],
                             "LATITUDE": row["LATITUDE"],

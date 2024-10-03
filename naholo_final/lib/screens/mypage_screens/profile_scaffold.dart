@@ -71,6 +71,16 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
 
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
+        print(data['reviews'].length);
+        for (var review in data['reviews']) {
+            debugPrint("리뷰ID: ${review['REVIEW_ID']}");
+            debugPrint("리뷰이미지 길이  : ${review['REVIEW_IMAGES'].length}");
+            if(review['REVIEW_IMAGES'].length>0){
+              for(var i =0;i<review['REVIEW_IMAGES'].length;i++){
+                print(review['REVIEW_IMAGES'][i]);
+              }
+            }
+          }
 
         setState(() {
           // Null 체크를 통해 안전하게 데이터를 처리
@@ -78,12 +88,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               ? UserProfile.fromJson(data['user_info'])
               : null;
 
-          print(_userProfile);
+          
           // _reviews에 데이터가 없을 때 빈 리스트 할당
           _reviews = data['reviews'] != null
               ? List<Map<String, dynamic>>.from(data['reviews'])
               : [];
-
+              
           //   print("ㅎㅇ ${data["reviews"]["REVIEW_IMAGES"]}");
           _isLoading = false;
         });
