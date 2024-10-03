@@ -57,59 +57,47 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
     }
   }
 
-  Future<void> _fetchMyPageData() async {
-    print("데이터 가져오기 시작");
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.user?.userId ?? '';
+Future<void> _fetchMyPageData() async {
+  print("데이터 가져오기 시작");
+  final userProvider = Provider.of<UserProvider>(context, listen: false);
+  final userId = userProvider.user?.userId ?? '';
 
-    try {
-      print("사용자 ID: $userId");
-      final response = await http.get(
-        Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
-        headers: {'Content-Type': 'application/json; charset=utf-8'},
-      );
+  try {
+    print("사용자 ID: $userId");
+    final response = await http.get(
+      Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+    );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(utf8.decode(response.bodyBytes));
-        print(data['reviews'].length);
-        for (var review in data['reviews']) {
-            debugPrint("리뷰ID: ${review['REVIEW_ID']}");
-            debugPrint("리뷰이미지 길이  : ${review['REVIEW_IMAGES'].length}");
-            if(review['REVIEW_IMAGES'].length>0){
-              for(var i =0;i<review['REVIEW_IMAGES'].length;i++){
-                print(review['REVIEW_IMAGES'][i]);
-              }
-            }
-          }
+    if (response.statusCode == 200) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
 
-        setState(() {
-          // Null 체크를 통해 안전하게 데이터를 처리
-          _userProfile = data['user_info'] != null
-              ? UserProfile.fromJson(data['user_info'])
-              : null;
+      // UserProfile의 데이터를 비동기적으로 가져옴
+      UserProfile? userProfile = data['user_info'] != null
+          ? await UserProfile.fromJson(data['user_info'])  // await 사용
+          : null;
 
-          
-          // _reviews에 데이터가 없을 때 빈 리스트 할당
-          _reviews = data['reviews'] != null
-              ? List<Map<String, dynamic>>.from(data['reviews'])
-              : [];
-              
-          //   print("ㅎㅇ ${data["reviews"]["REVIEW_IMAGES"]}");
-          _isLoading = false;
-        });
-      } else {
-        print('서버 응답 에러: ${response.statusCode}');
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
+      setState(() {
+        _userProfile = userProfile;  // 이제 _userProfile에 비동기적으로 할당
+        _reviews = data['reviews'] != null
+            ? List<Map<String, dynamic>>.from(data['reviews'])
+            : [];
+        _isLoading = false;
+      });
+    } else {
+      print('서버 응답 에러: ${response.statusCode}');
       setState(() {
         _isLoading = false;
       });
-      print('데이터 가져오기 에러: $e');
     }
+  } catch (e) {
+    setState(() {
+      _isLoading = false;
+    });
+    print('데이터 가져오기 에러: $e');
   }
+}
+
 
   // 마커 추가 메서드 정의
   void _addMarkers(List<Map<String, dynamic>> wheres) {
@@ -244,9 +232,14 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                       fit: BoxFit.cover,
                     ),
                   )
-                : Icon(Icons.person,
-                    size: SizeScaler.scaleSize(context, 18),
-                    color: Colors.white),
+                : ClipOval(
+                    child: Image.asset(
+                      'assets/images/default_image.png',  // 기본 이미지 경로 사용
+                      width: SizeScaler.scaleSize(context, 32),
+                      height: SizeScaler.scaleSize(context, 32),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
           ),
         ),
         SizedBox(width: SizeScaler.scaleSize(context, 8)),

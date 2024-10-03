@@ -1,11 +1,11 @@
-// lib/screens/profile_edit_page.dart
+import 'dart:convert';  // Base64 인코딩을 위해 추가
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // SystemUiOverlayStyle 사용을 위한 임포트
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;  // HTTP 요청을 위해 추가
 import 'package:nahollo/sizeScaler.dart';
+import 'package:nahollo/api/api.dart';
 
 class ProfileEditPage extends StatefulWidget {
   const ProfileEditPage({super.key});
@@ -15,24 +15,69 @@ class ProfileEditPage extends StatefulWidget {
 }
 
 class _ProfileEditPageState extends State<ProfileEditPage> {
-  File? _profileImage; // 프로필 이미지 파일
-  TextEditingController? _nickname; // 닉네임
-  TextEditingController? _myself; // 자기소개
-
-  //저장 버튼 함수
-  //미구현
-  Future<void> _saveButton() async {}
+  File? _profileImage;  // 프로필 이미지 파일
+  TextEditingController _nickname = TextEditingController();  // 닉네임
+  TextEditingController _myself = TextEditingController();  // 자기소개
 
   // 이미지 선택 함수
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
-        await picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
-        _profileImage = File(pickedFile.path); // 선택된 이미지를 파일로 저장
+        _profileImage = File(pickedFile.path);  // 선택된 이미지를 파일로 저장
       });
+    }
+  }
+
+  // 이미지를 Base64로 인코딩
+  Future<String?> _convertImageToBase64(File? imageFile) async {
+    if (imageFile == null) return null;
+    final bytes = await imageFile.readAsBytes();
+    return base64Encode(bytes);
+  }
+
+  // 저장 버튼 클릭 시 서버로 데이터 전송
+  Future<void> _saveButton() async {
+    String userId = '1@1.1';  // 실제 사용자 ID로 변경
+
+    // 이미지 파일을 Base64로 인코딩
+    String? encodedImage = await _convertImageToBase64(_profileImage);
+
+    // 서버로 보낼 데이터
+    Map<String, dynamic> userData = {
+      'NICKNAME': _nickname.text,
+      'INTRODUCE': _myself.text,
+      'IMAGE': encodedImage,
+    };
+
+    // 서버로 HTTP PUT 요청
+    try {
+
+
+      final response = await http.put(
+        Uri.parse('${Api.baseUrl}/update_user/$userId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(userData),  // 데이터를 JSON으로 변환하여 전송
+      );
+
+      if (response.statusCode == 200) {
+        // 성공적으로 업데이트되었음을 알림
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필이 성공적으로 업데이트되었습니다.')),
+        );
+      } else {
+        // 오류 발생 시 처리
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('프로필 업데이트 실패: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      print('프로필 업데이트 중 오류 발생: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('서버 요청 실패')),
+      );
     }
   }
 
@@ -112,15 +157,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                       fontSize: SizeScaler.scaleSize(context, 8),
                     ),
                   ),
-                  SizedBox(
-                    height: SizeScaler.scaleSize(context, 3),
-                  ),
+                  SizedBox(height: SizeScaler.scaleSize(context, 3)),
                   TextField(
                     controller: _nickname,
                     decoration: InputDecoration(
-                      labelStyle: const TextStyle(color: Color(0xff4b0066)),
-                      floatingLabelAlignment: FloatingLabelAlignment.start,
-                      floatingLabelBehavior: FloatingLabelBehavior.always,
                       hintText: "한글,영문,숫자 2-15 자로 작성해 주세요",
                       hintStyle: TextStyle(
                         color: const Color(0xff843ff9),
@@ -133,9 +173,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5), // 활성 상태의 테두리 모양
+                        borderRadius: BorderRadius.circular(5),
                         borderSide: const BorderSide(
-                          color: Color(0xff843ff9), // 활성 상태의 테두리 색상
+                          color: Color(0xff843ff9),
                         ),
                       ),
                     ),
@@ -150,12 +190,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
               child: TextField(
                 controller: _myself,
-                maxLines: 4, //상자 크기 설정
+                maxLines: 4,
                 decoration: InputDecoration(
-                  alignLabelWithHint: true, // 힌트 텍스트를 상단에 맞춤
-                  // 세로 패딩을 늘려서 높이 조절,
                   hintText: "자기소개를 입력해 주세요",
-
                   hintStyle: TextStyle(
                     color: const Color(0xff843ff9),
                     fontSize: SizeScaler.scaleSize(context, 6),
@@ -167,17 +204,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5), // 활성 상태의 테두리 모양
+                    borderRadius: BorderRadius.circular(5),
                     borderSide: const BorderSide(
-                      color: Color(0xff843ff9), // 활성 상태의 테두리 색상
+                      color: Color(0xff843ff9),
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(
-              height: SizeScaler.scaleSize(context, 70),
-            ),
+            SizedBox(height: SizeScaler.scaleSize(context, 70)),
             GestureDetector(
               onTap: _saveButton,
               child: Container(
@@ -193,6 +228,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ),
