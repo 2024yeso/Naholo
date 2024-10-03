@@ -6,6 +6,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_register_screen.dart';
@@ -14,6 +15,7 @@ import 'package:nahollo/test_where_review_data.dart';
 import 'package:provider/provider.dart';
 import '../models/review.dart';
 import '../models/user_profile.dart';
+import 'package:http/http.dart' as http;
 
 class JournalContent extends StatefulWidget {
   final List<Map<String, dynamic>> reviews;
@@ -26,6 +28,8 @@ class JournalContent extends StatefulWidget {
 }
 
 class _JournalContentState extends State<JournalContent> {
+  late List<Map<String, dynamic>> reviews = widget.reviews;
+
   String getLocationParts(Map<String, dynamic> review) {
     String location = review["WHERE_LOCATE"];
     List<String> locationParts = location.split(' ');
@@ -35,6 +39,110 @@ class _JournalContentState extends State<JournalContent> {
     String part2 = locationParts.length > 2 ? ", ${locationParts[2]}" : "";
 
     return "$part1$part2";
+  }
+
+  // 이유 목록과 대응되는 한글 텍스트 맵
+  final Map<String, String> reasonTextMap = {
+    "MENU": "1인 메뉴가 좋아요",
+    "MOOD": "분위기가 좋아요",
+    "SAFE": "위생관리 잘돼요",
+    "SEAT": "좌석이 편해요",
+    "TRANSPORT": "대중교통으로 가기 편해요",
+    "PARK": "주차 가능해요",
+    "LONG": "오래 머물기 좋아요",
+    "VIEW": "경치가 좋아요",
+    "INTERACTION": "교류하기 좋아요",
+    "QUITE": "조용해요",
+    "PHOTO": "사진 찍기 좋아요",
+    "WATCH": "구경할 거 있어요",
+  };
+
+  // 하트를 눌렀을 때 실행할 함수
+  void toggleLike(int index) async {
+    List<Map<String, dynamic>> reviews = widget.reviews;
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+    String userId = user?.userId ?? '';
+
+    if (userId.isEmpty) {
+      Fluttertoast.showToast(msg: "로그인이 필요합니다.");
+      return;
+    }
+
+    // 현재 좋아요 상태를 가져와서 bool 타입으로 변환
+    bool currentIsLiked;
+    var isLikedValue = reviews[index]["isLiked"] ?? false;
+
+    if (isLikedValue is int) {
+      currentIsLiked = isLikedValue == 1;
+    } else {
+      currentIsLiked = isLikedValue == true;
+    }
+
+    // 좋아요 상태를 토글
+    bool newIsLiked = !currentIsLiked;
+
+    // UI에 즉시 반영
+    setState(() {
+      reviews[index]["isLiked"] = newIsLiked;
+      if (newIsLiked) {
+        reviews[index]["REVIEW_LIKE"] =
+            (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+      } else {
+        reviews[index]["REVIEW_LIKE"] =
+            (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+      }
+    });
+
+    // 서버로 좋아요 상태를 전송
+    try {
+      final response = await http.post(
+        Uri.parse("${Api.baseUrl}/reviews/${reviews[index]['REVIEW_ID']}/like"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Charset': 'utf-8'
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'like': newIsLiked,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        // 서버 응답이 실패하면 상태를 원래대로 복구
+        setState(() {
+          reviews[index]["isLiked"] = currentIsLiked;
+          if (currentIsLiked) {
+            reviews[index]["REVIEW_LIKE"] =
+                (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+          } else {
+            reviews[index]["REVIEW_LIKE"] =
+                (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+          }
+        });
+        Fluttertoast.showToast(msg: "좋아요 처리에 실패했습니다.");
+      } else {
+        // 서버 응답이 성공하면 서버에서 받은 최신 좋아요 수를 업데이트
+        final responseData = jsonDecode(response.body);
+        setState(() {
+          reviews[index]["REVIEW_LIKE"] =
+              responseData["REVIEW_LIKE"] ?? reviews[index]["REVIEW_LIKE"];
+        });
+      }
+    } catch (e) {
+      // 예외 발생 시 상태를 원래대로 복구
+      setState(() {
+        reviews[index]["isLiked"] = currentIsLiked;
+        if (currentIsLiked) {
+          reviews[index]["REVIEW_LIKE"] =
+              (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
+        } else {
+          reviews[index]["REVIEW_LIKE"] =
+              (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
+        }
+      });
+      Fluttertoast.showToast(msg: "좋아요 처리 중 오류가 발생했습니다.");
+    }
   }
 
   @override
@@ -101,7 +209,134 @@ class _JournalContentState extends State<JournalContent> {
         ),
       );
     } else {
-      return ListView.builder(
+      return // 리뷰 리스트
+          Column(
+        children: reviews.map((review) {
+          // True인 REASON 값만 필터링
+          final trueReasons = reasonTextMap.entries
+              .where((entry) =>
+                  review['REASON_${entry.key}'] == true ||
+                  review['REASON_${entry.key}'] == 1)
+              .map((entry) => entry.value)
+              .toList();
+
+          // 리뷰의 이미지 리스트 가져오기
+          List<dynamic> reviewImages = [];
+          if (review["REVIEW_IMAGES"] != null &&
+              review["REVIEW_IMAGES"].isNotEmpty) {
+            reviewImages = review["REVIEW_IMAGES"];
+          }
+
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
+              color: Colors.white,
+              elevation: 0,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 상단 사용자 정보 및 태그
+
+                  // 이미지 스크롤
+                  if (reviewImages.isNotEmpty)
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 147),
+                      width: SizeScaler.scaleSize(context, 147),
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: reviewImages.length,
+                        itemBuilder: (context, imgIndex) {
+                          // 이미지 데이터를 가져오기
+                          final imageData = reviewImages[imgIndex];
+                          return Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 4.0),
+                            child: buildImage(
+                              imageData,
+                              SizeScaler.scaleSize(context, 147),
+                              SizeScaler.scaleSize(context, 147),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  const SizedBox(height: 15),
+                  // 리뷰 내용
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                      review["REVIEW_CONTENT"],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xff7e7e7e),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // True인 REASON들 표시
+                  Wrap(
+                    spacing: 6.0,
+                    children: trueReasons
+                        .map((reason) => Padding(
+                              padding: EdgeInsets.only(
+                                bottom: SizeScaler.scaleSize(context, 3),
+                              ),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12.0,
+                                    vertical: 8.0), // Chip의 패딩과 유사하게 설정
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(
+                                    color:
+                                        const Color(0xff7e7e7e), // 검정색 테두리 추가
+                                    width: 1.0, // 테두리 두께 설정
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                      20), // Chip과 같은 둥근 모서리
+                                ),
+                                child: Text(reason,
+                                    style: TextStyle(
+                                        fontSize:
+                                            SizeScaler.scaleSize(context, 6),
+                                        color: const Color(
+                                            0xff7e7e7e))), // 텍스트 스타일
+                              ),
+                            ))
+                        .toList(),
+                  ),
+
+                  // 좋아요 및 하트 이모티콘
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          (review["isLiked"] == true || review["isLiked"] == 1)
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: (review["isLiked"] == true ||
+                                  review["isLiked"] == 1)
+                              ? Colors.red
+                              : Colors.grey,
+                        ),
+                        onPressed: () {
+                          toggleLike(reviews.indexOf(review));
+                        },
+                      ),
+                      Text(
+                        "${review["REVIEW_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
+                        style: const TextStyle(color: Color(0xff7e7e7e)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ); /* ListView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: widget.reviews.length,
@@ -149,9 +384,10 @@ class _JournalContentState extends State<JournalContent> {
                     width: SizeScaler.scaleSize(context, 147),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: review["REVIEW_IMAGE"].length,
+                      itemCount: 1,
                       itemBuilder: (context, imgIndex) {
-                        print(review["REVIEW_IMAGE"].length);
+              
+
                         try {
                           return buildImage(
                             review["REVIEW_IMAGE"],
@@ -222,6 +458,7 @@ class _JournalContentState extends State<JournalContent> {
           );
         },
       );
+    } */
     }
   }
 
