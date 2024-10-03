@@ -1,50 +1,27 @@
 import requests
+import json
 
-# 서버 주소 (로컬에서 FastAPI 서버가 실행 중일 경우)
-BASE_URL = "http://127.0.0.1:8000"
+# FastAPI 서버 URL 설정 (서버가 로컬에서 실행 중인 경우)
+BASE_URL = "http://localhost:8000"  # 실제 서버 주소로 변경 필요
 
-def test_get_top_rated_places(page=0):
-    """
-    /where/top-rated 엔드포인트를 테스트하는 함수.
-    :param page: 요청할 페이지 번호 (0이면 1~10번째 장소, 1이면 11~20번째 장소)
-    """
-    try:
-        # 전체 상위 10개의 장소와 각 타입별 장소를 요청하는 URL
-        url = f"{BASE_URL}/where/top-rated?page={page}"
-        
-        # GET 요청을 보내고 응답을 받음
-        response = requests.get(url)
-        
-        # 상태 코드가 200(성공)인지 확인
-        if response.status_code == 200:
-            # JSON 응답을 딕셔너리로 파싱
-            data = response.json()
-            
-            # 전체 상위 10개 장소 출력
-            overall_top_10 = data['data']['overall_top_10']
-            print("전체 상위 10개 장소:")
-            for place in overall_top_10:
-                print(place["WHERE_ID"])  # 딕셔너리 형태로 출력
+# 테스트할 유저 ID
+user_id = "1@1.1"
 
-            # 타입별 상위 장소들 출력 (타입별 딕셔너리)
-            by_type = data.get('data', {}).get('by_type', {})
-            print("\n타입별 상위 장소들:")
-            for place_type, places in by_type.items():
-                print(f"\nType: {place_type}")  # 타입 이름 출력
-                for place in places:
-                    print(place["WHERE_ID"])  # 딕셔너리 형태로 출력
-        else:
-            print(f"Error: Received status code {response.status_code}")
-            print("Response content:", response.content)
-    
-    except Exception as e:
-        print(f"An error occurred: {e}")
+# 엔드포인트 URL
+url = f"{BASE_URL}/user_follow_info/{user_id}"
 
-if __name__ == "__main__":
-    # 0번째 페이지 (1~10번째 장소)
-    print("==== Testing page 0 (1~10th places) ====")
-    test_get_top_rated_places(page=0)
-    
-    # 1번째 페이지 (11~20번째 장소)
-    print("\n==== Testing page 1 (11~20th places) ====")
-    test_get_top_rated_places(page=1)
+# 요청 보내기
+try:
+    response = requests.get(url)
+    response.raise_for_status()  # 응답 코드가 200이 아닌 경우 예외 처리
+
+    # 응답 데이터를 JSON으로 변환
+    data = response.json()
+
+    # 응답 출력 (팔로잉 및 팔로워 유저 정보)
+    print(json.dumps(data, indent=4, ensure_ascii=False))
+
+except requests.exceptions.HTTPError as err:
+    print(f"HTTP error occurred: {err}")
+except Exception as e:
+    print(f"An error occurred: {e}")
