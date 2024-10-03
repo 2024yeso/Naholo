@@ -476,6 +476,7 @@ def call_review(user_id: str) -> List[Dict]:
         w.LONGITUDE AS LONGITUDE,
         wr.REVIEW_CONTENT AS REVIEW_CONTENT,
         wr.WHERE_RATE AS WHERE_RATE,
+        wr.WHERE_LIKE AS WHERE_LIKE,
         ri.IMAGE AS REVIEW_IMAGE,
         wr.REASON_MENU AS REASON_MENU,
         wr.REASON_MOOD AS REASON_MOOD,
@@ -520,6 +521,7 @@ def call_review(user_id: str) -> List[Dict]:
                             "LONGITUDE": row["LONGITUDE"],
                             "REVIEW_CONTENT": row["REVIEW_CONTENT"],
                             "WHERE_RATE": row["WHERE_RATE"],
+                            "WHERE_LIKE": row["WHERE_LIKE"],
                             "REASON_MENU": row["REASON_MENU"],
                             "REASON_MOOD": row["REASON_MOOD"],
                             "REASON_SAFE": row["REASON_SAFE"],
@@ -589,6 +591,7 @@ def my_page(user_id: str, db=Depends(get_db)):
         print(len(reviews))
         for i in reviews:
             print(i["WHERE_NAME"])
+            print(i["WHERE_LIKE"])
             print(len(i["REVIEW_IMAGES"]))
         # 좋아요한 장소 가져오기
         liked_places = call_wanted(user_id)
