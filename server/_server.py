@@ -638,37 +638,53 @@ def my_page(user_id: str, db=Depends(get_db)):
         logger.error(f"Unexpected error in my_page: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-# 팔로우 페이지 엔드포인트
+
+# 팔로워 및 팔로잉 정보 반환하는 엔드포인트
 @app.get("/follow_page/")
-def follow_page(user_id: str, db=Depends(get_db)):
-    logger.info(f"Fetching follow_page data for user_id: {user_id}")
+async def get_follow_info(user_id: str, db=Depends(get_db)):
     try:
-        with db.cursor(dictionary=True) as cursor:
-            # 내가 팔로우한 사람
-            cursor.execute("""
-                SELECT Users.USER_ID, Users.NICKNAME, Users.IMAGE
-                FROM Follow
-                JOIN Users ON Follow.FOLLOWER = Users.USER_ID
-                WHERE Follow.USER_ID = %s
-            """, (user_id,))
-            following = cursor.fetchall()
+        cursor = db.cursor(dictionary=True)
+        
+        # 팔로잉 정보 가져오기 (해당 유저가 팔로우하는 유저들)
+        cursor.execute("""
+            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
+            FROM Follow F
+            JOIN Users U ON F.FOLLOWER = U.USER_ID
+            WHERE F.USER_ID = %s
+        """, (user_id,))
+        following_users = cursor.fetchall()
 
-            # 나를 팔로우한 사람
-            cursor.execute("""
-                SELECT Users.USER_ID, Users.NICKNAME, Users.IMAGE
-                FROM Follow
-                JOIN Users ON Follow.USER_ID = Users.USER_ID
-                WHERE Follow.FOLLOWER = %s
-            """, (user_id,))
-            followers = cursor.fetchall()
+        logger.info(f"Following users for {user_id}: {following_users}")
 
-        return {"following": following, "followers": followers}
+        # 팔로워 정보 가져오기 (해당 유저를 팔로우하는 유저들)
+        cursor.execute("""
+            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
+            FROM Follow F
+            JOIN Users U ON F.USER_ID = U.USER_ID
+            WHERE F.FOLLOWER = %s
+        """, (user_id,))
+        followers = cursor.fetchall()
+
+        logger.info(f"Followers for {user_id}: {followers}")
+
+        if not following_users and not followers:
+            raise HTTPException(status_code=404, detail="No follow data found")
+
+        return {
+            "user_id": user_id,
+            "following": following_users,
+            "followers": followers
+        }
+
     except mysql.connector.Error as err:
-        logger.error(f"Database error in follow_page: {err}")
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        logger.error(f"Unexpected error in follow_page: {e}")
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
 
 @app.get("/where/top-rated")
 def get_top_rated_places(page: int = 0, db=Depends(get_db)):
@@ -1561,34 +1577,6 @@ async def add_journal(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-import requests
-import json
-
-# FastAPI 서버 URL 설정 (서버가 로컬에서 실행 중인 경우)
-BASE_URL = "http://localhost:8000"  # 실제 서버 주소로 변경 필요
-
-# 테스트할 유저 ID
-user_id = "1@1.1"
-
-# 엔드포인트 URL
-url = f"{BASE_URL}/user_follow_info/{user_id}"
-
-# 요청 보내기
-try:
-    response = requests.get(url)
-    response.raise_for_status()  # 응답 코드가 200이 아닌 경우 예외 처리
-
-    # 응답 데이터를 JSON으로 변환
-    data = response.json()
-
-    # 응답 출력 (팔로잉 및 팔로워 유저 정보)
-    print(json.dumps(data, indent=4, ensure_ascii=False))
-
-except requests.exceptions.HTTPError as err:
-    print(f"HTTP error occurred: {err}")
-except Exception as e:
-    print(f"An error occurred: {e}")
 
 
 # 서버 실행
