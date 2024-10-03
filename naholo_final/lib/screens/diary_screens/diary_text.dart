@@ -343,7 +343,7 @@ class _DiaryTextState extends State<DiaryText> {
                             child: Text(
                               '일지 상세 보기',
                               style: TextStyle(
-                                fontSize: SizeScaler.scaleSize(context, 8),
+                                fontSize: SizeScaler.scaleSize(context, 8.8),
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),

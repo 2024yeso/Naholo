@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:nahollo/screens/diary_screens/diary_text.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/models/diaryPost_model.dart'; // 포스트 모델
+import 'package:http/http.dart' as http; // 서버 요청을 위한 패키지
+import 'package:nahollo/api/api.dart';
 import 'package:intl/intl.dart'; // 날짜 포맷
 import 'package:nahollo/sizeScaler.dart'; // 크기 조절
 
@@ -111,7 +113,7 @@ class _DiarySearchState extends State<DiarySearch> {
                       child: Text(
                         '나홀로일지 검색',
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 8),
+                          fontSize: SizeScaler.scaleSize(context, 8.8),
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),

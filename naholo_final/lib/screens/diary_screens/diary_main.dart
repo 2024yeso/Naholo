@@ -243,10 +243,7 @@ class _DiaryMainState extends State<DiaryMain> {
                       child: Text(
                         '나홀로일지',
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(
-                            context,
-                            SizeScaler.scaleSize(context, 5),
-                          ),
+                          fontSize: SizeScaler.scaleSize(context, 8.8),
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         ),
@@ -739,10 +736,9 @@ class _DiaryMainState extends State<DiaryMain> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           highlightElevation: 0, // 눌렀을 때의 elevation 제거
-    focusElevation: 0, // 포커스 시 elevation 제거
-    hoverElevation: 0, // 마우스 hover 시 elevation 제거
-    splashColor: Colors.transparent, // 눌렀을 때 물결 효과 제거
-
+          focusElevation: 0, // 포커스 시 elevation 제거
+          hoverElevation: 0, // 마우스 hover 시 elevation 제거
+          splashColor: Colors.transparent, // 눌렀을 때 물결 효과 제거
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

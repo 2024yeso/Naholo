@@ -17,7 +17,6 @@ final UserModel user = UserModel(
   nickName: "얼뚱이",
   userCharacter: "오징어",
   lv: 10,
-  introduceDiary: "얼뚱이의 일지",
   image: "",
 );
 
@@ -118,7 +117,7 @@ class _DiaryUserState extends State<DiaryUser> {
         children: [
           AppBar(
             backgroundColor: Colors.white,
-            toolbarHeight: SizeScaler.scaleSize(context, 35),
+            toolbarHeight: SizeScaler.scaleSize(context, 32),
             automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
             title: Row(
               children: [
@@ -146,7 +145,7 @@ class _DiaryUserState extends State<DiaryUser> {
                             ? '나의 일지'
                             : '${user.nickName} 님의 일지',
                         style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 8),
+                          fontSize: SizeScaler.scaleSize(context, 8.8),
                           fontWeight: FontWeight.bold,
                           color: Colors.black,
                         )),
@@ -159,9 +158,7 @@ class _DiaryUserState extends State<DiaryUser> {
                       Icons.share,
                       size: SizeScaler.scaleSize(context, 10),
                     ),
-                    onPressed: () {
-                      // 공유 기능 추가 (예: 공유 패키지 사용)
-                    },
+                    onPressed: () {},
                   ),
                 ),
               ],
@@ -182,12 +179,12 @@ class _DiaryUserState extends State<DiaryUser> {
                         children: [
                           // 위쪽 영역 (배경 사진)
                           Container(
-                            height: SizeScaler.scaleSize(context, 80),
+                            height: SizeScaler.scaleSize(context, 100),
                             color: Colors.grey,
                           ),
                           // 아래쪽 영역
                           Container(
-                            height: SizeScaler.scaleSize(context, 100),
+                            height: SizeScaler.scaleSize(context, 60),
                             color: Colors.white,
                             child: Center(
                                 child: Column(
@@ -201,34 +198,14 @@ class _DiaryUserState extends State<DiaryUser> {
                                   user.nickName,
                                   style: TextStyle(
                                       fontSize:
-                                          SizeScaler.scaleSize(context, 11),
+                                          SizeScaler.scaleSize(context, 12),
                                       fontWeight: FontWeight.w600),
                                 ),
                                 Text(
                                   'Lv. ${user.lv}',
                                   style: TextStyle(
                                       fontSize:
-                                          SizeScaler.scaleSize(context, 7),
-                                      fontWeight: FontWeight.w300,
-                                      color: const Color(0xFF7E7E7E)),
-                                ),
-                                SizedBox(
-                                  height: SizeScaler.scaleSize(context, 5),
-                                ),
-                                Text(
-                                  user.introduceDiary,
-                                  style: TextStyle(
-                                      fontSize:
-                                          SizeScaler.scaleSize(context, 8.5),
-                                      fontWeight: FontWeight.w400),
-                                ),
-                                SizedBox(
-                                    height: SizeScaler.scaleSize(context, 3)),
-                                Text(
-                                  '팔로워 $follower명',
-                                  style: TextStyle(
-                                      fontSize:
-                                          SizeScaler.scaleSize(context, 5),
+                                          SizeScaler.scaleSize(context, 7.7),
                                       fontWeight: FontWeight.w300,
                                       color: const Color(0xFF7E7E7E)),
                                 ),
@@ -239,23 +216,24 @@ class _DiaryUserState extends State<DiaryUser> {
                       ),
                       // 두 영역 사이에 겹치는 이미지
                       Positioned(
-                        top: 22, // top 값을 조정
+                        top: 25, // top 값을 조정
                         child: Image.asset(
                           "assets/images/$userCharacter.png",
                           scale: 4.5,
                         ),
                       ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: IconButton(
-                          icon: const Icon(Icons.settings),
-                          iconSize: SizeScaler.scaleSize(context, 10),
-                          onPressed: () {
-                            // 설정 모드 On
-                          },
+                      if (clientID == authorID)
+                        Positioned(
+                          top: 0,
+                          right: 0,
+                          child: IconButton(
+                            icon: const Icon(Icons.settings),
+                            iconSize: SizeScaler.scaleSize(context, 10),
+                            onPressed: () {
+                              // 설정 모드 On
+                            },
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   Container(

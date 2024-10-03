@@ -167,7 +167,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
           child: Text(
             '일지 작성',
             style: TextStyle(
-              fontSize: SizeScaler.scaleSize(context, 8),
+              fontSize: SizeScaler.scaleSize(context, 8.8),
               fontWeight: FontWeight.bold,
               color: Colors.black,
             ),

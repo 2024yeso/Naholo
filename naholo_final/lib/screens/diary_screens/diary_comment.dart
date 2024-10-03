@@ -109,7 +109,7 @@ Future<void> addComment(String content) async {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        toolbarHeight: SizeScaler.scaleSize(context, 35),
+        toolbarHeight: SizeScaler.scaleSize(context, 32),
         automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
         title: Row(
           children: [
@@ -135,7 +135,7 @@ Future<void> addComment(String content) async {
                 child: Text(
                   '댓글',
                   style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8),
+                    fontSize: SizeScaler.scaleSize(context, 8.8),
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
