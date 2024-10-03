@@ -317,7 +317,7 @@ class _DiaryTextState extends State<DiaryText> {
                 children: [
                   AppBar(
                     backgroundColor: Colors.white,
-                    toolbarHeight: SizeScaler.scaleSize(context, 35),
+                    toolbarHeight: SizeScaler.scaleSize(context, 32),
                     automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
                     title: Row(
                       children: [
@@ -537,52 +537,58 @@ class _DiaryTextState extends State<DiaryText> {
                           SizedBox(
                             height: SizeScaler.scaleSize(
                                 context, 100), // 높이를 고정하여 슬라이더 높이 일정
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: widget.images.length,
-                              itemBuilder: (context, index) {
-                                try {
-                                  final decodedImage =
-                                      base64Decode(widget.images[index]);
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal:
-                                          SizeScaler.scaleSize(context, 5),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                          SizeScaler.scaleSize(context, 7)),
-                                      child: Image.memory(
-                                        decodedImage,
-                                        width: SizeScaler.scaleSize(
-                                            context, 100), // 고정된 너비 설정
-                                        fit: BoxFit
-                                            .contain, // 이미지 비율을 유지하며 잘리지 않게 표시
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: SizeScaler.scaleSize(
+                                      context, 5)), // 좌우 패딩 설정
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: widget.images.length,
+                                itemBuilder: (context, index) {
+                                  try {
+                                    final decodedImage =
+                                        base64Decode(widget.images[index]);
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal:
+                                            SizeScaler.scaleSize(context, 5),
                                       ),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  print('Error decoding image: $e');
-                                  return Padding(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal:
-                                          SizeScaler.scaleSize(context, 5),
-                                    ),
-                                    child: Container(
-                                      width: SizeScaler.scaleSize(context, 100),
-                                      height:
-                                          SizeScaler.scaleSize(context, 100),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[300],
+                                      child: ClipRRect(
                                         borderRadius: BorderRadius.circular(
                                             SizeScaler.scaleSize(context, 7)),
+                                        child: Image.memory(
+                                          decodedImage,
+                                          height: SizeScaler.scaleSize(
+                                              context, 90), // 고정된 너비 설정
+                                          fit: BoxFit
+                                              .fitHeight, // 이미지 비율을 유지하며 잘리지 않게 표시
+                                        ),
                                       ),
-                                      child: const Icon(Icons.broken_image,
-                                          color: Colors.red),
-                                    ),
-                                  );
-                                }
-                              },
+                                    );
+                                  } catch (e) {
+                                    print('Error decoding image: $e');
+                                    return Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal:
+                                            SizeScaler.scaleSize(context, 5),
+                                      ),
+                                      child: Container(
+                                        width:
+                                            SizeScaler.scaleSize(context, 100),
+                                        height:
+                                            SizeScaler.scaleSize(context, 100),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[300],
+                                          borderRadius: BorderRadius.circular(
+                                              SizeScaler.scaleSize(context, 7)),
+                                        ),
+                                        child: const Icon(Icons.broken_image,
+                                            color: Colors.red),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
                             ),
                           ),
                           SizedBox(height: SizeScaler.scaleSize(context, 25)),
