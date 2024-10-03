@@ -109,8 +109,8 @@ class _DiaryUserState extends State<DiaryUser> {
 
   @override
   Widget build(BuildContext context) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      String userCharacter = userProvider.user?.userCharacter ?? 'unknown';
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String userCharacter = userProvider.user?.userCharacter ?? 'unknown';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -118,40 +118,54 @@ class _DiaryUserState extends State<DiaryUser> {
         children: [
           AppBar(
             backgroundColor: Colors.white,
-            toolbarHeight: SizeScaler.scaleSize(context, 25),
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: Colors.black,
-                size: SizeScaler.scaleSize(context, 10),
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            title: Center(
-              child: Text(
-                  clientID == authorID ? '나의 일지' : '${user.nickName} 님의 일지',
-                  style: TextStyle(
-                    fontSize: SizeScaler.scaleSize(context, 8),
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  )),
-            ),
-            actions: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.share,
-                        size: SizeScaler.scaleSize(context, 10)),
+            toolbarHeight: SizeScaler.scaleSize(context, 35),
+            automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
+            title: Row(
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
+                        size: SizeScaler.scaleSize(context, 10),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 10,
+                  child: Center(
+                    child: Text(
+                        clientID == authorID
+                            ? '나의 일지'
+                            : '${user.nickName} 님의 일지',
+                        style: TextStyle(
+                          fontSize: SizeScaler.scaleSize(context, 8),
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        )),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.share,
+                      size: SizeScaler.scaleSize(context, 10),
+                    ),
                     onPressed: () {
-                      // 공유 기능 추가
+                      // 공유 기능 추가 (예: 공유 패키지 사용)
                     },
                   ),
-                  SizedBox(width: SizeScaler.scaleSize(context, 2)),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           Container(
             color: const Color(0xFFBABABA), // 타이틀 회색 구분선 색상
@@ -228,7 +242,7 @@ class _DiaryUserState extends State<DiaryUser> {
                         top: 22, // top 값을 조정
                         child: Image.asset(
                           "assets/images/$userCharacter.png",
-                                scale: 4.5,
+                          scale: 4.5,
                         ),
                       ),
                       Positioned(

@@ -317,45 +317,53 @@ class _DiaryTextState extends State<DiaryText> {
                 children: [
                   AppBar(
                     backgroundColor: Colors.white,
-                    toolbarHeight: SizeScaler.scaleSize(context, 25),
-                    leading: IconButton(
-                      icon: Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                        size: SizeScaler.scaleSize(context, 10),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    title: Center(
-                      child: Text(
-                        '일지 상세 보기',
-                        style: TextStyle(
-                          fontSize: SizeScaler.scaleSize(context, 8),
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                    toolbarHeight: SizeScaler.scaleSize(context, 35),
+                    automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
+                    title: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.arrow_back,
+                                color: Colors.black,
+                                size: SizeScaler.scaleSize(context, 10),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    actions: [
-                      Row(
-                        children: [
-                          IconButton(
+                        Expanded(
+                          flex: 10,
+                          child: Center(
+                            child: Text(
+                              '일지 상세 보기',
+                              style: TextStyle(
+                                fontSize: SizeScaler.scaleSize(context, 8),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: IconButton(
                             icon: Icon(
                               Icons.share,
                               size: SizeScaler.scaleSize(context, 10),
                             ),
                             onPressed: () {
                               // 공유 기능 추가 (예: 공유 패키지 사용)
-                              // 예시:
-                              // Share.share('나홀로일지: ${widget.postTitle}\n${widget.postContent}');
                             },
                           ),
-                          SizedBox(width: SizeScaler.scaleSize(context, 2)),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
                   Container(
                     color: const Color(0xFFBABABA),
@@ -372,8 +380,7 @@ class _DiaryTextState extends State<DiaryText> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    DiaryUser(),
+                                builder: (context) => DiaryUser(),
                               ),
                             );
                           },

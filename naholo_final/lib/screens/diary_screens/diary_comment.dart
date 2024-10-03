@@ -109,7 +109,7 @@ Future<void> addComment(String content) async {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        toolbarHeight: SizeScaler.scaleSize(context, 25),
+        toolbarHeight: SizeScaler.scaleSize(context, 35),
         automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
         title: Row(
           children: [

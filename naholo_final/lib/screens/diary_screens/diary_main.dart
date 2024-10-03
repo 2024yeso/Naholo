@@ -214,7 +214,7 @@ class _DiaryMainState extends State<DiaryMain> {
           children: [
             AppBar(
               backgroundColor: const Color(0xFFF0E8FA),
-              toolbarHeight: SizeScaler.scaleSize(context, 35),
+              toolbarHeight: SizeScaler.scaleSize(context, 32),
 
               automaticallyImplyLeading: false, // Remove default back arrow
               title: Row(
@@ -738,6 +738,11 @@ class _DiaryMainState extends State<DiaryMain> {
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
+          highlightElevation: 0, // 눌렀을 때의 elevation 제거
+    focusElevation: 0, // 포커스 시 elevation 제거
+    hoverElevation: 0, // 마우스 hover 시 elevation 제거
+    splashColor: Colors.transparent, // 눌렀을 때 물결 효과 제거
+
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -85,7 +85,7 @@ class _DiarySearchState extends State<DiarySearch> {
           children: [
             AppBar(
               backgroundColor: Colors.white,
-              toolbarHeight: SizeScaler.scaleSize(context, 25),
+              toolbarHeight: SizeScaler.scaleSize(context, 35),
               automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
               title: Row(
                 children: [

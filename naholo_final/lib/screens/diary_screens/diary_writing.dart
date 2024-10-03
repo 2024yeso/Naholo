@@ -82,7 +82,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
     return base64Images;
   }
 
-// 서버로 데이터 전송 함수
+  // 서버로 데이터 전송 함수
   Future<void> _uploadData() async {
     // Provider를 통해 사용자 정보를 가져옴
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -155,7 +155,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        toolbarHeight: SizeScaler.scaleSize(context, 25),
+        toolbarHeight: SizeScaler.scaleSize(context, 32),
         leading: IconButton(
           icon: Icon(Icons.arrow_back,
               color: Colors.black, size: SizeScaler.scaleSize(context, 10)),
@@ -230,71 +230,82 @@ class _DiaryWritingState extends State<DiaryWriting> {
                       color: const Color(0xFFBABABA), // 구분선 색상
                       height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
                     ),
-                    // 이미지 추가 버튼
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          vertical: SizeScaler.scaleSize(context, 11),
-                          horizontal: SizeScaler.scaleSize(context, 11)),
-                      child: ElevatedButton.icon(
-                        onPressed: _pickImage, // 버튼 클릭 시 이미지 선택 함수 호출
-                        icon: const Icon(Icons.add_photo_alternate),
-                        label: Text(
-                          '사진 추가',
-                          style: TextStyle(
-                              fontSize: SizeScaler.scaleSize(context, 8)),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          minimumSize: Size(double.infinity,
-                              SizeScaler.scaleSize(context, 25)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                SizeScaler.scaleSize(context, 10)),
-                          ),
-                        ),
-                      ),
-                    ),
+                    if (_imageList.isNotEmpty)
+                      SizedBox(height: SizeScaler.scaleSize(context, 7)),
                     // 선택한 이미지 미리보기
                     _imageList.isNotEmpty
                         ? SizedBox(
                             height: SizeScaler.scaleSize(
                                 context, 100), // 이미지 미리보기 높이 설정
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal, // 수평 스크롤
-                              itemCount: _imageList.length,
-                              itemBuilder: (context, index) {
-                                return Stack(
-                                  children: [
-                                    Padding(
-                                      padding: EdgeInsets.all(
-                                          SizeScaler.scaleSize(context, 5)),
-                                      child: Image.file(
-                                        _imageList[index],
-                                        fit: BoxFit.cover,
-                                        width: SizeScaler.scaleSize(
-                                            context, 80), // 이미지 미리보기 너비 설정
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: SizeScaler.scaleSize(
+                                      context, 5)), // 좌우 패딩 설정
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal, // 수평 스크롤
+                                itemCount: _imageList.length,
+                                itemBuilder: (context, index) {
+                                  return Stack(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.all(
+                                            SizeScaler.scaleSize(context, 5)),
+                                        child: Image.file(
+                                          _imageList[index],
+                                          height: SizeScaler.scaleSize(
+                                              context, 90), // 이미지 미리보기 너비 설정
+                                          fit: BoxFit.fitHeight,
+                                        ),
                                       ),
-                                    ),
-                                    Positioned(
-                                      right: 0,
-                                      top: 0,
-                                      child: IconButton(
-                                        icon: const Icon(Icons.cancel,
-                                            color: Colors.red),
-                                        onPressed: () {
-                                          setState(() {
-                                            _imageList
-                                                .removeAt(index); // 이미지 삭제
-                                          });
-                                        },
+                                      Positioned(
+                                        right:
+                                            SizeScaler.scaleSize(context, -1),
+                                        top: SizeScaler.scaleSize(context, -1),
+                                        child: IconButton(
+                                          icon: Icon(Icons.circle,
+                                              color: Colors.white,
+                                              size: SizeScaler.scaleSize(
+                                                  context, 12)),
+                                          onPressed: () {
+                                            setState(() {
+                                              _imageList
+                                                  .removeAt(index); // 이미지 삭제
+                                            });
+                                          },
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                );
-                              },
+                                      Positioned(
+                                        right:
+                                            SizeScaler.scaleSize(context, -1),
+                                        top: SizeScaler.scaleSize(context, -1),
+                                        child: IconButton(
+                                          icon: Icon(Icons.cancel,
+                                              color: const Color(0xFFF9747D),
+                                              size: SizeScaler.scaleSize(
+                                                  context, 12)),
+                                          onPressed: () {
+                                            setState(() {
+                                              _imageList
+                                                  .removeAt(index); // 이미지 삭제
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
                             ),
                           )
                         : const SizedBox.shrink(),
+                    if (_imageList.isNotEmpty)
+                      SizedBox(height: SizeScaler.scaleSize(context, 7)),
+                    if (_imageList.isNotEmpty)
+                      Container(
+                        color:
+                            const Color(0xFFBABABA).withOpacity(0.5), // 구분선 색상
+                        height: SizeScaler.scaleSize(context, 0.5), // 구분선 두께
+                      ),
                     // 주제 선택란
                     Padding(
                       padding: EdgeInsets.all(
@@ -405,29 +416,53 @@ class _DiaryWritingState extends State<DiaryWriting> {
               ),
             ),
           ),
-          /* Container(
-            color: const Color(0xFFBABABA),
-            height: SizeScaler.scaleSize(context, 0.5),
-          ), */
-          /*   SizedBox(
-            height: SizeScaler.scaleSize(context, 27), // 높이 설정
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  height: SizeScaler.scaleSize(context, 26),
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.camera_alt,
-                        size: SizeScaler.scaleSize(context, 10)), // 카메라 아이콘
-                    onPressed: () {
-                      _pickImage;
-                    },
-                  ),
+          Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: SizeScaler.scaleSize(context, 11),
+                horizontal: SizeScaler.scaleSize(context, 11)),
+            child: ElevatedButton.icon(
+              onPressed: _pickImage, // 버튼 클릭 시 이미지 선택 함수 호출
+              icon: const Icon(Icons.add_photo_alternate),
+              label: Text(
+                '사진 추가',
+                style: TextStyle(fontSize: SizeScaler.scaleSize(context, 8)),
+              ),
+              style: ElevatedButton.styleFrom(
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                backgroundColor: const Color(0xFFD8CBFF),
+                minimumSize:
+                    Size(double.infinity, SizeScaler.scaleSize(context, 25)),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(SizeScaler.scaleSize(context, 10)),
                 ),
-              ],
+              ),
             ),
-          ), */
+          ),
+          /* Container(
+              color: const Color(0xFFBABABA),
+              height: SizeScaler.scaleSize(context, 0.5),
+            ), */
+          /*   SizedBox(
+              height: SizeScaler.scaleSize(context, 27), // 높이 설정
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    height: SizeScaler.scaleSize(context, 26),
+                    alignment: Alignment.topLeft,
+                    child: IconButton(
+                      icon: Icon(Icons.camera_alt,
+                          size: SizeScaler.scaleSize(context, 10)), // 카메라 아이콘
+                      onPressed: () {
+                        _pickImage;
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ), */
         ],
       ),
     );
