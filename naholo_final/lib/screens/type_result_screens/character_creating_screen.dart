@@ -124,6 +124,7 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
                 ),
                 Text(
                   getKoreanSaid(widget.character),
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,

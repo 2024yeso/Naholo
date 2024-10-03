@@ -23,7 +23,8 @@ class FollowPage extends StatefulWidget {
   _FollowPageState createState() => _FollowPageState();
 }
 
-class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateMixin {
+class _FollowPageState extends State<FollowPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<dynamic> followers = [];
   List<dynamic> following = [];
@@ -37,7 +38,8 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
     final url = Uri.parse('${Api.baseUrl}/follow_page/?user_id=$userId');
 
     try {
-      final response = await http.get(url, headers: {'Content-Type': 'application/json'});
+      final response =
+          await http.get(url, headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -87,7 +89,8 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
             followingStates[followerId] = true;
             // 팔로잉 목록에 새롭게 추가된 경우 리스트에 추가
             if (followers.any((user) => user['USER_ID'] == followerId)) {
-              following.add(followers.firstWhere((user) => user['USER_ID'] == followerId));
+              following.add(followers
+                  .firstWhere((user) => user['USER_ID'] == followerId));
             }
           }
         });
@@ -114,6 +117,14 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final currentUserId = userProvider.user?.userId ?? '';
 
+    // NICKNAME과 INTRODUCE를 UTF-8 디코딩 처리
+    String nickname = user['NICKNAME'] != null
+        ? utf8.decode(user['NICKNAME'].toString().codeUnits)
+        : '이름 없음';
+    String introduce = user['INTRODUCE'] != null
+        ? utf8.decode(user['INTRODUCE'].toString().codeUnits)
+        : '';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ListTile(
@@ -122,14 +133,17 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
           backgroundColor: Colors.grey.withOpacity(0.5),
           backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
               ? MemoryImage(base64Decode(user['IMAGE']))
-              : AssetImage('assets/image/default_image.png') as ImageProvider,
+              : const AssetImage('assets/images/default_image.png')
+                  as ImageProvider,
         ),
         title: Text(
-          user['NICKNAME'] ?? '이름 없음',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeScaler.scaleSize(context, 10)),
+          nickname, // 디코딩된 닉네임 출력
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: SizeScaler.scaleSize(context, 10)),
         ),
         subtitle: Text(
-          user['INTRODUCE'] ?? '',
+          introduce, // 디코딩된 소개문 출력
           style: TextStyle(fontSize: SizeScaler.scaleSize(context, 8)),
         ),
         trailing: ElevatedButton(
@@ -141,24 +155,36 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            backgroundColor: followingStates[user['USER_ID']] ?? false ? Colors.red : const Color(0xffa971f4),
+            backgroundColor: followingStates[user['USER_ID']] ?? false
+                ? Colors.red
+                : const Color(0xffa971f4),
             foregroundColor: Colors.white,
             padding: EdgeInsets.zero,
           ),
           onPressed: () => toggleFollow(currentUserId, user['USER_ID']),
           child: Text(
             followingStates[user['USER_ID']] ?? false ? '언팔로우' : '팔로우',
-            style: TextStyle(fontSize: SizeScaler.scaleSize(context, 9), fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: SizeScaler.scaleSize(context, 9),
+                fontWeight: FontWeight.bold),
           ),
         ),
       ),
     );
   }
 
-  // 팔로잉 페이지의 유저 아이템 빌드 (삭제 버튼 있음)
+// 팔로잉 페이지의 유저 아이템 빌드 (삭제 버튼 있음)
   Widget _buildFollowingTile(Map<String, dynamic> user) {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final currentUserId = userProvider.user?.userId ?? '';
+
+    // NICKNAME과 INTRODUCE를 UTF-8 디코딩 처리
+    String nickname = user['NICKNAME'] != null
+        ? utf8.decode(user['NICKNAME'].toString().codeUnits)
+        : '이름 없음';
+    String introduce = user['INTRODUCE'] != null
+        ? utf8.decode(user['INTRODUCE'].toString().codeUnits)
+        : '';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
@@ -168,14 +194,17 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
           backgroundColor: Colors.grey.withOpacity(0.5),
           backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
               ? MemoryImage(base64Decode(user['IMAGE']))
-              : AssetImage('assets/image/default_image.png') as ImageProvider,
+              : const AssetImage('assets/images/default_image.png')
+                  as ImageProvider,
         ),
         title: Text(
-          user['NICKNAME'] ?? '이름 없음',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: SizeScaler.scaleSize(context, 10)),
+          nickname, // 디코딩된 닉네임 출력
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: SizeScaler.scaleSize(context, 10)),
         ),
         subtitle: Text(
-          user['INTRODUCE'] ?? '',
+          introduce, // 디코딩된 소개문 출력
           style: TextStyle(fontSize: SizeScaler.scaleSize(context, 8)),
         ),
         trailing: ElevatedButton(
@@ -194,7 +223,9 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
           onPressed: () => toggleFollow(currentUserId, user['USER_ID']),
           child: Text(
             '삭제',
-            style: TextStyle(fontSize: SizeScaler.scaleSize(context, 9), fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: SizeScaler.scaleSize(context, 9),
+                fontWeight: FontWeight.bold),
           ),
         ),
       ),
@@ -204,7 +235,8 @@ class _FollowPageState extends State<FollowPage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.selectedIndex);
+    _tabController = TabController(
+        length: 2, vsync: this, initialIndex: widget.selectedIndex);
     fetchFollowPage();
   }
 
