@@ -30,6 +30,43 @@ class _MainScreenState extends State<MainScreen> {
   DateTime today = DateTime.now(); // 현재 날짜와 시간을 가져옵니다.
   String _message = "";
 
+  Future<void> updateUser(
+      String userId, Map<String, dynamic> updatedData) async {
+    final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updatedData), // 데이터를 JSON 형식으로 변환하여 전달
+      );
+
+      if (response.statusCode == 200) {
+        print("User information updated successfully");
+      } else {
+        print("Failed to update user: ${response.statusCode}");
+        print("Error message: ${response.body}");
+      }
+    } catch (e) {
+      print("An error occurred: $e");
+    }
+  }
+
+  void updateUserDetails() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String userId = userProvider.user?.userId ?? '';
+
+    Map<String, dynamic> updatedData = {
+      "LV": userProvider.user?.lv,
+      "Exp": userProvider.user?.exp,
+      "usercharacter": userProvider.user?.userCharacter,
+    };
+
+    updateUser(userId, updatedData);
+  }
+
   Future<void> checkAttendance() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.user?.userId ?? '';
@@ -105,6 +142,7 @@ class _MainScreenState extends State<MainScreen> {
     // TODO: implement initState
     super.initState();
     checkAttendance();
+    updateUserDetails();
   }
 
   @override
@@ -128,6 +166,7 @@ class _MainScreenState extends State<MainScreen> {
           print('didPop호출');
           return;
         }
+        updateUserDetails();
         showAppExitDialog(context);
       },
       child: Scaffold(
