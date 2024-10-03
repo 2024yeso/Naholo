@@ -45,7 +45,7 @@ class _MapContentState extends State<MapContent> {
       return CameraPosition(
         target: LatLng(
             firstMarker.position.latitude, firstMarker.position.longitude),
-        zoom: 12.0, // 줌 레벨 설정
+        zoom: 10.0, // 줌 레벨 설정
       );
     } else {
       return const CameraPosition(

@@ -141,11 +141,45 @@ class _DiaryWritingState extends State<DiaryWriting> {
     if (response.statusCode == 200) {
       // 성공적으로 업로드된 경우
       print('업로드 성공');
-      Navigator.pop(context); // 업로드 후 이전 화면으로 돌아가기
+      // 업로드 후 이전 화면으로 돌아가기
     } else {
       // 업로드 실패한 경우
       print('업로드 실패: ${response.statusCode}');
       print('서버 응답: ${response.body}');
+    }
+  }
+
+  Future<void> increaseUserExp(int additionalExp) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+    final currentExp = userProvider.user!.exp;
+
+    // 새로운 exp 값 계산
+    final newExp = currentExp + additionalExp;
+
+    final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'EXP': newExp.toString(), // 서버에 보낼 exp 값
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // exp가 성공적으로 업데이트된 경우
+        final data = jsonDecode(response.body);
+        print('유저 정보 업데이트 성공: ${data['message']}');
+
+        // 로컬 상태에서도 exp 값을 업데이트
+        userProvider.updateUserExp(newExp);
+      } else {
+        print('유저 정보 업데이트 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('유저 정보 업데이트 중 오류 발생: $e');
     }
   }
 
@@ -178,7 +212,11 @@ class _DiaryWritingState extends State<DiaryWriting> {
             padding: EdgeInsets.only(right: SizeScaler.scaleSize(context, 8)),
             child: Center(
               child: GestureDetector(
-                onTap: _uploadData, // 작성 버튼 눌렀을 때 서버로 데이터 전송 함수 호출
+                onTap: () async {
+                  await _uploadData();
+                  await increaseUserExp(100);
+                  Navigator.pop(context);
+                }, // 작성 버튼 눌렀을 때 서버로 데이터 전송 함수 호출
                 child: Text(
                   '작성',
                   style: TextStyle(

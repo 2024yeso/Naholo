@@ -89,6 +89,8 @@ class _YourProfileState extends State<YourProfile> {
         print(isFollowing);
       } else if (response.statusCode == 400) {
         print('이미 팔로우한 상태입니다.');
+
+        deleteFollow();
       } else {
         print('팔로우 실패: ${response.body}');
       }

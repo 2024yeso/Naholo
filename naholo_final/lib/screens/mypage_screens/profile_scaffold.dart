@@ -118,7 +118,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           // 리뷰에서 위도와 경도 정보를 가져옵니다.
           double latitude = review["LATITUDE"];
           double longitude = review["LONGITUDE"];
-
+          print(review);
           // Marker 객체를 생성하여 _markers에 추가합니다.
           _markers.add(
             Marker(
