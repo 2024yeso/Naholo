@@ -10,8 +10,8 @@ class UserProfile {
   final String introduce;
   final Uint8List? image;
   final String? userCharacter;
-  String? follower_count="0";
-  String? following_count="0";
+  int? follower_count = 0;
+  int? following_count = 0;
 
   UserProfile({
     required this.userId,
@@ -36,12 +36,14 @@ class UserProfile {
     }
 
     return UserProfile(
-      userId: json['user_id'] as String? ?? '',
-      nickname: json['nickname'] as String? ?? '닉네임 없음',
-      level: json['level'] as int? ?? 0,
-      introduce: json['introduce'] as String? ?? '자기소개가 없습니다.',
+      userId: json['USER_ID'] as String? ?? '',
+      nickname: json['NICKNAME'] as String? ?? '닉네임 없음',
+      level: json['LV'] as int? ?? 0,
+      introduce: json['INTRODUCE'] as String? ?? '자기소개가 없습니다.',
       image: imageBytes,
       userCharacter: json['userCharacter'] as String?,
+      follower_count: json['follower_count'] as int? ?? 10,
+      following_count: json['following_count'] as int? ?? 10,
     );
   }
 }

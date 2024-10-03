@@ -25,7 +25,7 @@ class NaholloWhereDetailScreen extends StatefulWidget {
 class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   Map<String, dynamic>? info; // 장소 상세 정보를 저장할 변수
   List<Map<String, dynamic>> reviews = []; // 리뷰 리스트
-
+  final bool _isLoading = true;
   bool isLoading = true; // 데이터 로딩 상태
 
   String showAdress(String adress) {
@@ -40,6 +40,48 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
     var result = '$part1$part2';
     return result;
+  }
+
+  Future<Map<String, dynamic>> getReviewadd(Map<String, dynamic> review) async {
+    String userId = review["USER_ID"];
+
+    try {
+      print("사용자 ID: $userId");
+      final response = await http.get(
+        Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+
+        String nickname =
+            data['user_info'] != null ? data['user_info']['NICKNAME'] : "오류1";
+        Uint8List? imageBytes =
+            data['user_info'] != null ? data['user_info']['image'] : null;
+        int lv = data['user_info'] != null ? data['user_info']['LV'] : 0;
+
+        return {
+          'nickname': nickname,
+          'imageBytes': imageBytes,
+          'lv': lv,
+        };
+      } else {
+        print('서버 응답 에러: ${response.statusCode}');
+        return {
+          'nickname': '오류2',
+          'imageBytes': null,
+          'lv': 0,
+        };
+      }
+    } catch (e) {
+      print('데이터 가져오기 에러: $e');
+      return {
+        'nickname': '오류3',
+        'imageBytes': null,
+        'lv': 0,
+      };
+    }
   }
 
   Widget buildRatingBar(BuildContext context, double rating) {
@@ -148,11 +190,12 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           reviews = List<Map<String, dynamic>>.from(
               jsonDecode(utf8.decode(reviewResponse.bodyBytes))["data"]);
           print('Received Reviews: $reviews');
-          
+
           // 리뷰별로 이미지 데이터 확인
           for (var review in reviews) {
-            print('Review ID: ${review["REVIEW_ID"]}, Images: ${review["REVIEW_IMAGES"]}');
-            
+            print(
+                'Review ID: ${review["REVIEW_ID"]}, Images: ${review["REVIEW_IMAGES"]}');
+
             // REVIEW_LIKE와 isLiked 초기화
             review["REVIEW_LIKE"] = review["REVIEW_LIKE"] ?? 0;
 
@@ -170,7 +213,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         });
       } else {
         // 에러 처리
-        print("Failed to load data: Status Code - ${whereResponse.statusCode}, ${reviewResponse.statusCode}");
+        print(
+            "Failed to load data: Status Code - ${whereResponse.statusCode}, ${reviewResponse.statusCode}");
         setState(() {
           isLoading = false;
         });
@@ -567,6 +611,84 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // 상단 사용자 정보 및 태그
+                          Row(
+                            children: [
+                              FutureBuilder<Map<String, dynamic>>(
+                                future: getReviewadd(review), // 비동기 데이터 호출
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.person,
+                                          size: 20, color: Colors.white),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.error,
+                                          size: 20, color: Colors.red),
+                                    );
+                                  } else if (snapshot.hasData) {
+                                    final data = snapshot.data!;
+                                    final nickname = data['nickname'] ?? '오류';
+                                    final imageBytes = data['imageBytes'];
+                                    final lv = data['lv'] ?? 0;
+
+                                    return Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: imageBytes != null
+                                              ? MemoryImage(imageBytes)
+                                              : null, // 이미지가 있으면 넣고 없으면 기본 아이콘 사용
+                                          backgroundColor: imageBytes == null
+                                              ? Colors.grey[300]
+                                              : null,
+                                          child: imageBytes == null
+                                              ? const Icon(Icons.person,
+                                                  size: 20, color: Colors.white)
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              nickname,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Lv.$lv',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  } else {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.person,
+                                          size: 20, color: Colors.white),
+                                    );
+                                  }
+                                },
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
                           // 이미지 스크롤
                           if (reviewImages.isNotEmpty)
                             SizedBox(
@@ -621,7 +743,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           border: Border.all(
-                                            color: const Color(0xff7e7e7e), // 검정색 테두리 추가
+                                            color: const Color(
+                                                0xff7e7e7e), // 검정색 테두리 추가
                                             width: 1.0, // 테두리 두께 설정
                                           ),
                                           borderRadius: BorderRadius.circular(

@@ -107,7 +107,8 @@ class _JournalContentState extends State<JournalContent> {
         itemCount: widget.reviews.length,
         itemBuilder: (context, index) {
           final review = widget.reviews[index];
-
+          print("뭐죠? ${widget.reviews}");
+          print("왓더 ${review["REVIEW_IMAGE"]}");
           // 디버그 출력: 각 리뷰의 reason 값 출력
           /*
         print('Review #$index: reasonMenu=${review.reasonMenu}, reasonMood=${review.reasonMood}, '
@@ -125,40 +126,21 @@ class _JournalContentState extends State<JournalContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 상단 사용자 정보 및 태그
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 20,
-                        backgroundColor: Colors.grey[300],
-                        child: const Icon(Icons.person,
-                            size: 20, color: Colors.white),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.userProfile?.nickname ?? '닉네임 없음',
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            getLocationParts(review),
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
                   const SizedBox(height: 8),
                   // 장소 이름 및 리뷰 이미지
-                  Text(
-                    review["WHERE_NAME"],
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        review["WHERE_NAME"],
+                        style: const TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      Text(getLocationParts(review),
+                          style: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 7),
+                              fontWeight: FontWeight.w400))
+                    ],
                   ),
                   const SizedBox(height: 8),
                   // 이미지 스크롤
@@ -169,31 +151,12 @@ class _JournalContentState extends State<JournalContent> {
                       scrollDirection: Axis.horizontal,
                       itemCount: review["REVIEW_IMAGE"].length,
                       itemBuilder: (context, imgIndex) {
-                        // 바이트 배열을 가져오기
-                        final imageBytes = review["REVIEW_IMAGE"][imgIndex];
-
+                        print(review["REVIEW_IMAGE"].length);
                         try {
-                          // 바이트 배열을 Uint8List로 변환
-                          Uint8List byteData = Uint8List.fromList(imageBytes);
-
-                          return Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: Image.memory(
-                              byteData,
-                              height: SizeScaler.scaleSize(
-                                  context, 147), // 정사각형으로 동일한 크기
-                              width: SizeScaler.scaleSize(context, 147),
-                              fit: BoxFit.cover, // 이미지를 정사각형 안에 꽉 채움
-                              errorBuilder: (context, error, stackTrace) {
-                                // 이미지 변환 실패 시 에러 아이콘을 보여줌
-                                return const Icon(
-                                  Icons.error,
-                                  size: 50,
-                                  color: Colors.red,
-                                );
-                              },
-                            ),
+                          return buildImage(
+                            review["REVIEW_IMAGE"],
+                            SizeScaler.scaleSize(context, 147),
+                            SizeScaler.scaleSize(context, 147),
                           );
                         } catch (e) {
                           // 변환 실패 시 실패 아이콘을 표시
@@ -280,6 +243,90 @@ class _JournalContentState extends State<JournalContent> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// 이미지 데이터를 표시하는 위젯
+Widget buildImage(dynamic imageData, double width, double height) {
+  if (imageData != null) {
+    if (imageData is String && imageData.isNotEmpty) {
+      // Base64 데이터가 'data:image' 접두사를 가지고 있는지 확인 후 제거
+      String base64String = imageData;
+      if (imageData.startsWith('data:image')) {
+        base64String = imageData.split(',').last;
+      }
+
+      try {
+        // Base64 데이터를 디코딩
+        Uint8List imageBytes = base64Decode(base64String);
+
+        // 디버그 로그로 디코딩된 이미지 크기 확인
+        print('Decoded image size: ${imageBytes.length} bytes');
+
+        // 디코딩된 이미지가 유효한지 확인하기 위해 메모리에 로드
+        return Image.memory(
+          imageBytes,
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            // 디코딩에 실패하거나 이미지 로딩 중 에러 발생 시 대체 이미지 표시
+            print('Error displaying image: $error');
+            return Image.asset(
+              'assets/images/default_image.png',
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            );
+          },
+        );
+      } catch (e) {
+        print('Base64 decoding error: $e');
+        return Image.asset(
+          'assets/images/default_image.png',
+          width: width,
+          height: height,
+          fit: BoxFit.cover,
+        );
+      }
+    } else if (imageData is Uint8List || imageData is List<int>) {
+      // Uint8List 또는 List<int>인 경우
+      Uint8List imageBytes =
+          imageData is Uint8List ? imageData : Uint8List.fromList(imageData);
+      return Image.memory(
+        imageBytes,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error displaying image: $error');
+          return Image.asset(
+            'assets/images/default_image.png',
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+          );
+        },
+      );
+    } else {
+      // 지원하지 않는 데이터 타입인 경우 대체 이미지 표시
+      print('Unsupported image data type: ${imageData.runtimeType}');
+      return Image.asset(
+        'assets/images/default_image.png',
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
+    }
+  } else {
+    // 이미지 데이터가 없을 경우 기본 이미지 표시
+    print('No image data provided.');
+    return Image.asset(
+      'assets/images/default_image.png',
+      width: width,
+      height: height,
+      fit: BoxFit.cover,
     );
   }
 }

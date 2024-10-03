@@ -36,7 +36,6 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   final Set<Marker> _markers = {};
   UserProfile? _userProfile;
 
-
   void resetMapController() {
     if (_mapController.isCompleted) {
       _mapController = Completer<GoogleMapController>();
@@ -58,50 +57,50 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   }
 
   Future<void> _fetchMyPageData() async {
-  print("데이터 가져오기 시작");
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
-  final userId = userProvider.user?.userId ?? '';
-  
-  try {
-    print("사용자 ID: $userId");
-    final response = await http.get(
-      Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
-      headers: {'Content-Type': 'application/json; charset=utf-8'},
-    );
+    print("데이터 가져오기 시작");
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.userId ?? '';
 
-    if (response.statusCode == 200) {
-      final data = json.decode(utf8.decode(response.bodyBytes));
+    try {
+      print("사용자 ID: $userId");
+      final response = await http.get(
+        Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
 
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+
+        setState(() {
+          // Null 체크를 통해 안전하게 데이터를 처리
+          _userProfile = data['user_info'] != null
+              ? UserProfile.fromJson(data['user_info'])
+              : null;
+
+          print(_userProfile);
+          // _reviews에 데이터가 없을 때 빈 리스트 할당
+          _reviews = data['reviews'] != null
+              ? List<Map<String, dynamic>>.from(data['reviews'])
+              : [];
+
+          print(data['user_info']);
+          print(data["reviews"]);
+          _isLoading = false;
+          _addMarkers(where["where"]); // 필요에 따라 수정
+        });
+      } else {
+        print('서버 응답 에러: ${response.statusCode}');
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        // Null 체크를 통해 안전하게 데이터를 처리
-        _userProfile = data['user_info'] != null 
-          ? UserProfile.fromJson(data['user_info']) 
-          : null;
-
-        // _reviews에 데이터가 없을 때 빈 리스트 할당
-        _reviews = data['reviews'] != null 
-          ? List<Map<String, dynamic>>.from(data['reviews']) 
-          : [];
-        
-
-        print(data['user_info']);
-        _isLoading = false;
-        _addMarkers(where["where"]); // 필요에 따라 수정
-      });
-    } else {
-      print('서버 응답 에러: ${response.statusCode}');
-      setState(() {
         _isLoading = false;
       });
+      print('데이터 가져오기 에러: $e');
     }
-  } catch (e) {
-    setState(() {
-      _isLoading = false;
-    });
-    print('데이터 가져오기 에러: $e');
   }
-}
-
 
   // 마커 추가 메서드 정의
   void _addMarkers(List<Map<String, dynamic>> wheres) {
@@ -215,23 +214,28 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         SizedBox(
           width: SizeScaler.scaleSize(context, 6),
         ),
-        CircleAvatar(
-          radius: SizeScaler.scaleSize(context, 15),
-          backgroundColor: Colors.grey.withOpacity(0.5),
-          child: _userProfile != null && _userProfile!.image != null
-              ? ClipOval(
-                  child: Image.memory(
-                    _userProfile!.image!,
-                    width: SizeScaler.scaleSize(context, 32),
-                    height: SizeScaler.scaleSize(context, 32),
-                    fit: BoxFit.cover,
-                  ),
-                )
-              : Icon(
-                  Icons.person,
-                  size: SizeScaler.scaleSize(context, 18),
-                  color: Colors.white
-                ),
+        GestureDetector(
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfileEditPage(),
+              )),
+          child: CircleAvatar(
+            radius: SizeScaler.scaleSize(context, 15),
+            backgroundColor: Colors.grey.withOpacity(0.5),
+            child: _userProfile != null && _userProfile!.image != null
+                ? ClipOval(
+                    child: Image.memory(
+                      _userProfile!.image!,
+                      width: SizeScaler.scaleSize(context, 32),
+                      height: SizeScaler.scaleSize(context, 32),
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Icon(Icons.person,
+                    size: SizeScaler.scaleSize(context, 18),
+                    color: Colors.white),
+          ),
         ),
         SizedBox(width: SizeScaler.scaleSize(context, 8)),
         Expanded(
@@ -291,8 +295,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          const FollowPage(selectedIndex: 0),
+                      builder: (context) => const FollowPage(selectedIndex: 0),
                     )),
                 child: Text(
                   '팔로워 $follower',
@@ -336,8 +339,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 backgroundColor: const Color(0xFF794FFF),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      SizeScaler.scaleSize(context, 4)),
+                  borderRadius:
+                      BorderRadius.circular(SizeScaler.scaleSize(context, 4)),
                 ),
                 padding: EdgeInsets.zero,
               ),
@@ -375,10 +378,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
-              backgroundColor:
-                  const Color(0xFFEFBDFF).withOpacity(0.1),
-              side:
-                  const BorderSide(color: Color(0xFF7320BC), width: 0.5),
+              backgroundColor: const Color(0xFFEFBDFF).withOpacity(0.1),
+              side: const BorderSide(color: Color(0xFF7320BC), width: 0.5),
               elevation: 0,
               padding: EdgeInsets.zero,
             ),
