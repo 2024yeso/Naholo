@@ -311,8 +311,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   // 팔로워, 팔로잉, 프로필 수정 버튼 빌드 메서드
   Widget _buildProfileActions(BuildContext context) {
     // 서버에서 팔로워, 팔로잉 수를 받아왔다면 해당 값으로 대체하세요.
-    final follower = _userProfile?.follower_count;
-    final following = _userProfile?.following_count;
+    final following = _userProfile?.follower_count;
+    final follower = _userProfile?.following_count;
 
     return Padding(
       padding:

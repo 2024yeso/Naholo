@@ -638,43 +638,31 @@ def my_page(user_id: str, db=Depends(get_db)):
         logger.error(f"Unexpected error in my_page: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-
-# 팔로워 및 팔로잉 정보 반환하는 엔드포인트
+# 팔로워와 팔로잉 데이터를 가져오는 API
 @app.get("/follow_page/")
-async def get_follow_info(user_id: str, db=Depends(get_db)):
+async def follow_page(user_id: str, db=Depends(get_db)):
     try:
         cursor = db.cursor(dictionary=True)
-        
-        # 팔로잉 정보 가져오기 (해당 유저가 팔로우하는 유저들)
-        cursor.execute("""
-            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
-            FROM Follow F
-            JOIN Users U ON F.FOLLOWER = U.USER_ID
-            WHERE F.USER_ID = %s
-        """, (user_id,))
-        following_users = cursor.fetchall()
 
-        logger.info(f"Following users for {user_id}: {following_users}")
-
-        # 팔로워 정보 가져오기 (해당 유저를 팔로우하는 유저들)
+        # 팔로워 목록: 내가 FOLLOWER로 있는 경우 (나를 팔로우한 사람들)
         cursor.execute("""
-            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
-            FROM Follow F
-            JOIN Users U ON F.USER_ID = U.USER_ID
-            WHERE F.FOLLOWER = %s
+            SELECT u.USER_ID, u.NICKNAME, u.IMAGE, u.INTRODUCE, u.LV
+            FROM Follow f
+            JOIN Users u ON f.USER_ID = u.USER_ID
+            WHERE f.FOLLOWER = %s
         """, (user_id,))
         followers = cursor.fetchall()
 
-        logger.info(f"Followers for {user_id}: {followers}")
+        # 팔로잉 목록: 내가 USER_ID로 있는 경우 (내가 팔로우한 사람들)
+        cursor.execute("""
+            SELECT u.USER_ID, u.NICKNAME, u.IMAGE, u.INTRODUCE, u.LV
+            FROM Follow f
+            JOIN Users u ON f.FOLLOWER = u.USER_ID
+            WHERE f.USER_ID = %s
+        """, (user_id,))
+        following = cursor.fetchall()
 
-        if not following_users and not followers:
-            raise HTTPException(status_code=404, detail="No follow data found")
-
-        return {
-            "user_id": user_id,
-            "following": following_users,
-            "followers": followers
-        }
+        return {"user_id": user_id, "followers": followers, "following": following}
 
     except mysql.connector.Error as err:
         logger.error(f"Database error: {err}")
@@ -685,6 +673,7 @@ async def get_follow_info(user_id: str, db=Depends(get_db)):
     finally:
         cursor.close()
         db.close()
+
 
 @app.get("/where/top-rated")
 def get_top_rated_places(page: int = 0, db=Depends(get_db)):
@@ -1746,7 +1735,48 @@ def get_user_journals(user_id: str, db=Depends(get_db)):
     
     return {"data": results}
 
+from mysql.connector import Error
 
+class FollowRequest(BaseModel):
+    user_id: str
+    follower_id: str
+
+# 팔로우/언팔로우 토글 API
+@app.post("/toggle_follow/")
+async def toggle_follow(request: FollowRequest, db=Depends(get_db)):
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # 팔로우 여부 확인: 팔로우 거는 사람이 USER_ID, 받는 사람이 FOLLOWER
+        cursor.execute("""
+            SELECT * FROM Follow WHERE USER_ID = %s AND FOLLOWER = %s
+        """, (request.user_id, request.follower_id))
+        follow_data = cursor.fetchone()
+
+        if follow_data:
+            # 이미 팔로우된 상태라면, 팔로우 해제 (언팔로우)
+            cursor.execute("""
+                DELETE FROM Follow WHERE USER_ID = %s AND FOLLOWER = %s
+            """, (request.user_id, request.follower_id))
+            db.commit()
+            return {"message": "Unfollowed successfully", "status": "unfollowed"}
+        else:
+            # 팔로우되지 않은 상태라면, 팔로우 추가
+            cursor.execute("""
+                INSERT INTO Follow (USER_ID, FOLLOWER) VALUES (%s, %s)
+            """, (request.user_id, request.follower_id))
+            db.commit()
+            return {"message": "Followed successfully", "status": "followed"}
+
+    except mysql.connector.Error as err:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
 
 # 서버 실행
 if __name__ == "__main__":
