@@ -20,24 +20,26 @@ final UserModel user = UserModel(
   image: "",
 );
 
-final String clientID = "유저";
-final String authorID = "유저";
+const String clientID = "유저";
+const String authorID = "유저";
 int follower = 30;
 
 class DiaryUser extends StatefulWidget {
+  const DiaryUser({super.key});
+
   @override
   _DiaryUserState createState() => _DiaryUserState();
 }
 
 class _DiaryUserState extends State<DiaryUser> {
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
 
   List<diaryPost_model> allBlogPosts = [
     diaryPost_model(
       postid: 1,
       author: '유저',
       authorID: '유저',
-      createdAt: DateTime.now().subtract(Duration(hours: 3)),
+      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
       title: '드디어 레고 조립을 완료하였습니다.',
       content: '저의 취미인 레고 조립.. 그동안 시간이 없어서 많이 못했었는데요! 약 반년 걸린 긴 활동을 마무리했습니다.',
       likes: 10,
@@ -49,7 +51,7 @@ class _DiaryUserState extends State<DiaryUser> {
       postid: 2,
       author: '유저',
       authorID: '유저',
-      createdAt: DateTime.now().subtract(Duration(days: 2)),
+      createdAt: DateTime.now().subtract(const Duration(days: 2)),
       title: '사건의지평선',
       content:
           '생각이 많은 건 말이야\n당연히 해야 할 일이야\n나에겐 우리가 지금 1순위야\n안전한 유리병을 핑계로\n바람을 가둬 둔 것 같지만\n\n기억나? 그날의 우리가\n잡았던 그 손엔 말이야\n설레임보다 커다란 믿음이 담겨서\n난 함박웃음을 지었지만\n울음이 날 것도 같았어\n소중한 건 언제나 두려움이니까\n\n문을 열면 들리던 목소리\n너로 인해 변해있던 따뜻한 공기\n여전히 자신 없지만 안녕히\n\n저기, 사라진 별의 자리\n아스라이 하얀 빛\n한동안은 꺼내 볼 수 있을 거야\n아낌없이 반짝인 시간은\n조금씩 옅어져 가더라도\n너와 내 맘에 살아 숨 쉴테니\n\n여긴, 서로의 끝이 아닌\n새로운 길 모퉁이\n익숙함에 진심을 속이지 말자\n하나 둘 추억이 떠오르면\n많이 많이 그리워할 거야\n고마웠어요 그래도 이제는\n사건의 지평선 너머로\n\n솔직히 두렵기도 하지만\n노력은 우리에게 정답이 아니라서\n마지막 선물은 산뜻한 안녕\n\n저기, 사라진 별의 자리\n아스라이 하얀 빛\n한동안은 꺼내 볼 수 있을 거야\n아낌없이 반짝인 시간은\n조금씩 옅어져 가더라도\n너와 내맘에 살아 숨 쉴 테니\n\n여긴, 서로의 끝이 아닌\n새로운 길 모퉁이\n익숙함에 진심을 속이지 말자\n하나 둘 추억이 떠오르면\n많이 많이 그리워할 거야\n고마웠어요 그래도 이제는\n사건의 지평선 너머로\n\n저기 사라진 별의 자리 아스라이 하얀 빛\n한동안은 꺼내 볼 수 있을 거야\n아낌없이 반짝인 시간은\n조금씩 옅어져 가더라도\n너와 내 맘에 살아 숨 쉴 테니\n\n여긴, 서로의 끝이 아닌\n새로운 길 모퉁이\n익숙함에 진심을 속이지 말자\n하나 둘 추억이 떠오르면\n많이 많이 그리워할 거야\n고마웠어요 그래도 이제는\n사건의 지평선 너머로\n\n사건의 지평선 너머로',
@@ -62,7 +64,7 @@ class _DiaryUserState extends State<DiaryUser> {
       postid: 3,
       author: '유저',
       authorID: '유저',
-      createdAt: DateTime.now().subtract(Duration(days: 3)),
+      createdAt: DateTime.now().subtract(const Duration(days: 3)),
       title: 'Banana',
       content:
           'Bananananananananananananananana\nBanananananananananananananananana\nBananananananananananananananananana',
@@ -75,7 +77,7 @@ class _DiaryUserState extends State<DiaryUser> {
       postid: 4,
       author: '유저',
       authorID: '유저',
-      createdAt: DateTime.now().subtract(Duration(days: 23)),
+      createdAt: DateTime.now().subtract(const Duration(days: 23)),
       title: '대학영어 면제 기준 완화 안내',
       content:
           '후마니타스칼리지와의 총 3차례 면담을 통해 대학영어 면제 기준 완화를 요청하였습니다.\n이후 면제 기준에 대해 국제캠퍼스 후마니타스칼리지와 서울캠퍼스 후마니타스칼리지의 합의가 완료된 상황입니다. 추후 해당 안건에 대해 본부의 심의가 진행될 예정이며, 심의 진행 완료 후 면제 기준 변경 안건이 확정됩니다.\n\n면제 기준 완화(안)\n\n가. 기존 이수면제 기준 완화\nTOEIC 915점 -> 875점\n\n나. 적용 시기\n2025학년도 1학기',
@@ -179,8 +181,17 @@ class _DiaryUserState extends State<DiaryUser> {
                         children: [
                           // 위쪽 영역 (배경 사진)
                           Container(
-                            height: SizeScaler.scaleSize(context, 100),
-                            color: Colors.grey,
+                            height: SizeScaler.scaleSize(context, 80),
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFFC974F9),
+                                  Color(0xFF9A9EF0)
+                                ], // Gradient colors
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
                           ),
                           // 아래쪽 영역
                           Container(
@@ -216,7 +227,7 @@ class _DiaryUserState extends State<DiaryUser> {
                       ),
                       // 두 영역 사이에 겹치는 이미지
                       Positioned(
-                        top: 25, // top 값을 조정
+                        top: 15, // top 값을 조정
                         child: Image.asset(
                           "assets/images/$userCharacter.png",
                           scale: 4.5,
@@ -256,7 +267,7 @@ class _DiaryUserState extends State<DiaryUser> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     ListTile(
-                                      title: Text('최신순'),
+                                      title: const Text('최신순'),
                                       onTap: () {
                                         setState(() {
                                           _sortLabel = '최신순';
@@ -266,7 +277,7 @@ class _DiaryUserState extends State<DiaryUser> {
                                       },
                                     ),
                                     ListTile(
-                                      title: Text('인기순'),
+                                      title: const Text('인기순'),
                                       onTap: () {
                                         setState(() {
                                           _sortLabel = '인기순';

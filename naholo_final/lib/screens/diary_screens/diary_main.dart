@@ -731,7 +731,13 @@ class _DiaryMainState extends State<DiaryMain> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const DiaryWriting()),
-            );
+            ).then((_) {
+              final userProvider =
+                  Provider.of<UserProvider>(context, listen: false);
+              String userId = userProvider.user!.userId;
+              // 페이지를 다녀온 후 데이터를 항상 다시 불러옴
+              fetchData(userId);
+            });
           },
           backgroundColor: Colors.transparent,
           elevation: 0,
