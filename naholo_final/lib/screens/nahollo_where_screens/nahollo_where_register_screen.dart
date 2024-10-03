@@ -161,9 +161,16 @@ class _NaholloWhereRegisterScreenState
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.user!.userId;
     final currentExp = userProvider.user!.exp;
+    final currentLv = userProvider.user!.lv;
 
+    int newLv = currentLv;
     // 새로운 exp 값 계산
-    final newExp = currentExp + additionalExp;
+    int newExp = currentExp + additionalExp;
+
+    if (newExp >= 100) {
+      newExp = newExp - 100;
+      newLv += 1;
+    }
 
     final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
 
@@ -173,6 +180,7 @@ class _NaholloWhereRegisterScreenState
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'EXP': newExp.toString(), // 서버에 보낼 exp 값
+          "LV": newLv.toString(),
         }),
       );
 
@@ -183,6 +191,7 @@ class _NaholloWhereRegisterScreenState
 
         // 로컬 상태에서도 exp 값을 업데이트
         userProvider.updateUserExp(newExp);
+        userProvider.updateUserLv(newLv);
       } else {
         print('유저 정보 업데이트 실패: ${response.body}');
       }
@@ -520,7 +529,7 @@ class _NaholloWhereRegisterScreenState
                       await _submitReview(); // 리뷰 등록
 
                       print('리뷰 등록 완료, 경험치 증가 시작...');
-                      await increaseUserExp(100); // 경험치 증가
+                      await increaseUserExp(50); // 경험치 증가
                       print('경험치 증가 완료!');
                       Navigator.pop(context);
                     }

@@ -153,9 +153,16 @@ class _DiaryWritingState extends State<DiaryWriting> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     final userId = userProvider.user!.userId;
     final currentExp = userProvider.user!.exp;
+    final currentLv = userProvider.user!.lv;
 
+    int newLv = currentLv;
     // 새로운 exp 값 계산
-    final newExp = currentExp + additionalExp;
+    int newExp = currentExp + additionalExp;
+
+    if (newExp >= 100) {
+      newExp = newExp - 100;
+      newLv += 1;
+    }
 
     final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
 
@@ -165,6 +172,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'EXP': newExp.toString(), // 서버에 보낼 exp 값
+          "LV": newLv.toString(),
         }),
       );
 
@@ -175,6 +183,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
 
         // 로컬 상태에서도 exp 값을 업데이트
         userProvider.updateUserExp(newExp);
+        userProvider.updateUserLv(newLv);
       } else {
         print('유저 정보 업데이트 실패: ${response.body}');
       }
@@ -214,7 +223,7 @@ class _DiaryWritingState extends State<DiaryWriting> {
               child: GestureDetector(
                 onTap: () async {
                   await _uploadData();
-                  await increaseUserExp(100);
+                  await increaseUserExp(50);
                   Navigator.pop(context);
                 }, // 작성 버튼 눌렀을 때 서버로 데이터 전송 함수 호출
                 child: Text(
