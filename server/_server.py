@@ -1579,6 +1579,87 @@ async def add_journal(
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 
+@app.get("/user_likes/{user_id}")
+async def get_user_likes(user_id: str, db=Depends(get_db)):
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # LIKES 테이블과 WHERE 테이블을 조인하여 유저가 좋아요한 장소의 정보를 가져오는 쿼리
+        cursor.execute("""
+            SELECT W.WHERE_ID, W.WHERE_NAME, W.WHERE_LOCATE, W.WHERE_RATE, W.WHERE_TYPE, W.LATITUDE, W.LONGITUDE, W.WHERE_IMAGE
+            FROM LIKES L
+            JOIN `Where` W ON L.WHERE_ID = W.WHERE_ID
+            WHERE L.USER_ID = %s
+        """, (user_id,))
+        liked_places = cursor.fetchall()
+
+        # 유저가 좋아요한 장소가 없을 경우 예외 처리
+        if not liked_places:
+            raise HTTPException(status_code=404, detail="No likes found for this user")
+
+        logger.info(f"User {user_id} liked places: {liked_places}")
+        return {"user_id": user_id, "liked_places": liked_places}
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
+
+
+
+class LikeToggleRequest(BaseModel):
+    user_id: str
+    where_id: str
+
+@app.post("/toggle_like")
+async def toggle_like(request: LikeToggleRequest, db=Depends(get_db)):
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # 먼저 해당 유저가 장소에 대해 좋아요를 눌렀는지 확인
+        cursor.execute("""
+            SELECT LIKES_ID
+            FROM LIKES
+            WHERE USER_ID = %s AND WHERE_ID = %s
+        """, (request.user_id, request.where_id))
+        like = cursor.fetchone()
+
+        if like:
+            # 이미 좋아요한 경우: 좋아요를 삭제
+            cursor.execute("""
+                DELETE FROM LIKES
+                WHERE USER_ID = %s AND WHERE_ID = %s
+            """, (request.user_id, request.where_id))
+            db.commit()
+            logger.info(f"Like removed for user {request.user_id} on place {request.where_id}")
+            return {"message": "remove"}
+        else:
+            # 좋아요하지 않은 경우: 좋아요를 추가
+            cursor.execute("""
+                INSERT INTO LIKES (USER_ID, WHERE_ID)
+                VALUES (%s, %s)
+            """, (request.user_id, request.where_id))
+            db.commit()
+            logger.info(f"Like added for user {request.user_id} on place {request.where_id}")
+            return {"message": "add"}
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
+
+
 # 서버 실행
 if __name__ == "__main__":
     import uvicorn
