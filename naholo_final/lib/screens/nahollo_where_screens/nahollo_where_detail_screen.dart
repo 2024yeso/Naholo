@@ -25,14 +25,63 @@ class NaholloWhereDetailScreen extends StatefulWidget {
 class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   Map<String, dynamic>? info; // 장소 상세 정보를 저장할 변수
   List<Map<String, dynamic>> reviews = []; // 리뷰 리스트
-
+  final bool _isLoading = true;
   bool isLoading = true; // 데이터 로딩 상태
 
   String showAdress(String adress) {
     var list = adress.split(' ');
+
+    // 리스트가 2개 이상의 항목을 가지는지 확인
     if (list.length < 2) return adress;
-    var result = '${list[1]}, ${list[2]}';
+
+    // 리스트가 3개 이상의 항목을 가지는지 확인 후 안전하게 접근
+    var part1 = list.length > 1 ? list[1] : '';
+    var part2 = list.length > 2 ? ', ${list[2]}' : '';
+
+    var result = '$part1$part2';
     return result;
+  }
+
+  Future<Map<String, dynamic>> getReviewadd(Map<String, dynamic> review) async {
+    String userId = review["USER_ID"];
+
+    try {
+      print("사용자 ID: $userId");
+      final response = await http.get(
+        Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
+
+        String nickname =
+            data['user_info'] != null ? data['user_info']['NICKNAME'] : "오류1";
+        Uint8List? imageBytes =
+            data['user_info'] != null ? data['user_info']['image'] : null;
+        int lv = data['user_info'] != null ? data['user_info']['LV'] : 0;
+
+        return {
+          'nickname': nickname,
+          'imageBytes': imageBytes,
+          'lv': lv,
+        };
+      } else {
+        print('서버 응답 에러: ${response.statusCode}');
+        return {
+          'nickname': '오류2',
+          'imageBytes': null,
+          'lv': 0,
+        };
+      }
+    } catch (e) {
+      print('데이터 가져오기 에러: $e');
+      return {
+        'nickname': '오류3',
+        'imageBytes': null,
+        'lv': 0,
+      };
+    }
   }
 
   Widget buildRatingBar(BuildContext context, double rating) {
@@ -140,9 +189,14 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           info = jsonDecode(utf8.decode(whereResponse.bodyBytes))["data"];
           reviews = List<Map<String, dynamic>>.from(
               jsonDecode(utf8.decode(reviewResponse.bodyBytes))["data"]);
+          print('Received Reviews: $reviews');
 
-          // REVIEW_LIKE와 isLiked 초기화
+          // 리뷰별로 이미지 데이터 확인
           for (var review in reviews) {
+            print(
+                'Review ID: ${review["REVIEW_ID"]}, Images: ${review["REVIEW_IMAGES"]}');
+
+            // REVIEW_LIKE와 isLiked 초기화
             review["REVIEW_LIKE"] = review["REVIEW_LIKE"] ?? 0;
 
             var isLikedValue = review["isLiked"] ?? false;
@@ -159,7 +213,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         });
       } else {
         // 에러 처리
-        print("Failed to load data");
+        print(
+            "Failed to load data: Status Code - ${whereResponse.statusCode}, ${reviewResponse.statusCode}");
         setState(() {
           isLoading = false;
         });
@@ -329,14 +384,28 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   Widget buildImage(dynamic imageData, double width, double height) {
     if (imageData != null) {
       if (imageData is String && imageData.isNotEmpty) {
-        if (imageData.startsWith('http')) {
-          // 이미지 URL인 경우
-          return Image.network(
-            imageData,
+        // Base64 데이터가 'data:image' 접두사를 가지고 있는지 확인 후 제거
+        String base64String = imageData;
+        if (imageData.startsWith('data:image')) {
+          base64String = imageData.split(',').last;
+        }
+
+        try {
+          // Base64 데이터를 디코딩
+          Uint8List imageBytes = base64Decode(base64String);
+
+          // 디버그 로그로 디코딩된 이미지 크기 확인
+          print('Decoded image size: ${imageBytes.length} bytes');
+
+          // 디코딩된 이미지가 유효한지 확인하기 위해 메모리에 로드
+          return Image.memory(
+            imageBytes,
             width: width,
             height: height,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
+              // 디코딩에 실패하거나 이미지 로딩 중 에러 발생 시 대체 이미지 표시
+              print('Error displaying image: $error');
               return Image.asset(
                 'assets/images/default_image.png',
                 width: width,
@@ -345,32 +414,14 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
               );
             },
           );
-        } else {
-          // Base64 데이터로 처리
-          try {
-            Uint8List imageBytes = base64Decode(imageData);
-            return Image.memory(
-              imageBytes,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.asset(
-                  'assets/images/default_image.png',
-                  width: width,
-                  height: height,
-                  fit: BoxFit.cover,
-                );
-              },
-            );
-          } catch (e) {
-            return Image.asset(
-              'assets/images/default_image.png',
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-            );
-          }
+        } catch (e) {
+          print('Base64 decoding error: $e');
+          return Image.asset(
+            'assets/images/default_image.png',
+            width: width,
+            height: height,
+            fit: BoxFit.cover,
+          );
         }
       } else if (imageData is Uint8List || imageData is List<int>) {
         // Uint8List 또는 List<int>인 경우
@@ -382,6 +433,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           height: height,
           fit: BoxFit.cover,
           errorBuilder: (context, error, stackTrace) {
+            print('Error displaying image: $error');
             return Image.asset(
               'assets/images/default_image.png',
               width: width,
@@ -391,7 +443,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           },
         );
       } else {
-        // 지원하지 않는 데이터 타입
+        // 지원하지 않는 데이터 타입인 경우 대체 이미지 표시
+        print('Unsupported image data type: ${imageData.runtimeType}');
         return Image.asset(
           'assets/images/default_image.png',
           width: width,
@@ -401,6 +454,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
       }
     } else {
       // 이미지 데이터가 없을 경우 기본 이미지 표시
+      print('No image data provided.');
       return Image.asset(
         'assets/images/default_image.png',
         width: width,
@@ -437,11 +491,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
+          info!["WHERE_NAME"],
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: SizeScaler.scaleSize(context, 9),
           ),
-          info!["WHERE_NAME"],
         ),
       ),
       body: Center(
@@ -467,15 +521,15 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          textAlign: TextAlign.start,
                           "혼자 놀기 좋아요!",
+                          textAlign: TextAlign.start,
                           style: TextStyle(
                               color: Color(0xff7f7f7f),
                               fontWeight: FontWeight.bold),
                         ),
                         AutoSizeText(
-                          textAlign: TextAlign.start,
                           "${info!["WHERE_NAME"]}",
+                          textAlign: TextAlign.start,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 20,
@@ -544,11 +598,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
                   // 리뷰의 이미지 리스트 가져오기
                   List<dynamic> reviewImages = [];
-                  if (review["REVIEW_IMAGE"] != null) {
-                    reviewImages = [review["REVIEW_IMAGE"]];
-                  } else if (review["IMAGES"] != null &&
-                      review["IMAGES"].isNotEmpty) {
-                    reviewImages = review["IMAGES"];
+                  if (review["REVIEW_IMAGES"] != null &&
+                      review["REVIEW_IMAGES"].isNotEmpty) {
+                    reviewImages = review["REVIEW_IMAGES"];
                   }
 
                   return Padding(
@@ -559,6 +611,84 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          // 상단 사용자 정보 및 태그
+                          Row(
+                            children: [
+                              FutureBuilder<Map<String, dynamic>>(
+                                future: getReviewadd(review), // 비동기 데이터 호출
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.person,
+                                          size: 20, color: Colors.white),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.error,
+                                          size: 20, color: Colors.red),
+                                    );
+                                  } else if (snapshot.hasData) {
+                                    final data = snapshot.data!;
+                                    final nickname = data['nickname'] ?? '오류';
+                                    final imageBytes = data['imageBytes'];
+                                    final lv = data['lv'] ?? 0;
+
+                                    return Row(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 20,
+                                          backgroundImage: imageBytes != null
+                                              ? MemoryImage(imageBytes)
+                                              : null, // 이미지가 있으면 넣고 없으면 기본 아이콘 사용
+                                          backgroundColor: imageBytes == null
+                                              ? Colors.grey[300]
+                                              : null,
+                                          child: imageBytes == null
+                                              ? const Icon(Icons.person,
+                                                  size: 20, color: Colors.white)
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              nickname,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              'Lv.$lv',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    );
+                                  } else {
+                                    return CircleAvatar(
+                                      radius: 20,
+                                      backgroundColor: Colors.grey[300],
+                                      child: const Icon(Icons.person,
+                                          size: 20, color: Colors.white),
+                                    );
+                                  }
+                                },
+                              ),
+                              const Spacer(),
+                            ],
+                          ),
                           // 이미지 스크롤
                           if (reviewImages.isNotEmpty)
                             SizedBox(

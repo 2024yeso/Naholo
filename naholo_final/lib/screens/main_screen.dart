@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:nahollo/api/api.dart';
 
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
@@ -13,6 +16,7 @@ import 'package:nahollo/util.dart';
 import 'package:o3d/o3d.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:http/http.dart' as http;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -24,30 +28,106 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
   DateTime today = DateTime.now(); // 현재 날짜와 시간을 가져옵니다.
-  bool _isCheckInDialogShown = false; // 다이얼로그가 이미 표시되었는지 확인하기 위한 변수
+  String _message = "";
 
-  void showCheckInDialog(DateTime selectedDay) {
-    // 오늘 날짜가 이미 _attendanceDays에 포함되어 있는지 확인
-    if (attendanceDays
-        .any((attendanceDay) => isSameDay(attendanceDay, selectedDay))) {
-      // 이미 출석된 경우 팝업을 띄우지 않음
+  Future<void> updateUser(
+      String userId, Map<String, dynamic> updatedData) async {
+    final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
 
-      return;
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updatedData), // 데이터를 JSON 형식으로 변환하여 전달
+      );
+
+      if (response.statusCode == 200) {
+        print("User information updated successfully");
+      } else {
+        print("Failed to update user: ${response.statusCode}");
+        print("Error message: ${response.body}");
+      }
+    } catch (e) {
+      print("An error occurred: $e");
     }
+  }
 
-    // 출석되지 않은 경우에만 팝업 띄우기
+  void updateUserDetails() {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    String userId = userProvider.user?.userId ?? '';
+
+    Map<String, dynamic> updatedData = {
+      "LV": userProvider.user?.lv,
+      "Exp": userProvider.user?.exp,
+      "usercharacter": userProvider.user?.userCharacter,
+    };
+
+    updateUser(userId, updatedData);
+  }
+
+  Future<void> checkAttendance() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.userId ?? '';
+
+    final url = Uri.parse('${Api.baseUrl}/attendance/check');
+
+    // 출석 체크 요청 데이터
+    final body = json.encode({'username': userId});
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        // 응답을 JSON으로 변환
+        final Map<String, dynamic> responseData = json.decode(response.body);
+
+        // List<dynamic>을 List<String>으로 변환
+        List<String> stringList =
+            (responseData['attendance_dates'] as List<dynamic>)
+                .whereType<String>() // String 타입인 요소만 필터링
+                .map((element) => element.toString()) // 각 요소를 String으로 변환
+                .toList();
+
+        attendanceDays = stringList;
+
+        // message를 _message에 저장하고 다이얼로그 처리
+        setState(() {
+          _message = responseData['message'];
+
+          if (_message == 'attendance.') {
+            // 출석 체크가 완료된 경우에만 다이얼로그 표시
+            showAttendanceDialog(context, '오늘도 출석하셨네요!');
+          } else if (_message == 'already') {
+            // 이미 출석한 경우에는 아무 작업도 하지 않음
+            print('이미 출석 체크를 했습니다.');
+          }
+        });
+
+        print("메세지 $_message");
+      } else {
+        print('출석 체크 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('출석 체크 요청 중 오류 발생: $e');
+    }
+  }
+
+// 출석 체크 성공 시 다이얼로그를 표시하는 함수
+  void showAttendanceDialog(BuildContext context, String message) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('출석 성공!'),
-        content: const Text('오늘도 출석하셨습니다!'),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
-              // 확인 버튼을 누르면 오늘 날짜를 _attendanceDays에 추가
-              setState(() {
-                attendanceDays.add(selectedDay);
-              });
               Navigator.of(context).pop();
             },
             child: const Text('확인'),
@@ -58,13 +138,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 화면이 빌드될 때 한 번만 실행되도록 조건 추가
-    if (!_isCheckInDialogShown) {
-      _isCheckInDialogShown = true; // 다이얼로그가 실행되었음을 표시
-      Future.microtask(() => showCheckInDialog(today)); // 오늘 날짜로 다이얼로그 호출
-    }
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    checkAttendance();
+    updateUserDetails();
   }
 
   @override
@@ -88,6 +166,7 @@ class _MainScreenState extends State<MainScreen> {
           print('didPop호출');
           return;
         }
+        updateUserDetails();
         showAppExitDialog(context);
       },
       child: Scaffold(
@@ -337,8 +416,8 @@ class _MainScreenState extends State<MainScreen> {
                             onTap: () => Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const AttendMainScreen(
-                                  hasCheckedInToday: true,
+                                builder: (context) => AttendMainScreen(
+                                  attendance_dates: attendanceDays,
                                 ),
                               ),
                             ),

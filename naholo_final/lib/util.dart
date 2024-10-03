@@ -1,7 +1,11 @@
 // 팝업 다이얼로그 함수
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:nahollo/api/api.dart';
 import 'package:nahollo/community_screen.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/attend_screens/attend_main_screen.dart';
 import 'package:nahollo/screens/diary_screens/diary_main.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
@@ -10,6 +14,9 @@ import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/screens/mypage_screens/profile_scaffold.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
+import 'package:nahollo/test_day_data.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 void showExitDialog(BuildContext context) {
   //회원가입 취소 팝업창
@@ -172,8 +179,8 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AttendMainScreen(
-              hasCheckedInToday: true,
+            builder: (context) => AttendMainScreen(
+              attendance_dates: attendanceDays,
             ),
           ),
         );

@@ -10,6 +10,14 @@ from uuid import uuid4
 import base64
 import logging
 from datetime import datetime
+from fastapi import FastAPI, HTTPException, Body
+from pydantic import BaseModel, Field
+from typing import List
+from pathlib import Path
+import json
+from datetime import date
+import logging
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -66,13 +74,6 @@ class Like(BaseModel):
 class UsersImage(BaseModel):
     USER_ID: str
     IMAGE: str
-
-class JournalComment(BaseModel):
-    COMMENT_ID: Optional[int] = None  # COMMENT_ID 필드 추가
-    POST_ID: int
-    COMMENT_CONTENT: str
-    USER_ID: str
-    COMMENT_CREATE: Optional[datetime] = None  # COMMENT_CREATE 필드 추가
 
 class ReviewImage(BaseModel):
     REVIEW_ID: int
@@ -146,6 +147,7 @@ class UserUpdate(BaseModel):
     INTRODUCE: Optional[str] = None
     IMAGE: Optional[str] = None
     EXP: Optional[int] = None  # EXP 필드 추가
+
 
 # 유저 정보 업데이트 엔드포인트
 @app.put("/update_user/{user_id}")
@@ -264,6 +266,7 @@ def login(user_id: str, user_pw: str):
 
 # 서버 코드에서 추가 또는 수정해야 할 부분
 
+from collections import defaultdict
 @app.post("/add_review/")
 def add_review(review_data: dict, db=Depends(get_db)):
     try:
@@ -462,11 +465,11 @@ def delete_follow(follow: Follow, db=Depends(get_db)):
         db.rollback()
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-# 리뷰 호출 함수
+    
 def call_review(user_id: str) -> List[Dict]:
     query = """
     SELECT 
+        wr.REVIEW_ID AS REVIEW_ID,
         w.WHERE_NAME AS WHERE_NAME,
         w.WHERE_LOCATE AS WHERE_LOCATE,
         w.LATITUDE AS LATITUDE,
@@ -495,25 +498,56 @@ def call_review(user_id: str) -> List[Dict]:
     WHERE 
         wr.USER_ID = %s;
     """
-    reviews = []
+    reviews = {}
     try:
         with mysql.connector.connect(**db_config) as conn:
             with conn.cursor(dictionary=True) as cursor:
                 logger.debug(f"Executing review query for user_id: {user_id}")
                 cursor.execute(query, (user_id,))
-                reviews = cursor.fetchall()
-                logger.debug(f"Fetched {len(reviews)} reviews")
+                rows = cursor.fetchall()
+                logger.debug(f"Fetched reviews: {rows}")
 
-                # REVIEW_IMAGE가 없을 경우 None으로 설정
-                for review in reviews:
-                    if not review.get('REVIEW_IMAGE'):
-                        review['REVIEW_IMAGE'] = None
+                # REVIEW_ID를 기준으로 리뷰를 그룹화하고, 이미지를 리스트로 수집
+                for row in rows:
+                    review_id = row["REVIEW_ID"]
+                    if review_id not in reviews:
+                        # 첫 번째 리뷰 항목이므로 새로운 리뷰 추가
+                        reviews[review_id] = {
+                            "REVIEW_ID" : row["REVIEW_ID"],
+                            "WHERE_NAME": row["WHERE_NAME"],
+                            "WHERE_LOCATE": row["WHERE_LOCATE"],
+                            "LATITUDE": row["LATITUDE"],
+                            "LONGITUDE": row["LONGITUDE"],
+                            "REVIEW_CONTENT": row["REVIEW_CONTENT"],
+                            "WHERE_RATE": row["WHERE_RATE"],
+                            "REASON_MENU": row["REASON_MENU"],
+                            "REASON_MOOD": row["REASON_MOOD"],
+                            "REASON_SAFE": row["REASON_SAFE"],
+                            "REASON_SEAT": row["REASON_SEAT"],
+                            "REASON_TRANSPORT": row["REASON_TRANSPORT"],
+                            "REASON_PARK": row["REASON_PARK"],
+                            "REASON_LONG": row["REASON_LONG"],
+                            "REASON_VIEW": row["REASON_VIEW"],
+                            "REASON_INTERACTION": row["REASON_INTERACTION"],
+                            "REASON_QUITE": row["REASON_QUITE"],
+                            "REASON_PHOTO": row["REASON_PHOTO"],
+                            "REASON_WATCH": row["REASON_WATCH"],
+                            "REVIEW_IMAGES": []
+                        }
+
+                    # 이미지가 존재하면 리뷰의 REVIEW_IMAGES 리스트에 추가
+                    if row["REVIEW_IMAGE"]:
+                        reviews[review_id]["REVIEW_IMAGES"].append(row["REVIEW_IMAGE"])
+
     except mysql.connector.Error as err:
         logger.error(f"Database error in call_review: {err}")
     except Exception as e:
         logger.error(f"Unexpected error in call_review: {e}")
     finally:
-        return reviews
+        return list(reviews.values())
+
+
+
 
 # 좋아요 호출 함수
 def call_wanted(user_id: str) -> List[Dict]:
@@ -552,7 +586,10 @@ def my_page(user_id: str, db=Depends(get_db)):
     try:
         # 리뷰 가져오기
         reviews = call_review(user_id)
-
+        print(len(reviews))
+        for i in reviews:
+            print(i["WHERE_NAME"])
+            print(len(i["REVIEW_IMAGES"]))
         # 좋아요한 장소 가져오기
         liked_places = call_wanted(user_id)
 
@@ -565,6 +602,20 @@ def my_page(user_id: str, db=Depends(get_db)):
             logger.warning(f"User with user_id {user_id} not found")
             raise HTTPException(status_code=404, detail="User not found")
 
+        # 팔로잉 수 가져오기 (해당 사용자가 팔로우하는 유저 수)
+        with db.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT COUNT(*) AS following_count FROM Follow WHERE FOLLOWER = %s", (user_id,))
+            following_count = cursor.fetchone()["following_count"]
+            if(following_count==False):
+                following_count = 0 
+
+        # 팔로워 수 가져오기 (해당 사용자를 팔로우하는 유저 수)
+        with db.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT COUNT(*) AS follower_count FROM Follow WHERE USER_ID = %s", (user_id,))
+            follower_count = cursor.fetchone()["follower_count"]
+            if(follower_count==False):
+                follower_count = 0 
+
         return {
             "user_info": {
                 "USER_ID": user_info["USER_ID"],
@@ -572,11 +623,15 @@ def my_page(user_id: str, db=Depends(get_db)):
                 "LV": user_info["LV"],
                 "EXP": user_info["EXP"],
                 "INTRODUCE": user_info["INTRODUCE"],
-                "IMAGE": user_info["IMAGE"]
+                "IMAGE": user_info["IMAGE"],
+                "userCharacter": user_info["USER_CHARACTER"],
+                "follower_count": follower_count,       # 팔로워 수 추가
+                "following_count": following_count      # 팔로잉 수 추가
             },
             "reviews": reviews,
             "liked_places": liked_places
         }
+        
     except HTTPException as he:
         raise he
     except Exception as e:
@@ -616,41 +671,46 @@ def follow_page(user_id: str, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 @app.get("/where/top-rated")
-def get_top_rated_places(db=Depends(get_db)):
+def get_top_rated_places(page: int = 0, db=Depends(get_db)):
+    """
+    상위 평점 장소를 페이징하여 가져옵니다.
+    page: 0이면 1~10번째 장소, 1이면 11~20번째 장소를 반환
+    """
     types = ["play", "eat", "sleep", "drink"]
-    results = {"by_type": {}, "overall_top_8": []}
+    results = {"by_type": {}, "overall_top_10": []}
+    items_per_page = 10
+    offset = page * items_per_page  # 페이징을 위한 시작 인덱스
 
     try:
         with db.cursor(dictionary=True) as cursor:
-            # 각 타입별로 평점이 높은 순서대로 8개의 항목을 가져오는 쿼리
+            # 전체 평점이 높은 순서대로 상위 10개의 항목만 가져오는 쿼리 (페이징 없이 상위 10개)
+            overall_query = """
+            SELECT w.*
+            FROM `Where` w
+            ORDER BY w.WHERE_RATE DESC
+            LIMIT 10;
+            """
+            logger.debug("Fetching overall top 10 places")
+            cursor.execute(overall_query)
+            overall_top_10 = cursor.fetchall()
+            results["overall_top_10"] = overall_top_10
+            logger.debug(f"Fetched {len(overall_top_10)} overall top places")
+
+            # 각 타입별로 평점이 높은 순서대로 페이지에 따라 10개의 항목을 가져오는 쿼리
             for place_type in types:
                 query = """
                 SELECT w.*
-                FROM `Where` w  -- 테이블 이름을 백틱으로 감쌈
+                FROM `Where` w
                 WHERE w.WHERE_TYPE = %s
                 ORDER BY w.WHERE_RATE DESC
-                LIMIT 8;
+                LIMIT %s OFFSET %s;
                 """
-                logger.debug(f"Fetching top 8 places for type: {place_type}")
-                cursor.execute(query, (place_type,))
+                logger.debug(f"Fetching top places for type: {place_type}, page: {page}")
+                cursor.execute(query, (place_type, items_per_page, offset))
                 rows = cursor.fetchall()
                 results["by_type"][place_type] = rows
                 logger.debug(f"Fetched {len(rows)} places for type: {place_type}")
 
-            # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
-            overall_query = """
-            SELECT w.*
-            FROM `Where` w  -- 테이블 이름을 백틱으로 감쌈
-            ORDER BY w.WHERE_RATE DESC
-            LIMIT 8;
-            """
-            logger.debug("Fetching overall top 8 places")
-            cursor.execute(overall_query)
-            overall_top_8 = cursor.fetchall()
-            results["overall_top_8"] = overall_top_8
-            logger.debug(f"Fetched {len(overall_top_8)} overall top places")
-            print(results)
-            
         return {"data": results}
     except mysql.connector.Error as err:
         logger.error(f"Database error in get_top_rated_places: {err}")
@@ -688,26 +748,59 @@ def get_place_info(where_id: str, db=Depends(get_db)):
         logger.error(f"Unexpected error in get_place_info: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
+
 @app.get("/where/{where_id}/reviews")
 def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_db)):
     logger.info(f"Fetching reviews for WHERE_ID: {where_id}")
-    review_query = """
-    SELECT wr.*, ri.IMAGE AS REVIEW_IMAGE,
-    CASE WHEN rl.USER_ID IS NOT NULL THEN TRUE ELSE FALSE END AS isLiked
-    FROM WHERE_REVIEW wr
-    LEFT JOIN REVIEW_IMAGE ri ON wr.REVIEW_ID = ri.REVIEW_ID
-    LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
-    WHERE wr.WHERE_ID = %s;
-    """
     try:
         with db.cursor(dictionary=True) as cursor:
+            # 1. 리뷰 데이터 가져오기
+            review_query = """
+                SELECT wr.*, 
+                CASE WHEN rl.USER_ID IS NOT NULL THEN TRUE ELSE FALSE END AS isLiked
+                FROM WHERE_REVIEW wr
+                LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
+                WHERE wr.WHERE_ID = %s;
+            """
             cursor.execute(review_query, (user_id, where_id))
             reviews = cursor.fetchall()
 
-        # REVIEW_LIKE로 매핑
-        for review in reviews:
-            review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
-            del review["WHERE_LIKE"]  # 클라이언트에 불필요한 필드 제거
+            # 2. REVIEW_ID 수집
+            review_ids = [review['REVIEW_ID'] for review in reviews]
+
+            # 3. 리뷰 이미지 가져오기
+            if review_ids:
+                format_strings = ','.join(['%s'] * len(review_ids))
+                images_query = f"""
+                    SELECT REVIEW_ID, IMAGE AS REVIEW_IMAGE
+                    FROM REVIEW_IMAGE
+                    WHERE REVIEW_ID IN ({format_strings});
+                """
+                cursor.execute(images_query, tuple(review_ids))
+                images_data = cursor.fetchall()
+            else:
+                images_data = []
+
+            # 4. 리뷰별로 이미지를 매핑
+            images_map = defaultdict(list)
+            for image in images_data:
+                # 이미지 데이터를 Base64 문자열로 인코딩
+                if isinstance(image['REVIEW_IMAGE'], bytes):
+                    image_base64 = base64.b64encode(image['REVIEW_IMAGE']).decode('utf-8')
+                else:
+                    image_base64 = image['REVIEW_IMAGE']  # 이미 Base64인 경우
+
+                images_map[image['REVIEW_ID']].append(image_base64)
+
+            # 리뷰 데이터에 이미지 추가
+            for review in reviews:
+                review_id = review['REVIEW_ID']
+                review['REVIEW_IMAGES'] = images_map.get(review_id, [])
+
+                # REVIEW_LIKE로 매핑 및 불필요한 필드 제거
+                review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
+                if "WHERE_LIKE" in review:
+                    del review["WHERE_LIKE"]
 
         return {
             "data": reviews
@@ -717,7 +810,7 @@ def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
         logger.error(f"Unexpected error in get_place_reviews: {e}")
-        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
 
 
 
@@ -736,58 +829,74 @@ class JournalPost(BaseModel):
     created_at: Optional[datetime] = None  # 작성 시간 필드 추가
 
 # 저널 업로드 엔드포인트
-@app.post("/journal/upload/")
-async def add_journal(
-    user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
-    journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
-    db=Depends(get_db)
-):
-    logger.info(f"Uploading journal post for user_id: {user_id}")
-    logger.debug(f"JournalPost data: {journal_post.dict()}")
-
-    insert_post_query = """
-    INSERT INTO Journal_post 
-    (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    insert_image_query = "INSERT INTO Journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
+@app.get("/where/{where_id}/reviews")
+def get_place_reviews(where_id: str, user_id: str = Query(None), db=Depends(get_db)):
+    logger.info(f"Fetching reviews for WHERE_ID: {where_id}, USER_ID: {user_id}")
     try:
-        with db.cursor() as cursor:
-            # 현재 시간을 기본값으로 설정
-            created_at = journal_post.created_at or datetime.now()
+        with db.cursor(dictionary=True) as cursor:
+            # 1. 리뷰 데이터 가져오기
+            review_query = """
+                SELECT wr.*, 
+                COUNT(rl.USER_ID) > 0 AS isLiked
+                FROM WHERE_REVIEW wr
+                LEFT JOIN REVIEW_LIKE rl ON wr.REVIEW_ID = rl.REVIEW_ID AND rl.USER_ID = %s
+                WHERE wr.WHERE_ID = %s
+                GROUP BY wr.REVIEW_ID;
+            """
+            cursor.execute(review_query, (user_id, where_id))
+            reviews = cursor.fetchall()
 
-            # Journal_post 테이블에 일지 내용 삽입
-            cursor.execute(insert_post_query, (
-                user_id, 
-                journal_post.title, 
-                journal_post.content,
-                journal_post.혼캎, 
-                journal_post.혼영, 
-                journal_post.혼놀, 
-                journal_post.혼밥,
-                journal_post.혼박, 
-                journal_post.혼술, 
-                journal_post.기타, 
-                created_at
-            ))
-            post_id = cursor.lastrowid
-            logger.debug(f"Inserted Journal_post with POST_ID: {post_id}")
+            logger.debug(f"Fetched Reviews: {reviews}")
 
-            # Journal_image 테이블에 이미지 데이터 삽입
-            for image in journal_post.images:
-                cursor.execute(insert_image_query, (post_id, image))
-                logger.debug(f"Inserted image for POST_ID {post_id}")
+            # 2. REVIEW_ID 수집
+            review_ids = [review['REVIEW_ID'] for review in reviews]
 
-            db.commit()
-        logger.info(f"Journal post and images added successfully for POST_ID: {post_id}")
-        return {"message": "Journal post and images added successfully", "post_id": post_id}
+            # 3. 리뷰 이미지 가져오기
+            if review_ids:
+                format_strings = ','.join(['%s'] * len(review_ids))
+                images_query = f"""
+                    SELECT REVIEW_ID, IMAGE AS REVIEW_IMAGE
+                    FROM REVIEW_IMAGE
+                    WHERE REVIEW_ID IN ({format_strings});
+                """
+                cursor.execute(images_query, tuple(review_ids))
+                images_data = cursor.fetchall()
+                logger.debug(f"Fetched Images: {images_data}")
+            else:
+                images_data = []
+                logger.debug("No images found for the reviews.")
+
+            # 4. 리뷰별로 이미지를 매핑
+            images_map = defaultdict(list)
+            for image in images_data:
+                # 이미지 데이터를 Base64 문자열로 인코딩
+                if isinstance(image['REVIEW_IMAGE'], bytes):
+                    image_base64 = base64.b64encode(image['REVIEW_IMAGE']).decode('utf-8')
+                else:
+                    image_base64 = image['REVIEW_IMAGE']  # 이미 Base64인 경우
+
+                images_map[image['REVIEW_ID']].append(image_base64)
+                logger.debug(f"Encoded Image for REVIEW_ID {image['REVIEW_ID']}: {image_base64[:30]}...")  # 일부만 출력
+
+            # 리뷰 데이터에 이미지 추가
+            for review in reviews:
+                review_id = review['REVIEW_ID']
+                review['REVIEW_IMAGES'] = images_map.get(review_id, [])
+
+                # REVIEW_LIKE로 매핑 및 불필요한 필드 제거
+                review["REVIEW_LIKE"] = review.get("WHERE_LIKE", 0)
+                if "WHERE_LIKE" in review:
+                    del review["WHERE_LIKE"]
+
+            logger.info(f"Returning {len(reviews)} reviews with images.")
+        return {
+            "data": reviews
+        }
     except mysql.connector.Error as err:
-        db.rollback()
-        logger.error(f"Database error in add_journal: {err}")
+        logger.error(f"Database error in get_place_reviews: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        db.rollback()
-        logger.error(f"Unexpected error in add_journal: {e}")
+        logger.error(f"Unexpected error in get_place_reviews: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 저널 메인 엔드포인트 수정본
@@ -945,9 +1054,16 @@ def get_journal(user_id: str, db=Depends(get_db)):
         logger.debug(f"Final Results with Images: {results}")
     return {"data": results}
     
+class JournalComment(BaseModel):
+    
+    POST_ID: int
+    COMMENT_CONTENT: str
+    USER_ID: str
+
 # 저널 댓글 추가 엔드포인트
 @app.post("/journal/add_comment")
 def add_comment(comment: JournalComment, db=Depends(get_db)):
+    print(comment)
     logger.info(f"Adding comment to POST_ID: {comment.POST_ID} by USER_ID: {comment.USER_ID}")
     logger.debug(f"Comment data: {comment.dict()}")
     insert_comment_query = """
@@ -980,6 +1096,54 @@ class Comment(BaseModel):
 
 class CommentsResponse(BaseModel):
     comments: List[Comment]
+
+class PostDetailsResponse(BaseModel):
+    likes: int
+    comments: int
+    liked: bool
+@app.get("/journal/post_details", response_model=PostDetailsResponse)
+def get_post_details(
+    post_id: int = Query(..., description="게시물의 ID"),
+    user_id: Optional[str] = Query(None, description="현재 사용자의 ID"),
+    db=Depends(get_db)
+):
+    logger.info(f"Fetching details for post_id: {post_id} by user_id: {user_id}")
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            # 좋아요 수 조회
+            likes_query = "SELECT COUNT(*) AS likes FROM Post_like WHERE POST_ID = %s;"
+            cursor.execute(likes_query, (post_id,))
+            likes_result = cursor.fetchone()
+            likes = likes_result['likes'] if likes_result else 0
+            logger.debug(f"Likes count: {likes}")
+
+            # 댓글 수 조회
+            comments_query = "SELECT COUNT(*) AS comments FROM Journal_comment WHERE POST_ID = %s;"
+            cursor.execute(comments_query, (post_id,))
+            comments_result = cursor.fetchone()
+            comments = comments_result['comments'] if comments_result else 0
+            logger.debug(f"Comments count: {comments}")
+
+            # 현재 사용자가 좋아요 했는지 여부 조회
+            if user_id:
+                liked_query = "SELECT * FROM Post_like WHERE POST_ID = %s AND USER_ID = %s;"
+                cursor.execute(liked_query, (post_id, user_id))
+                liked_result = cursor.fetchone()
+                liked = bool(liked_result)
+                logger.debug(f"User liked: {liked}")
+            else:
+                liked = False
+                logger.debug("User ID not provided, defaulting liked to False.")
+
+        return PostDetailsResponse(likes=likes, comments=comments, liked=liked)
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_post_details: {err}")
+        raise HTTPException(status_code=500, detail="데이터베이스 오류가 발생했습니다.")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_post_details: {e}")
+        raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
 
 @app.get("/journal/get_comments", response_model=CommentsResponse)
 def get_comments(post_id: int = Query(..., description="댓글을 가져올 게시물의 ID"), db=Depends(get_db)):
@@ -1031,6 +1195,87 @@ def get_comments(post_id: int = Query(..., description="댓글을 가져올 게�
 class LikePostRequest(BaseModel):
     post_id: int
     user_id: str
+
+@app.get("/user/journal/")
+def get_user_journal_posts(user_id: str, db=Depends(get_db)):
+    results = {"latest": [], "top_likes": []}
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            
+            # 최신순으로 포스트 가져오기
+            latest_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            ORDER BY jp.POST_CREATE DESC;
+            """
+            cursor.execute(latest_query, (user_id,))
+            latest_posts = cursor.fetchall()
+            results["latest"] = latest_posts
+            
+            # 좋아요 순으로 포스트 가져오기
+            top_likes_query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            ORDER BY jp.POST_LIKE DESC, jp.POST_CREATE DESC;
+            """
+            cursor.execute(top_likes_query, (user_id,))
+            top_likes_posts = cursor.fetchall()
+            results["top_likes"] = top_likes_posts
+            
+            # 모든 POST_ID 수집
+            all_post_ids = set(post['POST_ID'] for post in latest_posts + top_likes_posts)
+            
+            if all_post_ids:
+                post_ids_list = [str(int(post_id)) for post_id in all_post_ids]
+                post_ids_str = ','.join(post_ids_list)
+                
+                # 각 POST_ID의 이미지 조회
+                images_query = f"""
+                SELECT POST_ID, IMAGE_DATA
+                FROM Journal_image
+                WHERE POST_ID IN ({post_ids_str});
+                """
+                cursor.execute(images_query)
+                images_data = cursor.fetchall()
+                
+                # POST_ID별 이미지 매핑
+                post_images_map: Dict[int, List[str]] = {}
+                for image in images_data:
+                    post_id = image['POST_ID']
+                    post_images_map.setdefault(post_id, []).append(image['IMAGE_DATA'])
+                
+                # 각 게시물에 이미지 추가
+                for key in results:
+                    for post in results[key]:
+                        post_id = post['POST_ID']
+                        post['images'] = post_images_map.get(post_id, [])
+                
+                # 혼캎, 혼영 등의 필드를 bool 리스트로 변환
+                for key in results:
+                    for post in results[key]:
+                        post['subjList'] = [
+                            bool(post.get('혼캎', False)),
+                            bool(post.get('혼영', False)),
+                            bool(post.get('혼놀', False)),
+                            bool(post.get('혼밥', False)),
+                            bool(post.get('혼박', False)),
+                            bool(post.get('혼술', False)),
+                            bool(post.get('기타', False)),
+                        ]
+    
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_user_journal_posts: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_user_journal_posts: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    
+    return {"data": results}
 
 @app.post("/journal/like_post")
 def like_post(payload: LikePostRequest, db=Depends(get_db)):
@@ -1126,6 +1371,7 @@ def unlike_post(payload: UnlikePostRequest, db=Depends(get_db)):
         db.rollback()
         logger.error(f"Unexpected error in unlike_post: {e}")
         raise HTTPException(status_code=500, detail="예상치 못한 오류가 발생했습니다.")
+    
 @app.post("/reviews/{review_id}/like")
 def like_review(review_id: int, like_data: dict = Body(...), db=Depends(get_db)):
     user_id = like_data.get('user_id')
@@ -1200,6 +1446,67 @@ def like_review(review_id: int, like_data: dict = Body(...), db=Depends(get_db))
         db.rollback()
         logger.error(f"Unexpected error in like_review: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+class AttendanceCheck(BaseModel):
+    username: str
+
+class AttendanceResponse(BaseModel):
+    message: str
+    attendance_dates: List[str]
+
+# 출석 체크 엔드포인트
+@app.post("/attendance/check", response_model=AttendanceResponse)
+def check_attendance(attendance: AttendanceCheck = Body(...)):
+    userid = attendance.username
+    
+    user_file = f"./json/{userid}.json"
+    today_str = date.today().isoformat()
+    logger.info(f"Processing attendance for user: {userid} on {today_str}")
+
+    try:
+        # 파일 존재 여부를 os.path.exists로 확인
+        if os.path.exists(user_file):
+            logger.debug(f"Found existing file for user: {userid}")
+            with open(user_file, "r", encoding="utf-8") as f:
+                user_data = json.load(f)
+            
+            if "attendance_dates" not in user_data:
+                user_data["attendance_dates"] = []
+                logger.debug("Initialized 'attendance_dates' list.")
+
+            if today_str in user_data["attendance_dates"]:
+                return AttendanceResponse(
+                    message="already", 
+                    attendance_dates=user_data["attendance_dates"]
+                )
+            else:
+                user_data["attendance_dates"].append(today_str)
+
+                with open(user_file, "w", encoding="utf-8") as f:
+                    json.dump(user_data, f, ensure_ascii=False, indent=4)
+        else:
+            logger.debug(f"No existing file for user: {userid}. Creating new file.")
+            user_data = {
+                "username": userid,
+                "attendance_dates": [today_str]
+            }
+            with open(user_file, "w", encoding="utf-8") as f:
+                json.dump(user_data, f, ensure_ascii=False, indent=4)
+
+        # 응답 객체를 생성하여 반환
+        return AttendanceResponse(
+            message="attendance.",
+            attendance_dates=user_data["attendance_dates"]
+        )
+    
+    except json.JSONDecodeError:
+        logger.error(f"JSON decode error for file: {user_file}")
+        raise HTTPException(status_code=500, detail="Corrupted attendance record.")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+
 
 # 서버 실행
 if __name__ == "__main__":

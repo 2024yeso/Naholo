@@ -21,40 +21,6 @@ class CharacterExplainScreen extends StatefulWidget {
 class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
   final O3DController controller = O3DController(); // 3D 모델 컨트롤러
 
-  void changeCharacter() {
-    String character = widget.character;
-    if (character == "래서판다") {
-      setState(() {
-        widget.character = "red_panda";
-      });
-    }
-    if (character == "오징어") {
-      setState(() {
-        widget.character = "squid";
-      });
-    }
-    if (character == "고양이") {
-      setState(() {
-        widget.character = "cat";
-      });
-    }
-    if (character == "코알라") {
-      setState(() {
-        widget.character = "koala";
-      });
-    }
-    if (character == "올빼미") {
-      setState(() {
-        widget.character = "owl";
-      });
-    } else {
-      //고슴도치
-      setState(() {
-        widget.character = "hedgehog";
-      });
-    }
-  }
-
   String getKoreanCharacterName(String character) {
     if (character == "red_panda") {
       return "래서판다";
@@ -254,7 +220,6 @@ class _CharacterExplainScreenState extends State<CharacterExplainScreen> {
     // TODO: implement initState
     super.initState();
     print(widget.character);
-    changeCharacter();
   }
 
   @override
