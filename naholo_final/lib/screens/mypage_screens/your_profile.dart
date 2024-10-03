@@ -64,6 +64,34 @@ class _YourProfileState extends State<YourProfile> {
     }
   }
 
+  Future<void> _checkFollowStatus() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    final url = Uri.parse('${Api.baseUrl}/follow_page/?user_id=$userId');
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // 팔로잉 목록을 가져와서 해당 유저가 포함되어 있는지 확인
+        List<dynamic> followingList = data['following'] ?? [];
+        setState(() {
+          isFollowing =
+              followingList.any((user) => user['USER_ID'] == widget.user_id);
+        });
+      } else {
+        print('팔로우 상태 확인 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('팔로우 상태 확인 중 오류 발생: $e');
+    }
+  }
+
   // 팔로우 추가 API 호출 함수
   Future<void> addFollow() async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
@@ -129,22 +157,21 @@ class _YourProfileState extends State<YourProfile> {
     }
   }
 
-  // 팔로우 버튼 동작 정의
   void followButton() async {
-    // isFollowing 값이 false이면 팔로우를 추가하고, true이면 팔로우를 삭제합니다.
     if (!isFollowing) {
       await addFollow(); // 팔로우 추가
     } else {
       await deleteFollow(); // 팔로우 삭제
     }
-    print(isFollowing);
+
+    // 팔로우 상태를 서버에서 다시 확인 (확인하지 않아도 상태가 맞다면 생략 가능)
+    await _checkFollowStatus();
   }
 
   Future<void> _fetchMyPageData() async {
     print("데이터 가져오기 시작");
     final userId = widget.user_id;
     try {
-      print("사용자 ID: $userId");
       final response = await http.get(
         Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
         headers: {'Content-Type': 'application/json; charset=utf-8'},
@@ -153,26 +180,21 @@ class _YourProfileState extends State<YourProfile> {
       if (response.statusCode == 200) {
         final data = json.decode(utf8.decode(response.bodyBytes));
 
-        // UserProfile의 데이터를 비동기적으로 가져옴
         UserProfile? userProfile = data['user_info'] != null
-            ? UserProfile.fromJson(data['user_info']) // await 사용
+            ? UserProfile.fromJson(data['user_info'])
             : null;
 
         setState(() {
-          _userProfile = userProfile; // 이제 _userProfile에 비동기적으로 할당
+          _userProfile = userProfile;
           _reviews = data['reviews'] != null
               ? List<Map<String, dynamic>>.from(data['reviews'])
               : [];
           _isLoading = false;
         });
         _addMarkers();
-        // UserProfileProvider를 사용하여 _userProfile을 설정
-        final userProfileProvider =
-            Provider.of<UserProfileProvider>(context, listen: false);
-        if (_userProfile != null) {
-          print("굿");
-          userProfileProvider.setUserProfile(_userProfile!);
-        }
+
+        // 팔로우 상태 확인
+        await _checkFollowStatus(); // 팔로우 상태를 확인하여 업데이트
       } else {
         print('서버 응답 에러: ${response.statusCode}');
         setState(() {
