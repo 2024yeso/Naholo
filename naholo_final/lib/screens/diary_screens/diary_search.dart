@@ -85,7 +85,7 @@ class _DiarySearchState extends State<DiarySearch> {
           children: [
             AppBar(
               backgroundColor: Colors.white,
-              toolbarHeight: SizeScaler.scaleSize(context, 35),
+              toolbarHeight: SizeScaler.scaleSize(context, 32),
               automaticallyImplyLeading: false, // 기본 뒤로가기 화살표 제거
               title: Row(
                 children: [
@@ -132,7 +132,6 @@ class _DiarySearchState extends State<DiarySearch> {
             Padding(
               padding: EdgeInsets.only(
                 top: SizeScaler.scaleSize(context, 15),
-                // bottom: SizeScaler.scaleSize(context, 15),
                 left: SizeScaler.scaleSize(context, 12),
                 right: SizeScaler.scaleSize(context, 12),
               ),
