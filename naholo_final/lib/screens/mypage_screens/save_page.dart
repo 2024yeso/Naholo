@@ -199,7 +199,7 @@ class _SavePageState extends State<SavePage> {
                     crossAxisAlignment: CrossAxisAlignment.center, // 수직 중앙 정렬
                     children: [
                       Text(
-                        '   최신순 ',
+                        _sortLabel,
                         style: TextStyle(
                           fontSize: SizeScaler.scaleSize(context, 6),
                           fontWeight: FontWeight.w500,
