@@ -467,6 +467,16 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     );
   }
 
+  // 아이템의 저장 상태를 관리하는 Map
+  Map<String, bool> savedItems = {}; // 'WHERE_ID'에 대한 저장 상태를 관리
+
+// 저장 상태를 토글하는 함수
+  void toggleSaveStatus(String whereId) {
+    setState(() {
+      savedItems[whereId] = !(savedItems[whereId] ?? false);
+    });
+  }
+
   /// 특정 타입별로 상위 항목을 보여주는 위젯 빌드
   Widget buildTypeSection(String type, Size size) {
     final items = filterByType(type);
@@ -487,6 +497,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
+        final whereId = item['WHERE_ID'];
+        final isSaved = savedItems[whereId] ?? false;
 
         return GestureDetector(
           onTap: () {
@@ -505,47 +517,70 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Stack(
               children: [
-                // 이미지를 보여주는 부분
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(15),
-                  child: buildImage(
-                    item["WHERE_IMAGE"],
-                    size.width * 0.4,
-                    size.width * 0.45,
-                  ),
-                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AutoSizeText(
-                      item["WHERE_NAME"] ?? "Unknown",
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                      maxLines: 1,
-                      minFontSize: 10,
+                    // 이미지를 보여주는 부분
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: buildImage(
+                        item["WHERE_IMAGE"],
+                        size.width * 0.4,
+                        size.width * 0.45,
+                      ),
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.location_on_sharp,
-                          size: 13,
-                        ),
                         AutoSizeText(
-                          showAdress(item["WHERE_LOCATE"]),
+                          item["WHERE_NAME"] ?? "Unknown",
                           style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.black,
-                              fontWeight: FontWeight.w200),
-                          maxLines: 1, // 최대 라인 수
-                          minFontSize: 8, // 최소 글자 크기
+                              fontSize: 14, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          minFontSize: 10,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.location_on_sharp,
+                              size: 13,
+                            ),
+                            AutoSizeText(
+                              showAdress(item["WHERE_LOCATE"]),
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w200),
+                              maxLines: 1, // 최대 라인 수
+                              minFontSize: 8, // 최소 글자 크기
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
+                ),
+                // 이미지 우측 상단에 저장하기 아이콘 배치
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {
+                      // 저장하기 함수 실행
+                      toggleSaveStatus(item["WHERE_ID"]);
+                      savePlace(item['WHERE_ID']);
+                    },
+                    child: Icon(
+                      isSaved
+                          ? Icons.bookmark
+                          : Icons.bookmark_border, // 상태에 따라 아이콘 변경
+                      size: 30,
+                      color: const Color(0xff7a4fff), // 저장하기 아이콘 색상
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -553,6 +588,12 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
         );
       },
     );
+  }
+
+  /// 저장하기 함수 예시
+  void savePlace(String placeId) {
+    // 저장 기능을 여기에 구현
+    // placeId에 해당하는 where 불러와서 , WHERE["SAVE"] 1+,  provider에서 user_id 받아와서 그 유저 정보가 있는 profile에 있는  user like 올리고,
   }
 
   Widget buildOverallSection() {

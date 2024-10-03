@@ -13,6 +13,7 @@ import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/mypage_screens/follow_page.dart';
 import 'package:nahollo/screens/mypage_screens/profile_edit_page.dart';
+import 'package:nahollo/screens/mypage_screens/save_page.dart';
 import 'package:nahollo/services/network_service.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_where_data.dart';
@@ -418,7 +419,11 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           height: SizeScaler.scaleSize(context, 23),
           child: ElevatedButton(
             onPressed: () {
-              // 버튼 클릭 시 동작
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SavePage(),
+                  ));
             },
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(
