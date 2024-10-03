@@ -127,6 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
       Fluttertoast.showToast(msg: res["message"]);
 
       if (context.mounted) {
+        FocusScope.of(context).unfocus();
+        await Future.delayed(const Duration(milliseconds: 250));
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
