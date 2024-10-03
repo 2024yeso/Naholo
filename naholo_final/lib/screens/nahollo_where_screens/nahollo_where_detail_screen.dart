@@ -66,8 +66,21 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
         String nickname =
             data['user_info'] != null ? data['user_info']['NICKNAME'] : "오류1";
-        Uint8List? imageBytes =
-            data['user_info'] != null ? data['user_info']['image'] : null;
+
+        Uint8List? imageBytes;
+        try {
+          if (data['user_info'] != null && data['user_info']['IMAGE'] != null) {
+            String base64Image =
+                data['user_info']['IMAGE'].replaceAll(RegExp(r'\s+'), '');
+            imageBytes = base64Decode(base64Image);
+          } else {
+            imageBytes = null;
+          }
+        } catch (e) {
+          print('base64 디코딩 에러: $e');
+          imageBytes = null; // 디코딩 실패 시 null로 처리
+        }
+
         int lv = data['user_info'] != null ? data['user_info']['LV'] : 0;
 
         return {
@@ -135,9 +148,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           width: SizeScaler.scaleSize(context, 6),
         ),
         Text(
-          '$rating', // 평점 숫자 표시
+          rating.toStringAsFixed(1), // 소수점 첫 번째 자리까지 표시
           style: TextStyle(
-              color: Colors.grey, fontSize: SizeScaler.scaleSize(context, 5)),
+            color: Colors.grey,
+            fontSize: SizeScaler.scaleSize(context, 5),
+          ),
         ),
       ],
     );
@@ -475,6 +490,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final user = userProvider.user;
+
     if (isLoading) {
       // 데이터 로딩 중이면 로딩 인디케이터 표시
       return Scaffold(
@@ -666,38 +684,55 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                     );
                                   } else if (snapshot.hasData) {
                                     final data = snapshot.data!;
-                                    final nickname = data['nickname'] ?? '오류';
+                                    final nickname = data['nickname'];
                                     final imageBytes = data['imageBytes'];
-                                    final lv = data['lv'] ?? 0;
+                                    final lv = data['lv'];
 
                                     return Row(
                                       children: [
-                                        GestureDetector(
-                                          onTap: () {
-                                            Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      YourProfile(
-                                                    user_id: review["USER_ID"],
-                                                  ),
-                                                ));
-                                          },
-                                          child: CircleAvatar(
-                                            radius: 20,
-                                            backgroundImage: imageBytes != null
-                                                ? MemoryImage(imageBytes)
-                                                : null, // 이미지가 있으면 넣고 없으면 기본 아이콘 사용
-                                            backgroundColor: imageBytes == null
-                                                ? Colors.grey[300]
-                                                : null,
-                                            child: imageBytes == null
-                                                ? const Icon(Icons.person,
-                                                    size: 20,
-                                                    color: Colors.white)
-                                                : null,
-                                          ),
+                                        SizedBox(
+                                          width:
+                                              SizeScaler.scaleSize(context, 20),
                                         ),
+                                        GestureDetector(
+                                            onTap: () {
+                                              if (user!.userId !=
+                                                  review["USER_ID"]
+                                                      .toString()) {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          YourProfile(
+                                                        user_id:
+                                                            review["USER_ID"],
+                                                      ),
+                                                    ));
+                                              }
+                                            },
+                                            child: ClipOval(
+                                              child: imageBytes != null
+                                                  ? Image.memory(
+                                                      imageBytes!,
+                                                      width:
+                                                          SizeScaler.scaleSize(
+                                                              context, 20),
+                                                      height:
+                                                          SizeScaler.scaleSize(
+                                                              context, 20),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : Image.asset(
+                                                      'assets/images/default_image.png', // 기본 이미지 경로
+                                                      width:
+                                                          SizeScaler.scaleSize(
+                                                              context, 20),
+                                                      height:
+                                                          SizeScaler.scaleSize(
+                                                              context, 20),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                            )),
                                         const SizedBox(width: 8),
                                         Column(
                                           crossAxisAlignment:

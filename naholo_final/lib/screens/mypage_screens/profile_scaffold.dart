@@ -87,12 +87,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : [];
           _isLoading = false;
         });
+        print(userProfile);
         _addMarkers();
         // UserProfileProvider를 사용하여 _userProfile을 설정
         final userProfileProvider =
             Provider.of<UserProfileProvider>(context, listen: false);
         if (_userProfile != null) {
-          print("굿");
           userProfileProvider.setUserProfile(_userProfile!);
         }
       } else {
