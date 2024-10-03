@@ -1659,6 +1659,94 @@ async def toggle_like(request: LikeToggleRequest, db=Depends(get_db)):
         cursor.close()
         db.close()
 
+@app.get("/user_journals/{user_id}")
+def get_user_journals(user_id: str, db=Depends(get_db)):
+    logger.info(f"Fetching journal posts for user_id: {user_id}")
+    results = {"latest": [], "top_liked": []}
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            # user_id에 맞는 모든 게시물을 조회하는 쿼리
+            query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            """
+            cursor.execute(query, (user_id,))
+            journal_posts = cursor.fetchall()
+            
+            if not journal_posts:
+                raise HTTPException(status_code=404, detail="No journal posts found for this user")
+            
+            # 최신순으로 정렬
+            latest_sorted = sorted(journal_posts, key=lambda x: x['POST_CREATE'], reverse=True)
+            
+            # 인기순으로 정렬 (POST_LIKE 기준으로 정렬)
+            top_liked_sorted = sorted(journal_posts, key=lambda x: x['POST_LIKE'], reverse=True)
+
+            # 최신순, 인기순 결과를 각각 할당
+            results["latest"] = latest_sorted
+            results["top_liked"] = top_liked_sorted
+
+            # 모든 POST_ID 수집
+            all_post_ids = set(post['POST_ID'] for post in journal_posts)
+            
+            if all_post_ids:
+                # POST_ID를 문자열로 변환하고 SQL에 안전하게 포함
+                post_ids_list = [str(int(post_id)) for post_id in all_post_ids]
+                post_ids_str = ','.join(post_ids_list)
+
+                # POST_ID별 이미지 데이터 조회
+                images_query = f"""
+                SELECT POST_ID, IMAGE_DATA
+                FROM journal_image
+                WHERE POST_ID IN ({post_ids_str});
+                """
+                logger.debug(f"Fetching images for POST_IDs: {post_ids_list}")
+                cursor.execute(images_query)
+                images_data = cursor.fetchall()
+                
+                # POST_ID별 이미지 매핑
+                post_images_map: Dict[int, List[str]] = {}
+                for image in images_data:
+                    post_id = image['POST_ID']
+                    post_images_map.setdefault(post_id, []).append(image['IMAGE_DATA'])
+                
+                # 각 게시물에 이미지 추가
+                for post in journal_posts:
+                    post_id = post['POST_ID']
+                    post['images'] = post_images_map.get(post_id, [])
+
+                # 혼캎, 혼영 등 필드를 bool 리스트로 변환
+                for post in journal_posts:
+                    post['subjList'] = [
+                        bool(post.get('혼캎', False)),
+                        bool(post.get('혼영', False)),
+                        bool(post.get('혼놀', False)),
+                        bool(post.get('혼밥', False)),
+                        bool(post.get('혼박', False)),
+                        bool(post.get('혼술', False)),
+                        bool(post.get('기타', False)),
+                    ]
+    
+            # USER_IMAGE 필드를 제거한 결과로 변경
+            for post in journal_posts:
+                if 'USER_IMAGE' in post:
+                    del post['USER_IMAGE']
+    
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_user_journals: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_user_journals: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        logger.debug(f"Final Results: {results}")
+    
+    return {"data": results}
+
+
 
 # 서버 실행
 if __name__ == "__main__":
