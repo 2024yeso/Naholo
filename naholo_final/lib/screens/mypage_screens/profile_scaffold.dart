@@ -323,14 +323,18 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         children: [
           Row(
             children: [
+              // Navigator.push로 페이지로 이동할 때, then을 사용하여 페이지가 닫힌 후 실행할 동작을 지정
               GestureDetector(
                 onTap: () async {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const FollowPage(selectedIndex: 0),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FollowPage(selectedIndex: 0),
+                    ),
+                  ).then((_) {
+                    // 페이지가 닫히면 항상 데이터를 다시 불러옴
+                    _fetchMyPageData();
+                  });
                 },
                 child: Text(
                   '팔로워 $follower',
@@ -342,12 +346,18 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               ),
               SizedBox(width: SizeScaler.scaleSize(context, 16)),
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FollowPage(selectedIndex: 1),
-                  ),
-                ),
+                onTap: () async {
+                  // FollowPage로 이동한 후, 돌아오면 데이터를 다시 불러옴
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FollowPage(selectedIndex: 1),
+                    ),
+                  ).then((_) {
+                    // 페이지를 다녀온 후 데이터를 항상 다시 불러옴
+                    _fetchMyPageData();
+                  });
+                },
                 child: Text(
                   '팔로잉 $following',
                   style: TextStyle(

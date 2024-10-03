@@ -24,6 +24,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _nickname = TextEditingController(); // 닉네임
   final TextEditingController _myself = TextEditingController(); // 자기소개
   final bool _isLoading = true;
+  String? _nicknameError; // 닉네임 에러 메시지
 
   // 이미지 선택 함수
   Future<void> _pickImage() async {
@@ -70,10 +71,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     return base64Encode(bytes);
   }
 
+  // 닉네임 길이 유효성 검사
+  bool _validateNickname() {
+    String nickname = _nickname.text.trim();
+    if (nickname.isEmpty || nickname.length < 2 || nickname.length > 15) {
+      setState(() {
+        _nicknameError = '닉네임은 2자에서 15자 사이여야 합니다.';
+      });
+      return false;
+    } else {
+      setState(() {
+        _nicknameError = null;
+      });
+      return true;
+    }
+  }
+
   // 저장 버튼 클릭 시 서버로 데이터 전송
   Future<void> _saveButton() async {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    if (!_validateNickname()) return; // 닉네임 검사를 통과하지 못하면 중단
 
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     String userId = userProvider.user?.userId ?? "정보 없음"; // 실제 사용자 ID로 변경
 
     // 이미지 파일을 Base64로 인코딩
@@ -186,8 +204,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                     SizedBox(height: SizeScaler.scaleSize(context, 3)),
                     TextField(
                       controller: _nickname,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(15), // 최대 15자까지 입력 가능
+                      ],
                       decoration: InputDecoration(
                         hintText: "한글,영문,숫자 2-15 자로 작성해 주세요",
+                        errorText: _nicknameError, // 에러 메시지 표시
                         hintStyle: TextStyle(
                           color: const Color(0xff843ff9),
                           fontSize: SizeScaler.scaleSize(context, 6),

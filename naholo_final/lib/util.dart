@@ -217,7 +217,7 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           BottomNavigationBarItem(
             icon: Icon(
               Icons.search,
-              color: Colors.black,
+              color: const Color(0xff4924bd),
               size: SizeScaler.scaleSize(context, 18),
             ),
             label: "나홀로어디?",
@@ -225,14 +225,14 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.book_outlined,
-                color: Colors.black,
+                color: const Color(0xff4924bd),
                 size: SizeScaler.scaleSize(context, 18),
               ),
               label: "나홀로일지"),
           BottomNavigationBarItem(
             icon: Icon(
               Icons.home_outlined,
-              color: Colors.black,
+              color: const Color(0xff4924bd),
               size: SizeScaler.scaleSize(context, 18),
             ),
             label: '홈',

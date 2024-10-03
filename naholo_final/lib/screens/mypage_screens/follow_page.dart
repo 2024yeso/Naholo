@@ -156,7 +156,7 @@ class _FollowPageState extends State<FollowPage>
               borderRadius: BorderRadius.circular(10),
             ),
             backgroundColor: followingStates[user['USER_ID']] ?? false
-                ? Colors.red
+                ? const Color(0xffb075ff)
                 : const Color(0xffa971f4),
             foregroundColor: Colors.white,
             padding: EdgeInsets.zero,
@@ -165,7 +165,7 @@ class _FollowPageState extends State<FollowPage>
           child: Text(
             followingStates[user['USER_ID']] ?? false ? '언팔로우' : '팔로우',
             style: TextStyle(
-                fontSize: SizeScaler.scaleSize(context, 9),
+                fontSize: SizeScaler.scaleSize(context, 8),
                 fontWeight: FontWeight.bold),
           ),
         ),
@@ -216,8 +216,8 @@ class _FollowPageState extends State<FollowPage>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
+            backgroundColor: const Color(0xffcccdf8),
+            foregroundColor: Colors.black,
             padding: EdgeInsets.zero,
           ),
           onPressed: () => toggleFollow(currentUserId, user['USER_ID']),
