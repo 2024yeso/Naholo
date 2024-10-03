@@ -26,9 +26,9 @@ class UserProfile {
     Uint8List? imageBytes;
 
     // 이미지가 null이 아니고 빈 문자열이 아니면 Base64 디코딩
-    if (json['image'] != null && json['image'].isNotEmpty) {
+    if (json['IMAGE'] != null && json['IMAGE'].isNotEmpty) {
       try {
-        imageBytes = base64Decode(json['image']);
+        imageBytes = base64Decode(json['IMAGE']);
       } catch (e) {
         print('이미지 디코딩 실패: $e');
         imageBytes = null; // 디코딩 실패 시 null 처리

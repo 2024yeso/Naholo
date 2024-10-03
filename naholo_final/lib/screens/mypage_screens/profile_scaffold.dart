@@ -57,47 +57,46 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
     }
   }
 
-Future<void> _fetchMyPageData() async {
-  print("데이터 가져오기 시작");
-  final userProvider = Provider.of<UserProvider>(context, listen: false);
-  final userId = userProvider.user?.userId ?? '';
+  Future<void> _fetchMyPageData() async {
+    print("데이터 가져오기 시작");
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user?.userId ?? '';
 
-  try {
-    print("사용자 ID: $userId");
-    final response = await http.get(
-      Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
-      headers: {'Content-Type': 'application/json; charset=utf-8'},
-    );
+    try {
+      print("사용자 ID: $userId");
+      final response = await http.get(
+        Uri.parse('${Api.baseUrl}/my_page/?user_id=$userId'),
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+      );
 
-    if (response.statusCode == 200) {
-      final data = json.decode(utf8.decode(response.bodyBytes));
+      if (response.statusCode == 200) {
+        final data = json.decode(utf8.decode(response.bodyBytes));
 
-      // UserProfile의 데이터를 비동기적으로 가져옴
-      UserProfile? userProfile = data['user_info'] != null
-          ? await UserProfile.fromJson(data['user_info'])  // await 사용
-          : null;
+        // UserProfile의 데이터를 비동기적으로 가져옴
+        UserProfile? userProfile = data['user_info'] != null
+            ? UserProfile.fromJson(data['user_info']) // await 사용
+            : null;
 
+        setState(() {
+          _userProfile = userProfile; // 이제 _userProfile에 비동기적으로 할당
+          _reviews = data['reviews'] != null
+              ? List<Map<String, dynamic>>.from(data['reviews'])
+              : [];
+          _isLoading = false;
+        });
+      } else {
+        print('서버 응답 에러: ${response.statusCode}');
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        _userProfile = userProfile;  // 이제 _userProfile에 비동기적으로 할당
-        _reviews = data['reviews'] != null
-            ? List<Map<String, dynamic>>.from(data['reviews'])
-            : [];
         _isLoading = false;
       });
-    } else {
-      print('서버 응답 에러: ${response.statusCode}');
-      setState(() {
-        _isLoading = false;
-      });
+      print('데이터 가져오기 에러: $e');
     }
-  } catch (e) {
-    setState(() {
-      _isLoading = false;
-    });
-    print('데이터 가져오기 에러: $e');
   }
-}
-
 
   // 마커 추가 메서드 정의
   void _addMarkers(List<Map<String, dynamic>> wheres) {
@@ -215,11 +214,25 @@ Future<void> _fetchMyPageData() async {
           width: SizeScaler.scaleSize(context, 6),
         ),
         GestureDetector(
-          onTap: () => Navigator.push(
+          onTap: () async {
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => const ProfileEditPage(),
-              )),
+              ),
+            );
+
+            // 반환된 값을 확인
+            print("수정 후 반환된 값: $result");
+
+            // result가 true일 경우 데이터를 다시 로드
+            if (result == true) {
+              print("프로필 수정 후 데이터 다시 로드 실행됨");
+              _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
+            } else {
+              print("프로필 수정 결과를 받지 못함. 반환 값: $result");
+            }
+          },
           child: CircleAvatar(
             radius: SizeScaler.scaleSize(context, 15),
             backgroundColor: Colors.grey.withOpacity(0.5),
@@ -234,7 +247,7 @@ Future<void> _fetchMyPageData() async {
                   )
                 : ClipOval(
                     child: Image.asset(
-                      'assets/images/default_image.png',  // 기본 이미지 경로 사용
+                      'assets/images/default_image.png', // 기본 이미지 경로 사용
                       width: SizeScaler.scaleSize(context, 32),
                       height: SizeScaler.scaleSize(context, 32),
                       fit: BoxFit.cover,
@@ -297,11 +310,20 @@ Future<void> _fetchMyPageData() async {
           Row(
             children: [
               GestureDetector(
-                onTap: () => Navigator.push(
+                onTap: () async {
+                  // 수정 화면에서 돌아온 후 수정 여부 확인
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const FollowPage(selectedIndex: 0),
-                    )),
+                      builder: (context) => const ProfileEditPage(),
+                    ),
+                  );
+
+                  // result가 true일 경우 데이터를 다시 로드
+                  if (result == true) {
+                    _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
+                  }
+                },
                 child: Text(
                   '팔로워 $follower',
                   style: TextStyle(
@@ -332,13 +354,24 @@ Future<void> _fetchMyPageData() async {
             width: SizeScaler.scaleSize(context, 48),
             height: SizeScaler.scaleSize(context, 15),
             child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const ProfileEditPage(),
                   ),
                 );
+
+                // 반환된 값을 확인
+                print("수정 후 반환된 값: $result");
+
+                // result가 true일 경우 데이터를 다시 로드
+                if (result == true) {
+                  print("프로필 수정 후 데이터 다시 로드 실행됨");
+                  _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
+                } else {
+                  print("프로필 수정 결과를 받지 못함. 반환 값: $result");
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF794FFF),
