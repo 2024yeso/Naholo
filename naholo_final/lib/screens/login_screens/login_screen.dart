@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (context.mounted) {
         FocusScope.of(context).unfocus();
-        await Future.delayed(const Duration(milliseconds: 250));
+        await Future.delayed(const Duration(milliseconds: 200));
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
