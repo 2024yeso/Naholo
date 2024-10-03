@@ -220,7 +220,10 @@ class _NicknameSettingScreenState extends State<NicknameSettingScreen> {
                         ),
                       ),
                       onPressed: () async {
+                        FocusScope.of(context).unfocus();
+                        await Future.delayed(const Duration(milliseconds: 200));
                         _submitNickname();
+
                         if (_isNicknameGood) {
                           await addUser();
                           await _1st_login();
