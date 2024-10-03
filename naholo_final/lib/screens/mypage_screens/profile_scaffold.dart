@@ -87,7 +87,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : [];
           _isLoading = false;
         });
-        print(userProfile);
+        print(_reviews);
+
         _addMarkers();
         // UserProfileProvider를 사용하여 _userProfile을 설정
         final userProfileProvider =

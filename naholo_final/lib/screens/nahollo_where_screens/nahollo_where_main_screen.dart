@@ -49,15 +49,17 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
         // 모든 타입의 장소를 합친 리스트 생성
         List<Map<String, dynamic>> allPlaces = [];
         results["by_type"].forEach((key, value) {
-          allPlaces.addAll(List<Map<String, dynamic>>.from(value));
+          allPlaces.addAll(List<Map<String, dynamic>>.from(value)); // 모든 유형 추가
         });
 
+        // 장소 이름에 query가 포함된 항목 필터링
         _searchResults = allPlaces.where((item) {
           return item["WHERE_NAME"]
               .toString()
               .toLowerCase()
               .contains(_searchQuery.toLowerCase());
         }).toList();
+
         print(_searchResults);
       }
     });
@@ -315,7 +317,8 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                                     Expanded(
                                       child: ListTile(
                                         title: Text(item['WHERE_NAME']),
-                                        subtitle: Text(item['WHERE_LOCATE']),
+                                        subtitle: Text(
+                                            showAdress(item['WHERE_LOCATE'])),
                                         onTap: () {
                                           // 검색 결과 항목 클릭 시 다음 화면으로 이동
                                           Navigator.push(

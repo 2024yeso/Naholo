@@ -60,96 +60,9 @@ class _JournalContentState extends State<JournalContent> {
     "WATCH": "구경할 거 있어요",
   };
 
-  // 하트를 눌렀을 때 실행할 함수
-  void toggleLike(int index) async {
-    List<Map<String, dynamic>> reviews = widget.reviews;
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final user = userProvider.user;
-    String userId = user?.userId ?? '';
-
-    if (userId.isEmpty) {
-      Fluttertoast.showToast(msg: "로그인이 필요합니다.");
-      return;
-    }
-
-    // 현재 좋아요 상태를 가져와서 bool 타입으로 변환
-    bool currentIsLiked;
-    var isLikedValue = reviews[index]["isLiked"] ?? false;
-
-    if (isLikedValue is int) {
-      currentIsLiked = isLikedValue == 1;
-    } else {
-      currentIsLiked = isLikedValue == true;
-    }
-
-    // 좋아요 상태를 토글
-    bool newIsLiked = !currentIsLiked;
-
-    // UI에 즉시 반영
-    setState(() {
-      reviews[index]["isLiked"] = newIsLiked;
-      if (newIsLiked) {
-        reviews[index]["REVIEW_LIKE"] =
-            (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
-      } else {
-        reviews[index]["REVIEW_LIKE"] =
-            (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
-      }
-    });
-
-    // 서버로 좋아요 상태를 전송
-    try {
-      final response = await http.post(
-        Uri.parse("${Api.baseUrl}/reviews/${reviews[index]['REVIEW_ID']}/like"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Charset': 'utf-8'
-        },
-        body: jsonEncode({
-          'user_id': userId,
-          'like': newIsLiked,
-        }),
-      );
-
-      if (response.statusCode != 200) {
-        // 서버 응답이 실패하면 상태를 원래대로 복구
-        setState(() {
-          reviews[index]["isLiked"] = currentIsLiked;
-          if (currentIsLiked) {
-            reviews[index]["REVIEW_LIKE"] =
-                (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
-          } else {
-            reviews[index]["REVIEW_LIKE"] =
-                (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
-          }
-        });
-        Fluttertoast.showToast(msg: "좋아요 처리에 실패했습니다.");
-      } else {
-        // 서버 응답이 성공하면 서버에서 받은 최신 좋아요 수를 업데이트
-        final responseData = jsonDecode(response.body);
-        setState(() {
-          reviews[index]["REVIEW_LIKE"] =
-              responseData["REVIEW_LIKE"] ?? reviews[index]["REVIEW_LIKE"];
-        });
-      }
-    } catch (e) {
-      // 예외 발생 시 상태를 원래대로 복구
-      setState(() {
-        reviews[index]["isLiked"] = currentIsLiked;
-        if (currentIsLiked) {
-          reviews[index]["REVIEW_LIKE"] =
-              (reviews[index]["REVIEW_LIKE"] ?? 0) + 1;
-        } else {
-          reviews[index]["REVIEW_LIKE"] =
-              (reviews[index]["REVIEW_LIKE"] ?? 0) - 1;
-        }
-      });
-      Fluttertoast.showToast(msg: "좋아요 처리 중 오류가 발생했습니다.");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    print(reviews);
     if (widget.reviews.isEmpty) {
       return Center(
         child: Column(
@@ -229,6 +142,8 @@ class _JournalContentState extends State<JournalContent> {
               review["REVIEW_IMAGES"].isNotEmpty) {
             reviewImages = review["REVIEW_IMAGES"];
           }
+
+          print("ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ${review["WHERE_LIKE"]}");
 
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -339,22 +254,14 @@ class _JournalContentState extends State<JournalContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      IconButton(
-                        icon: Icon(
-                          (review["isLiked"] == true || review["isLiked"] == 1)
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: (review["isLiked"] == true ||
-                                  review["isLiked"] == 1)
-                              ? Colors.red
-                              : Colors.grey,
-                        ),
-                        onPressed: () {
-                          toggleLike(reviews.indexOf(review));
-                        },
+                      Icon(
+                        Icons.favorite,
+                        color: review["WHERE_LIKE"] != 0
+                            ? Colors.red
+                            : Colors.grey,
                       ),
                       Text(
-                        "${review["REVIEW_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
+                        "${review["WHERE_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
                         style: const TextStyle(color: Color(0xff7e7e7e)),
                       ),
                     ],
