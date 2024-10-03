@@ -5,6 +5,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:nahollo/api/api.dart'; // API 경로를 위한 import 추가
+import 'package:nahollo/models/review.dart';
+import 'package:nahollo/screens/mypage_screens/your_profile.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/util.dart';
 import 'package:http/http.dart' as http; // HTTP 요청을 위한 import 추가
@@ -670,18 +672,31 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
                                     return Row(
                                       children: [
-                                        CircleAvatar(
-                                          radius: 20,
-                                          backgroundImage: imageBytes != null
-                                              ? MemoryImage(imageBytes)
-                                              : null, // 이미지가 있으면 넣고 없으면 기본 아이콘 사용
-                                          backgroundColor: imageBytes == null
-                                              ? Colors.grey[300]
-                                              : null,
-                                          child: imageBytes == null
-                                              ? const Icon(Icons.person,
-                                                  size: 20, color: Colors.white)
-                                              : null,
+                                        GestureDetector(
+                                          onTap: () {
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      YourProfile(
+                                                    user_id: review["USER_ID"],
+                                                  ),
+                                                ));
+                                          },
+                                          child: CircleAvatar(
+                                            radius: 20,
+                                            backgroundImage: imageBytes != null
+                                                ? MemoryImage(imageBytes)
+                                                : null, // 이미지가 있으면 넣고 없으면 기본 아이콘 사용
+                                            backgroundColor: imageBytes == null
+                                                ? Colors.grey[300]
+                                                : null,
+                                            child: imageBytes == null
+                                                ? const Icon(Icons.person,
+                                                    size: 20,
+                                                    color: Colors.white)
+                                                : null,
+                                          ),
                                         ),
                                         const SizedBox(width: 8),
                                         Column(
