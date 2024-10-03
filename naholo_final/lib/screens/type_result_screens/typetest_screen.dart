@@ -98,20 +98,23 @@ class _TypetestScreenState extends State<TypetestScreen> {
   ];
 
   String chooseCharacter() {
-    List<String> characters = ['오징어', '래서판다', '고양이', '코알라', '올빼미', '고슴도치'];
+    List<String> characters = [
+      'squid',
+      'red_panda',
+      'cat',
+      'koala',
+      'owl',
+      'hedgehog',
+    ];
     if (_type >= 4) {
       return characters[0];
-    }
-    if (_type >= 2) {
+    } else if (_type >= 2) {
       return characters[1];
-    }
-    if (_type >= 0) {
+    } else if (_type >= 0) {
       return characters[2];
-    }
-    if (_type >= -2) {
+    } else if (_type >= -2) {
       return characters[3];
-    }
-    if (_type >= -4) {
+    } else if (_type >= -4) {
       return characters[4];
     } else {
       return characters[5];
@@ -123,6 +126,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
     if (_currentQuestionIndex < _questions.length - 1) {
       setState(() {
         _type += 1; // 외향형 점수 증가
+
         count += 1; // 질문 번호 증가
         _currentQuestionIndex++; // 다음 질문으로 이동
         progress += 1 / _questions.length; // 진행률 업데이트
@@ -133,6 +137,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
       });
     } else {
       var character = chooseCharacter();
+      print(character);
       // 모든 질문이 끝나면 결과 분석 화면으로 이동
       Navigator.pushReplacement(
           context,
@@ -157,6 +162,7 @@ class _TypetestScreenState extends State<TypetestScreen> {
       });
     } else {
       var character = chooseCharacter();
+      print(character);
       // 모든 질문이 끝나면 결과 분석 화면으로 이동
       Navigator.pushReplacement(
           context,

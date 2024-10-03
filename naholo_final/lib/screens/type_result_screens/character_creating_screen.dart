@@ -136,7 +136,7 @@ class _CharacterCreatingScreenState extends State<CharacterCreatingScreen>
                 Text(
                   changeToKoreanName(widget.character),
                   style: const TextStyle(
-                    color: Color(0xFFf6841b),
+                    color: Color(0xff00276b),
                     fontSize: 40,
                     fontWeight: FontWeight.w600,
                   ),
