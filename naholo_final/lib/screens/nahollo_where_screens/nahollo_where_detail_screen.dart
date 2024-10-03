@@ -30,6 +30,8 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   final bool _isLoading = true;
   bool isLoading = true; // 데이터 로딩 상태
   bool _isSave = false;
+  String? errorMessage;
+  List likedPlaces = []; // 좋아요한 장소 리스트
 
   String showAdress(String adress) {
     var list = adress.split(' ');
@@ -49,6 +51,83 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
     setState(() {
       _isSave = !_isSave;
     });
+  }
+
+  Future<void> fetchLikedPlaces() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    final String url = '${Api.baseUrl}/user_likes/$userId'; // 서버의 엔드포인트 주소
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          likedPlaces = data['liked_places'];
+
+          // '가고 싶어요' 상태를 현재 장소에 맞춰 설정
+          _isSave =
+              likedPlaces.any((place) => place['WHERE_ID'] == widget.whereId);
+          isLoading = false;
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          errorMessage = "No likes found for this user.";
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage = "Failed to fetch liked places.";
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "An error occurred: $e";
+        isLoading = false;
+      });
+    }
+  }
+
+// 장소 저장 상태를 토글하는 함수
+  Future<void> savePlace() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId; // 사용자 ID
+
+    const String url = '${Api.baseUrl}/toggle_like'; // API 엔드포인트 주소
+
+    try {
+      // API 호출: 서버로 "가고 싶어요" 토글 요청 보내기
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'user_id': userId, // 사용자 ID
+          'where_id': widget.whereId // 장소 ID
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        setState(() {
+          if (responseBody['message'] == 'add') {
+            Fluttertoast.showToast(msg: '이 장소를 가고 싶어요 목록에 추가했습니다!');
+            _isSave = true; // '가고 싶어요' 상태를 true로 변경
+            info!["SAVE"] = (info!["SAVE"] ?? 0) + 1; // 저장된 수 업데이트
+          } else if (responseBody['message'] == 'remove') {
+            Fluttertoast.showToast(msg: '이 장소를 가고 싶어요 목록에서 제거했습니다.');
+            _isSave = false; // '가고 싶어요' 상태를 false로 변경
+            info!["SAVE"] = (info!["SAVE"] ?? 0) - 1; // 저장된 수 감소
+          }
+        });
+      } else {
+        Fluttertoast.showToast(msg: '서버와 통신하는 데 실패했습니다.');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: '에러가 발생했습니다: $e');
+    }
   }
 
   Future<Map<String, dynamic>> getReviewadd(Map<String, dynamic> review) async {
@@ -217,6 +296,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   void initState() {
     super.initState();
     fetchData(); // 데이터 가져오기
+    fetchLikedPlaces(); // '가고 싶어요' 상태 업데이트
   }
 
   Future<void> fetchData() async {
@@ -635,18 +715,18 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                         Positioned(
                           top: 5,
                           right: -5,
-                          child: GestureDetector(
-                            onTap: () {
-                              // 저장하기 버튼 클릭 시 동작
-                              saveButton();
-                            },
-                            child: Icon(
+                          child: IconButton(
+                            icon: Icon(
                               _isSave
                                   ? Icons.bookmark
-                                  : Icons.bookmark_border, // 상태에 따라 아이콘 변경
+                                  : Icons
+                                      .bookmark_border, // _isSave 값에 따라 아이콘 변경
                               size: 30,
-                              color: const Color(0xff7a4fff), // 저장하기 아이콘 색상
+                              color: const Color(0xff7a4fff),
                             ),
+                            onPressed: () {
+                              savePlace(); // 버튼 클릭 시 서버로 상태 전송
+                            },
                           ),
                         ),
                       ],

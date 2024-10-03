@@ -24,6 +24,9 @@ class NaholloWhereMainScreen extends StatefulWidget {
 
 class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   final int _selectedIndex = 0; // 선택된 인덱스
+  bool isLoading = true; // 로딩 상태 관리
+  String? errorMessage;
+  List likedPlaces = []; // 좋아요한 장소 리스트
   Map<String, dynamic> results = {
     "by_type": {},
     "overall_top_8": []
@@ -58,6 +61,45 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
         print(_searchResults);
       }
     });
+  }
+
+  Future<void> fetchLikedPlaces() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    final String url = '${Api.baseUrl}/user_likes/$userId'; // 서버의 엔드포인트 주소
+
+    try {
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          likedPlaces = data['liked_places'];
+
+          // '가고 싶어요' 상태를 저장
+          for (var place in likedPlaces) {
+            savedItems[place['WHERE_ID']] = true; // 저장된 상태
+          }
+          isLoading = false;
+        });
+      } else if (response.statusCode == 404) {
+        setState(() {
+          errorMessage = "No likes found for this user.";
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage = "Failed to fetch liked places.";
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = "An error occurred: $e";
+        isLoading = false;
+      });
+    }
   }
 
   // WHERE_TYPE에 따라 필터링된 리스트를 반환하는 함수
@@ -100,6 +142,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   void initState() {
     super.initState();
     getNaholloWhereTopRated(); // 화면 초기화 시 데이터 불러오기
+    fetchLikedPlaces();
     _pageController.addListener(() {
       // 현재 가운데 있는 페이지 인덱스를 계산
       setState(() {
@@ -484,9 +527,10 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
   Map<String, bool> savedItems = {}; // 'WHERE_ID'에 대한 저장 상태를 관리
 
 // 저장 상태를 토글하는 함수
-  void toggleSaveStatus(String whereId) {
+  void toggleSaveStatus(String whereId, bool currentStatus) {
     setState(() {
-      savedItems[whereId] = !(savedItems[whereId] ?? false);
+      savedItems[whereId] = !currentStatus;
+      savePlace(whereId, context, savedItems[whereId]!);
     });
   }
 
@@ -583,8 +627,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                   child: GestureDetector(
                     onTap: () {
                       // 저장하기 함수 실행
-                      toggleSaveStatus(item["WHERE_ID"]);
-                      savePlace(item['WHERE_ID']);
+                      toggleSaveStatus(item["WHERE_ID"], isSaved);
                     },
                     child: Icon(
                       isSaved
@@ -603,10 +646,46 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
     );
   }
 
-  /// 저장하기 함수 예시
-  void savePlace(String placeId) {
-    // 저장 기능을 여기에 구현
-    // placeId에 해당하는 where 불러와서 , WHERE["SAVE"] 1+,  provider에서 user_id 받아와서 그 유저 정보가 있는 profile에 있는  user like 올리고,
+  void savePlace(String placeId, BuildContext context, bool isSaved) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    const String url = '${Api.baseUrl}/toggle_like'; // API 엔드포인트 주소
+
+    try {
+      // 서버로 "가고 싶어요" 토글 요청 보내기
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'user_id': userId, // 사용자 ID
+          'where_id': placeId, // 장소 ID
+          'saved': isSaved // 저장된 상태 전송
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        if (responseBody['message'] == 'add') {
+          print('Place successfully liked!');
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Place liked!')));
+        } else if (responseBody['message'] == 'remove') {
+          print('Place successfully unliked!');
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('Place unliked!')));
+        }
+      } else {
+        print('Failed to toggle like: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to toggle like.')));
+      }
+    } catch (e) {
+      print('Error toggling like: $e');
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Error toggling like.')));
+    }
   }
 
   Widget buildOverallSection() {
