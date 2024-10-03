@@ -158,6 +158,42 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
     );
   }
 
+  Widget buildRatingBar2(BuildContext context, double rating) {
+    return Row(
+      children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(1.0),
+            child: RatingBarIndicator(
+              itemSize: 8,
+              rating: rating, // 전달받은 평점 값 사용
+              direction: Axis.horizontal,
+              itemCount: 5,
+              itemPadding: EdgeInsets.symmetric(
+                horizontal: SizeScaler.scaleSize(context, 1),
+              ), // 별 사이의 간격 조정
+              itemBuilder: (context, _) => Image.asset(
+                "assets/images/star.png",
+                height: SizeScaler.scaleSize(context, 30),
+                width: SizeScaler.scaleSize(context, 30),
+              ),
+            ),
+          ),
+        ),
+        SizedBox(
+          width: SizeScaler.scaleSize(context, 6),
+        ),
+        Text(
+          rating.toStringAsFixed(1), // 소수점 첫 번째 자리까지 표시
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: SizeScaler.scaleSize(context, 5),
+          ),
+        ),
+      ],
+    );
+  }
+
   // 이유별 카운트를 저장할 맵
   final Map<String, int> _reasonCounts = {};
 
@@ -806,6 +842,15 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          Row(children: [
+                            SizedBox(
+                              width: SizeScaler.scaleSize(
+                                  context, SizeScaler.scaleSize(context, 10)),
+                            ),
+                            buildRatingBar2(context, review["WHERE_RATE"])
+                          ]),
+
                           const SizedBox(height: 12),
                           // True인 REASON들 표시
                           Wrap(
