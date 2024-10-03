@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -238,7 +239,31 @@ class _JournalContentState extends State<JournalContent> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // 상단 사용자 정보 및 태그
-
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "${review["WHERE_NAME"]}",
+                          style: TextStyle(
+                              color: const Color(0xff542772),
+                              fontSize: SizeScaler.scaleSize(context, 10),
+                              fontWeight: FontWeight.bold),
+                        ),
+                        AutoSizeText(
+                          minFontSize: 2,
+                          getLocationParts(review),
+                          style: TextStyle(
+                              fontSize: SizeScaler.scaleSize(context, 6),
+                              fontWeight: FontWeight.w400),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 6),
+                  ),
                   // 이미지 스크롤
                   if (reviewImages.isNotEmpty)
                     SizedBox(
