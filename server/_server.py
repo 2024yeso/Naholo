@@ -669,41 +669,46 @@ def follow_page(user_id: str, db=Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 @app.get("/where/top-rated")
-def get_top_rated_places(db=Depends(get_db)):
+def get_top_rated_places(page: int = 0, db=Depends(get_db)):
+    """
+    상위 평점 장소를 페이징하여 가져옵니다.
+    page: 0이면 1~10번째 장소, 1이면 11~20번째 장소를 반환
+    """
     types = ["play", "eat", "sleep", "drink"]
-    results = {"by_type": {}, "overall_top_8": []}
+    results = {"by_type": {}, "overall_top_10": []}
+    items_per_page = 10
+    offset = page * items_per_page  # 페이징을 위한 시작 인덱스
 
     try:
         with db.cursor(dictionary=True) as cursor:
-            # 각 타입별로 평점이 높은 순서대로 8개의 항목을 가져오는 쿼리
+            # 전체 평점이 높은 순서대로 상위 10개의 항목만 가져오는 쿼리 (페이징 없이 상위 10개)
+            overall_query = """
+            SELECT w.*
+            FROM `Where` w
+            ORDER BY w.WHERE_RATE DESC
+            LIMIT 10;
+            """
+            logger.debug("Fetching overall top 10 places")
+            cursor.execute(overall_query)
+            overall_top_10 = cursor.fetchall()
+            results["overall_top_10"] = overall_top_10
+            logger.debug(f"Fetched {len(overall_top_10)} overall top places")
+
+            # 각 타입별로 평점이 높은 순서대로 페이지에 따라 10개의 항목을 가져오는 쿼리
             for place_type in types:
                 query = """
                 SELECT w.*
-                FROM `Where` w  -- 테이블 이름을 백틱으로 감쌈
+                FROM `Where` w
                 WHERE w.WHERE_TYPE = %s
                 ORDER BY w.WHERE_RATE DESC
-                LIMIT 8;
+                LIMIT %s OFFSET %s;
                 """
-                logger.debug(f"Fetching top 8 places for type: {place_type}")
-                cursor.execute(query, (place_type,))
+                logger.debug(f"Fetching top places for type: {place_type}, page: {page}")
+                cursor.execute(query, (place_type, items_per_page, offset))
                 rows = cursor.fetchall()
                 results["by_type"][place_type] = rows
                 logger.debug(f"Fetched {len(rows)} places for type: {place_type}")
 
-            # 전체 평점이 높은 순서대로 상위 8개의 항목을 가져오는 쿼리
-            overall_query = """
-            SELECT w.*
-            FROM `Where` w  -- 테이블 이름을 백틱으로 감쌈
-            ORDER BY w.WHERE_RATE DESC
-            LIMIT 8;
-            """
-            logger.debug("Fetching overall top 8 places")
-            cursor.execute(overall_query)
-            overall_top_8 = cursor.fetchall()
-            results["overall_top_8"] = overall_top_8
-            logger.debug(f"Fetched {len(overall_top_8)} overall top places")
-            print(results)
-            
         return {"data": results}
     except mysql.connector.Error as err:
         logger.error(f"Database error in get_top_rated_places: {err}")
