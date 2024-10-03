@@ -143,8 +143,6 @@ class _JournalContentState extends State<JournalContent> {
             reviewImages = review["REVIEW_IMAGES"];
           }
 
-          print("ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ${review["WHERE_LIKE"]}");
-
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Card(
@@ -165,13 +163,17 @@ class _JournalContentState extends State<JournalContent> {
                               color: const Color(0xff542772),
                               fontSize: SizeScaler.scaleSize(context, 10),
                               fontWeight: FontWeight.bold),
+                          maxLines: 2,
                         ),
                         AutoSizeText(
+                          maxLines: 2,
                           minFontSize: 2,
                           getLocationParts(review),
                           style: TextStyle(
                               fontSize: SizeScaler.scaleSize(context, 6),
                               fontWeight: FontWeight.w400),
+                          overflow:
+                              TextOverflow.ellipsis, // 텍스트가 넘칠 경우 '...'으로 표시
                         ),
                       ],
                     ),
@@ -180,29 +182,40 @@ class _JournalContentState extends State<JournalContent> {
                     height: SizeScaler.scaleSize(context, 6),
                   ),
                   // 이미지 스크롤
-                  if (reviewImages.isNotEmpty)
-                    SizedBox(
-                      height: SizeScaler.scaleSize(context, 147),
-                      width: SizeScaler.scaleSize(context, 147),
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: reviewImages.length,
-                        itemBuilder: (context, imgIndex) {
-                          print("갯수 ${reviewImages.length}");
-                          // 이미지 데이터를 가져오기
-                          final imageData = reviewImages[imgIndex];
-                          return Padding(
+                  // 이미지 스크롤 또는 기본 이미지 표시
+                  SizedBox(
+                    height: SizeScaler.scaleSize(context, 147),
+                    width: SizeScaler.scaleSize(context, 147),
+                    child: reviewImages.isNotEmpty
+                        ? ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: reviewImages.length,
+                            itemBuilder: (context, imgIndex) {
+                              print("갯수 ${reviewImages.length}");
+                              // 이미지 데이터를 가져오기
+                              final imageData = reviewImages[imgIndex];
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4.0),
+                                child: buildImage(
+                                  imageData,
+                                  SizeScaler.scaleSize(context, 147),
+                                  SizeScaler.scaleSize(context, 147),
+                                ),
+                              );
+                            },
+                          )
+                        : Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 4.0),
-                            child: buildImage(
-                              imageData,
-                              SizeScaler.scaleSize(context, 147),
-                              SizeScaler.scaleSize(context, 147),
+                            child: Image.asset(
+                              'assets/images/default_image_2.png', // 기본 이미지 경로
+                              width: SizeScaler.scaleSize(context, 147),
+                              height: SizeScaler.scaleSize(context, 147),
+                              fit: BoxFit.cover,
                             ),
-                          );
-                        },
-                      ),
-                    ),
+                          ),
+                  ),
                   const SizedBox(height: 15),
                   // 리뷰 내용
                   Padding(

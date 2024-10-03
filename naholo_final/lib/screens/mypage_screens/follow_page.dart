@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
+import 'package:nahollo/screens/mypage_screens/your_profile.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -128,19 +129,41 @@ class _FollowPageState extends State<FollowPage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.grey.withOpacity(0.5),
-          backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
-              ? MemoryImage(base64Decode(user['IMAGE']))
-              : const AssetImage('assets/images/default_image.png')
-                  as ImageProvider,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => YourProfile(
+                    user_id: user["USER_ID"],
+                  ),
+                ));
+          },
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.grey.withOpacity(0.5),
+            backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
+                ? MemoryImage(base64Decode(user['IMAGE']))
+                : const AssetImage('assets/images/default_image.png')
+                    as ImageProvider,
+          ),
         ),
-        title: Text(
-          nickname, // 디코딩된 닉네임 출력
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: SizeScaler.scaleSize(context, 10)),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => YourProfile(
+                    user_id: user["USER_ID"],
+                  ),
+                ));
+          },
+          child: Text(
+            nickname, // 디코딩된 닉네임 출력
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: SizeScaler.scaleSize(context, 10)),
+          ),
         ),
         subtitle: Text(
           introduce, // 디코딩된 소개문 출력
@@ -189,19 +212,41 @@ class _FollowPageState extends State<FollowPage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: ListTile(
-        leading: CircleAvatar(
-          radius: 20,
-          backgroundColor: Colors.grey.withOpacity(0.5),
-          backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
-              ? MemoryImage(base64Decode(user['IMAGE']))
-              : const AssetImage('assets/images/default_image.png')
-                  as ImageProvider,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => YourProfile(
+                    user_id: user["USER_ID"],
+                  ),
+                ));
+          },
+          child: CircleAvatar(
+            radius: 20,
+            backgroundColor: Colors.grey.withOpacity(0.5),
+            backgroundImage: user['IMAGE'] != null && isBase64(user['IMAGE'])
+                ? MemoryImage(base64Decode(user['IMAGE']))
+                : const AssetImage('assets/images/default_image.png')
+                    as ImageProvider,
+          ),
         ),
-        title: Text(
-          nickname, // 디코딩된 닉네임 출력
-          style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: SizeScaler.scaleSize(context, 10)),
+        title: GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => YourProfile(
+                    user_id: user["USER_ID"],
+                  ),
+                ));
+          },
+          child: Text(
+            nickname, // 디코딩된 닉네임 출력
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: SizeScaler.scaleSize(context, 10)),
+          ),
         ),
         subtitle: Text(
           introduce, // 디코딩된 소개문 출력

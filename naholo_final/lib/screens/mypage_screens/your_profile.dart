@@ -267,8 +267,9 @@ class _YourProfileState extends State<YourProfile> {
                     ),
                     // 팔로워, 팔로잉, 프로필 수정 버튼
                     _buildProfileActions(context),
-                    // 가고 싶어요 버튼
-                    _buildWishlistButton(context),
+                    SizedBox(
+                      height: SizeScaler.scaleSize(context, 20),
+                    ),
                     const Divider(),
                     // 탭 전환 버튼 (일지/지도)
                     Row(
@@ -412,7 +413,14 @@ class _YourProfileState extends State<YourProfile> {
               ),
             ],
           ),
-          SizedBox(
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              gradient: LinearGradient(colors: [
+                const Color(0xffA625FF).withOpacity(0.6),
+                const Color(0xff5C60F4).withOpacity(0.6)
+              ], begin: Alignment.centerLeft, end: Alignment.centerRight),
+            ),
             width: SizeScaler.scaleSize(context, 48),
             height: SizeScaler.scaleSize(context, 15),
             child: ElevatedButton(
@@ -420,11 +428,12 @@ class _YourProfileState extends State<YourProfile> {
                 followButton();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF794FFF),
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius:
-                      BorderRadius.circular(SizeScaler.scaleSize(context, 4)),
+                      BorderRadius.circular(SizeScaler.scaleSize(context, 8)),
                 ),
                 padding: EdgeInsets.zero,
               ),

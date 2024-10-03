@@ -274,7 +274,7 @@ class _DiaryMainState extends State<DiaryMain> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => DiaryUser(),
+                                builder: (context) => const DiaryUser(),
                               ),
                             );
                           },
@@ -552,7 +552,7 @@ class _DiaryMainState extends State<DiaryMain> {
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
-                                                    DiaryUser(),
+                                                    const DiaryUser(),
                                               ),
                                             );
                                           },
@@ -656,52 +656,98 @@ class _DiaryMainState extends State<DiaryMain> {
                                       width: SizeScaler.scaleSize(context, 8)),
                                   // Right column (image)
                                   post.images.isNotEmpty
-                                      ? Container(
-                                          width:
-                                              SizeScaler.scaleSize(context, 70),
-                                          height:
-                                              SizeScaler.scaleSize(context, 70),
-                                          decoration: BoxDecoration(
-                                            color: Colors
-                                                .grey[300], // Placeholder color
-                                            borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(
-                                                    context, 4)),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(
-                                                    context, 4)),
-                                            child: Image.memory(
-                                              base64Decode(post
-                                                  .images[0]), // 첫 번째 이미지 디코딩
-                                              fit: BoxFit
-                                                  .cover, // 이미지가 컨테이너를 꽉 채우도록 설정
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                return Center(
-                                                  child: Icon(
-                                                    Icons.broken_image,
-                                                    color: Colors.red,
-                                                    size: SizeScaler.scaleSize(
-                                                        context, 20),
-                                                  ),
-                                                );
-                                              },
+                                      ? GestureDetector(
+                                          onTap: () {
+                                            // Navigate to post detail page
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => DiaryText(
+                                                  postid:
+                                                      post.postid, // POST_ID 추가
+                                                  postTitle: post.title,
+                                                  postContent: post.content,
+                                                  author: post.author,
+                                                  authorID: post.authorID,
+                                                  createdAt: post.createdAt,
+                                                  subjList: post.subjList,
+                                                  images: post.images,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: SizeScaler.scaleSize(
+                                                context, 70),
+                                            height: SizeScaler.scaleSize(
+                                                context, 70),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[
+                                                  300], // Placeholder color
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      SizeScaler.scaleSize(
+                                                          context, 4)),
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      SizeScaler.scaleSize(
+                                                          context, 4)),
+                                              child: Image.memory(
+                                                base64Decode(post
+                                                    .images[0]), // 첫 번째 이미지 디코딩
+                                                fit: BoxFit
+                                                    .cover, // 이미지가 컨테이너를 꽉 채우도록 설정
+                                                errorBuilder: (context, error,
+                                                    stackTrace) {
+                                                  return Center(
+                                                    child: Icon(
+                                                      Icons.broken_image,
+                                                      color: Colors.red,
+                                                      size:
+                                                          SizeScaler.scaleSize(
+                                                              context, 20),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
                                             ),
                                           ),
                                         )
-                                      : Container(
-                                          width:
-                                              SizeScaler.scaleSize(context, 70),
-                                          height:
-                                              SizeScaler.scaleSize(context, 70),
-                                          decoration: BoxDecoration(
-                                            color: Colors
-                                                .grey[300], // Placeholder color
-                                            borderRadius: BorderRadius.circular(
-                                                SizeScaler.scaleSize(
-                                                    context, 4)),
+                                      : GestureDetector(
+                                          onTap: () {
+                                            // Navigate to post detail page
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => DiaryText(
+                                                  postid:
+                                                      post.postid, // POST_ID 추가
+                                                  postTitle: post.title,
+                                                  postContent: post.content,
+                                                  author: post.author,
+                                                  authorID: post.authorID,
+                                                  createdAt: post.createdAt,
+                                                  subjList: post.subjList,
+                                                  images: post.images,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Container(
+                                            width: SizeScaler.scaleSize(
+                                                context, 70),
+                                            height: SizeScaler.scaleSize(
+                                                context, 70),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[
+                                                  300], // Placeholder color
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      SizeScaler.scaleSize(
+                                                          context, 4)),
+                                            ),
                                           ),
                                         ),
                                 ],
