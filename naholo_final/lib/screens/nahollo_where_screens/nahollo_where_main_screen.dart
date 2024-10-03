@@ -67,7 +67,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
 
   // 전체 상위 8개의 항목을 반환하는 함수
   List<Map<String, dynamic>> filterBySave() {
-    return List<Map<String, dynamic>>.from(results["overall_top_8"] ?? []);
+    return List<Map<String, dynamic>>.from(results["overall_top_10"] ?? []);
   }
 
   String showAdress(String adress) {
