@@ -464,11 +464,11 @@ def delete_follow(follow: Follow, db=Depends(get_db)):
         db.rollback()
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
-
-# 리뷰 호출 함수
+    
 def call_review(user_id: str) -> List[Dict]:
     query = """
     SELECT 
+        wr.REVIEW_ID AS REVIEW_ID,
         w.WHERE_NAME AS WHERE_NAME,
         w.WHERE_LOCATE AS WHERE_LOCATE,
         w.LATITUDE AS LATITUDE,
@@ -497,25 +497,54 @@ def call_review(user_id: str) -> List[Dict]:
     WHERE 
         wr.USER_ID = %s;
     """
-    reviews = []
+    reviews = {}
     try:
         with mysql.connector.connect(**db_config) as conn:
             with conn.cursor(dictionary=True) as cursor:
                 logger.debug(f"Executing review query for user_id: {user_id}")
                 cursor.execute(query, (user_id,))
-                reviews = cursor.fetchall()
-                logger.debug(f"Fetched {len(reviews)} reviews")
+                rows = cursor.fetchall()
+                logger.debug(f"Fetched reviews: {rows}")
 
-                # REVIEW_IMAGE가 None이거나 존재하지 않으면 빈 리스트로 설정
-                for review in reviews:
-                    if not review.get('REVIEW_IMAGE'):
-                        review['REVIEW_IMAGE'] = []  # 빈 리스트로 설정
+                # REVIEW_ID를 기준으로 리뷰를 그룹화하고, 이미지를 리스트로 수집
+                for row in rows:
+                    review_id = row["REVIEW_ID"]
+                    if review_id not in reviews:
+                        # 첫 번째 리뷰 항목이므로 새로운 리뷰 추가
+                        reviews[review_id] = {
+                            "WHERE_NAME": row["WHERE_NAME"],
+                            "WHERE_LOCATE": row["WHERE_LOCATE"],
+                            "LATITUDE": row["LATITUDE"],
+                            "LONGITUDE": row["LONGITUDE"],
+                            "REVIEW_CONTENT": row["REVIEW_CONTENT"],
+                            "WHERE_RATE": row["WHERE_RATE"],
+                            "REASON_MENU": row["REASON_MENU"],
+                            "REASON_MOOD": row["REASON_MOOD"],
+                            "REASON_SAFE": row["REASON_SAFE"],
+                            "REASON_SEAT": row["REASON_SEAT"],
+                            "REASON_TRANSPORT": row["REASON_TRANSPORT"],
+                            "REASON_PARK": row["REASON_PARK"],
+                            "REASON_LONG": row["REASON_LONG"],
+                            "REASON_VIEW": row["REASON_VIEW"],
+                            "REASON_INTERACTION": row["REASON_INTERACTION"],
+                            "REASON_QUITE": row["REASON_QUITE"],
+                            "REASON_PHOTO": row["REASON_PHOTO"],
+                            "REASON_WATCH": row["REASON_WATCH"],
+                            "REVIEW_IMAGES": []
+                        }
+
+                    # 이미지가 존재하면 리뷰의 REVIEW_IMAGES 리스트에 추가
+                    if row["REVIEW_IMAGE"]:
+                        reviews[review_id]["REVIEW_IMAGES"].append(row["REVIEW_IMAGE"])
+
     except mysql.connector.Error as err:
         logger.error(f"Database error in call_review: {err}")
     except Exception as e:
         logger.error(f"Unexpected error in call_review: {e}")
     finally:
-        return reviews
+        return list(reviews.values())
+
+
 
 
 # 좋아요 호출 함수
@@ -555,7 +584,10 @@ def my_page(user_id: str, db=Depends(get_db)):
     try:
         # 리뷰 가져오기
         reviews = call_review(user_id)
-
+        print(len(reviews))
+        for i in reviews:
+            print(i["WHERE_NAME"])
+            print(len(i["REVIEW_IMAGES"]))
         # 좋아요한 장소 가져오기
         liked_places = call_wanted(user_id)
 
@@ -581,7 +613,7 @@ def my_page(user_id: str, db=Depends(get_db)):
             follower_count = cursor.fetchone()["follower_count"]
             if(follower_count==False):
                 follower_count = 0 
-        print(follower_count)
+
         return {
             "user_info": {
                 "USER_ID": user_info["USER_ID"],
