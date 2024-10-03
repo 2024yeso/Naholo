@@ -192,33 +192,31 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
           width: SizeScaler.scaleSize(context, 39),
           height: SizeScaler.scaleSize(context, 9),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius:
+                BorderRadius.circular(SizeScaler.scaleSize(context, 9.5)),
             color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                offset: const Offset(2, 2),
-                blurRadius: 2,
-                spreadRadius: 2,
-              )
+                  color: Colors.grey.withOpacity(0.2),
+                  offset: const Offset(2, 2),
+                  blurRadius: 2,
+                  spreadRadius: 2)
             ],
           ),
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(1.0),
-              child: RatingBarIndicator(
-                itemSize: 8,
-                rating: rating, // 전달받은 평점 값 사용
-                direction: Axis.horizontal,
-                itemCount: 5,
-                itemPadding: EdgeInsets.symmetric(
-                  horizontal: SizeScaler.scaleSize(context, 1),
-                ), // 별 사이의 간격 조정
-                itemBuilder: (context, _) => Image.asset(
-                  "assets/images/star.png",
-                  height: SizeScaler.scaleSize(context, 20),
-                  width: SizeScaler.scaleSize(context, 20),
-                ),
+            child: RatingBarIndicator(
+              itemSize: 8,
+              rating: rating, // 전달받은 평점 값 사용
+              direction: Axis.horizontal,
+              itemCount: 5,
+              itemPadding: EdgeInsets.symmetric(
+                horizontal: SizeScaler.scaleSize(
+                    context, SizeScaler.scaleSize(context, 0.5)),
+              ), // 별 사이의 간격 조정
+              itemBuilder: (context, _) => Image.asset(
+                "assets/images/star.png",
+                height: SizeScaler.scaleSize(context, 20),
+                width: SizeScaler.scaleSize(context, 20),
               ),
             ),
           ),
@@ -253,20 +251,20 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
               ), // 별 사이의 간격 조정
               itemBuilder: (context, _) => Image.asset(
                 "assets/images/star.png",
-                height: SizeScaler.scaleSize(context, 30),
-                width: SizeScaler.scaleSize(context, 30),
+                height: SizeScaler.scaleSize(context, 20),
+                width: SizeScaler.scaleSize(context, 20),
               ),
             ),
           ),
         ),
         SizedBox(
-          width: SizeScaler.scaleSize(context, 6),
+          width: SizeScaler.scaleSize(context, 4),
         ),
         Text(
           rating.toStringAsFixed(1), // 소수점 첫 번째 자리까지 표시
           style: TextStyle(
             color: Colors.grey,
-            fontSize: SizeScaler.scaleSize(context, 5),
+            fontSize: SizeScaler.scaleSize(context, 5.5),
           ),
         ),
       ],
@@ -383,50 +381,47 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
   Widget showReasonChips() {
     return Wrap(
-      spacing: 0.0, // 아이템들 사이의 간격
+      spacing: SizeScaler.scaleSize(context, 5), // 아이템들 사이의 간격
+      runSpacing: SizeScaler.scaleSize(context, 3.5),
       children: _reasonCounts.entries
           .where((entry) => entry.value > 0) // value가 0 이상인 항목만 필터링
           .map((entry) {
-        return Padding(
+        return Container(
           padding: EdgeInsets.symmetric(
-              horizontal: SizeScaler.scaleSize(context, 1),
-              vertical: SizeScaler.scaleSize(context, 1.5)),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: SizeScaler.scaleSize(context, 7),
-              vertical: SizeScaler.scaleSize(context, 3),
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xffFFD6F9).withOpacity(0.4),
-                  const Color(0xff9389FF).withOpacity(0.4),
-                  const Color(0xffEAC5FF).withOpacity(0.5),
-                  const Color(0xffFFF1C5).withOpacity(0.5),
-                ],
-                begin: Alignment.bottomRight,
-                end: Alignment.topLeft,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  reasonTextMap[entry.key] ?? entry.key, // 이유 텍스트
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: SizeScaler.scaleSize(context, 6)), // 텍스트 스타일 설정
-                ),
-                const SizedBox(width: 5), // 약간의 간격
-                Text(
-                  entry.value.toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ), // 숫자는 약간 다르게 스타일링
-                ),
+            horizontal: SizeScaler.scaleSize(context, 7),
+            vertical: SizeScaler.scaleSize(context, 3),
+          ),
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(SizeScaler.scaleSize(context, 8)),
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xffFFD6F9).withOpacity(1),
+                const Color(0xff9389FF).withOpacity(0.44),
+                const Color(0xffEAC5FF).withOpacity(1),
+                const Color(0xffFFF1C5).withOpacity(1),
               ],
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
             ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                reasonTextMap[entry.key] ?? entry.key, // 이유 텍스트
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: SizeScaler.scaleSize(context, 6)), // 텍스트 스타일 설정
+              ),
+              const SizedBox(width: 5), // 약간의 간격
+              Text(
+                entry.value.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                ), // 숫자는 약간 다르게 스타일링
+              ),
+            ],
           ),
         );
       }).toList(),
@@ -653,87 +648,86 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                     info!["WHERE_IMAGE"], double.infinity, double.infinity),
               ),
               SizedBox(
-                height: SizeScaler.scaleSize(context, 10),
+                height: SizeScaler.scaleSize(context, 15),
               ),
-              Row(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(
-                        left: SizeScaler.scaleSize(context, 15)),
-                    child: Stack(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "혼자 놀기 좋아요!",
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                  color: Color(0xff7f7f7f),
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            AutoSizeText(
-                              "${info!["WHERE_NAME"]}",
-                              textAlign: TextAlign.start,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                              ),
-                              maxLines: 1,
-                              minFontSize: 10,
-                            ),
-                            Text(
-                              showAdress(
-                                info!["WHERE_LOCATE"],
-                              ),
-                              style: TextStyle(
-                                color: const Color(0xff7f7f7f),
-                                fontSize: SizeScaler.scaleSize(context, 9),
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                Text(
-                                  info!["SAVE"] == null
-                                      ? "8명이 이 장소를 저장했어요"
-                                      : "${info!["SAVE"]}명이 이 장소를 저장했어요",
-                                  style: TextStyle(
-                                    color: const Color(0xff7f7f7f),
-                                    fontSize: SizeScaler.scaleSize(context, 8),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: SizeScaler.scaleSize(context, 10),
-                                ),
-                                buildRatingBar(context, info!["WHERE_RATE"])
-                              ],
-                            )
-                          ],
-                        ),
 
-                        // 이미지 오른쪽 상단에 저장하기 버튼
-                        Positioned(
-                          top: 5,
-                          right: -5,
-                          child: IconButton(
-                            icon: Icon(
-                              _isSave
-                                  ? Icons.bookmark
-                                  : Icons
-                                      .bookmark_border, // _isSave 값에 따라 아이콘 변경
-                              size: 30,
-                              color: const Color(0xff7a4fff),
-                            ),
-                            onPressed: () {
-                              savePlace(); // 버튼 클릭 시 서버로 상태 전송
-                            },
+              Padding(
+                padding:
+                    EdgeInsets.only(left: SizeScaler.scaleSize(context, 15)),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  textDirection: TextDirection.rtl,
+                  children: [
+                    // 이미지 오른쪽 상단에 저장하기 버튼
+                    SizedBox(
+                      width: SizeScaler.scaleSize(context, 28),
+                      child: IconButton(
+                        icon: Icon(
+                          _isSave
+                              ? Icons.bookmark
+                              : Icons.bookmark_border, // _isSave 값에 따라 아이콘 변경
+                          size: 30,
+                          color: const Color(0xff7a4fff),
+                        ),
+                        onPressed: () {
+                          savePlace(); // 버튼 클릭 시 서버로 상태 전송
+                        },
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "혼자 놀기 좋아요!",
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                              color: Color(0xff7f7f7f),
+                              fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: SizeScaler.scaleSize(context, 2)),
+                        AutoSizeText(
+                          "${info!["WHERE_NAME"]}",
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: SizeScaler.scaleSize(context, 11),
+                          ),
+                          maxLines: 1,
+                          minFontSize: 10,
+                        ),
+                        SizedBox(height: SizeScaler.scaleSize(context, 2)),
+                        Text(
+                          showAdress(
+                            info!["WHERE_LOCATE"],
+                          ),
+                          style: TextStyle(
+                            color: const Color(0xff7f7f7f),
+                            fontSize: SizeScaler.scaleSize(context, 9),
                           ),
                         ),
+                        Row(
+                          children: [
+                            Text(
+                              info!["SAVE"] == null
+                                  ? "8명이 이 장소를 저장했어요"
+                                  : "${info!["SAVE"]}명이 이 장소를 저장했어요",
+                              style: TextStyle(
+                                color: const Color(0xff7f7f7f),
+                                fontSize: SizeScaler.scaleSize(context, 8),
+                              ),
+                            ),
+                            SizedBox(
+                              width: SizeScaler.scaleSize(context, 10),
+                            ),
+                            buildRatingBar(context, info!["WHERE_RATE"])
+                          ],
+                        )
                       ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+
               SizedBox(
                 height: SizeScaler.scaleSize(context, 2),
               ),
@@ -749,8 +743,16 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                 height: 3,
               ),
               // 이유 칩들 표시
-              showReasonChips(),
-              const SizedBox(height: 20),
+              Padding(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: SizeScaler.scaleSize(context, 10)),
+                  child: showReasonChips()),
+              SizedBox(height: SizeScaler.scaleSize(context, 20)),
+              Container(
+                color: const Color(0xFFD9D9D9), // 회색 구분선 색상
+                height: SizeScaler.scaleSize(context, 4), // 구분선 두께
+              ),
+              SizedBox(height: SizeScaler.scaleSize(context, 12)),
               // 리뷰 리스트
               Column(
                 children: reviews.map((review) {
@@ -770,7 +772,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                   }
 
                   return Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: EdgeInsets.symmetric(
+                        vertical: SizeScaler.scaleSize(context, 10),
+                        horizontal: SizeScaler.scaleSize(context, 16)),
                     child: Card(
                       color: Colors.white,
                       elevation: 0,
@@ -780,6 +784,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                           // 상단 사용자 정보 및 태그
                           Row(
                             children: [
+                              SizedBox(width: SizeScaler.scaleSize(context, 3)),
                               FutureBuilder<Map<String, dynamic>>(
                                 future: getReviewadd(review), // 비동기 데이터 호출
                                 builder: (context, snapshot) {
@@ -806,10 +811,6 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
                                     return Row(
                                       children: [
-                                        SizedBox(
-                                          width:
-                                              SizeScaler.scaleSize(context, 20),
-                                        ),
                                         GestureDetector(
                                             onTap: () {
                                               if (user!.userId !=
@@ -849,7 +850,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                                       fit: BoxFit.cover,
                                                     ),
                                             )),
-                                        const SizedBox(width: 8),
+                                        SizedBox(
+                                            width: SizeScaler.scaleSize(
+                                                context, 5)),
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -886,10 +889,11 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                             ],
                           ),
                           // 이미지 스크롤
+                          SizedBox(height: SizeScaler.scaleSize(context, 7)),
                           if (reviewImages.isNotEmpty)
                             SizedBox(
-                              height: SizeScaler.scaleSize(context, 147),
-                              width: SizeScaler.scaleSize(context, 147),
+                              height: SizeScaler.scaleSize(context, 160),
+                              width: SizeScaler.scaleSize(context, 160),
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: reviewImages.length,
@@ -897,8 +901,9 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                                   // 이미지 데이터를 가져오기
                                   final imageData = reviewImages[imgIndex];
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 4.0),
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal:
+                                            SizeScaler.scaleSize(context, 2.5)),
                                     child: buildImage(
                                       imageData,
                                       SizeScaler.scaleSize(context, 147),
@@ -910,87 +915,97 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                             ),
                           const SizedBox(height: 15),
                           // 리뷰 내용
-                          Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: Text(
-                              review["REVIEW_CONTENT"],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Color(0xff7e7e7e),
-                                fontWeight: FontWeight.w400,
-                              ),
+                          Text(
+                            review["REVIEW_CONTENT"],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xff7e7e7e),
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                           const SizedBox(height: 12),
                           Row(children: [
                             SizedBox(
-                              width: SizeScaler.scaleSize(
-                                  context, SizeScaler.scaleSize(context, 10)),
+                              width: SizeScaler.scaleSize(context, 3),
                             ),
                             buildRatingBar2(context, review["WHERE_RATE"])
                           ]),
 
                           const SizedBox(height: 12),
                           // True인 REASON들 표시
-                          Wrap(
-                            spacing: 6.0,
-                            children: trueReasons
-                                .map((reason) => Padding(
-                                      padding: EdgeInsets.only(
-                                        bottom:
-                                            SizeScaler.scaleSize(context, 3),
-                                      ),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 12.0,
-                                            vertical: 8.0), // Chip의 패딩과 유사하게 설정
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          border: Border.all(
-                                            color: const Color(
-                                                0xff7e7e7e), // 검정색 테두리 추가
-                                            width: 1.0, // 테두리 두께 설정
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                              20), // Chip과 같은 둥근 모서리
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Wrap(
+                              alignment: WrapAlignment.start,
+                              spacing: SizeScaler.scaleSize(
+                                  context, 5), // 위젯 간의 수평 간격
+                              runSpacing: SizeScaler.scaleSize(context, 3.5),
+                              children: trueReasons
+                                  .map((reason) => Padding(
+                                        padding: EdgeInsets.only(
+                                          bottom:
+                                              SizeScaler.scaleSize(context, 0),
+                                          right:
+                                              SizeScaler.scaleSize(context, 0),
                                         ),
-                                        child: Text(reason,
-                                            style: TextStyle(
-                                                fontSize: SizeScaler.scaleSize(
-                                                    context, 6),
-                                                color: const Color(
-                                                    0xff7e7e7e))), // 텍스트 스타일
-                                      ),
-                                    ))
-                                .toList(),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0,
+                                              vertical:
+                                                  8.0), // Chip의 패딩과 유사하게 설정
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border.all(
+                                              color: const Color(
+                                                  0xff7e7e7e), // 검정색 테두리 추가
+                                              width: 1.0, // 테두리 두께 설정
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                                20), // Chip과 같은 둥근 모서리
+                                          ),
+                                          child: Text(reason,
+                                              style: TextStyle(
+                                                  fontSize:
+                                                      SizeScaler.scaleSize(
+                                                          context, 6),
+                                                  color: const Color(
+                                                      0xff7e7e7e))), // 텍스트 스타일
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
                           ),
-
+                          SizedBox(
+                            height: SizeScaler.scaleSize(context, 6),
+                          ),
                           // 좋아요 및 하트 이모티콘
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  (review["isLiked"] == true ||
-                                          review["isLiked"] == 1)
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color: (review["isLiked"] == true ||
-                                          review["isLiked"] == 1)
-                                      ? Colors.red
-                                      : Colors.grey,
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    (review["isLiked"] == true ||
+                                            review["isLiked"] == 1)
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: (review["isLiked"] == true ||
+                                            review["isLiked"] == 1)
+                                        ? Colors.red
+                                        : Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    toggleLike(reviews.indexOf(review));
+                                  },
                                 ),
-                                onPressed: () {
-                                  toggleLike(reviews.indexOf(review));
-                                },
-                              ),
-                              Text(
-                                "${review["REVIEW_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
-                                style:
-                                    const TextStyle(color: Color(0xff7e7e7e)),
-                              ),
-                            ],
+                                Text(
+                                  "${review["REVIEW_LIKE"] ?? 0}명이 이 후기를 좋아합니다",
+                                  style:
+                                      const TextStyle(color: Color(0xff7e7e7e)),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
