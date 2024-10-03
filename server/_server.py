@@ -1506,7 +1506,61 @@ def check_attendance(attendance: AttendanceCheck = Body(...)):
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
+class JournalPost(BaseModel):
+    title: str
+    content: str
+    혼캎: bool = False
+    혼영: bool = False
+    혼놀: bool = False
+    혼밥: bool = False
+    혼박: bool = False
+    혼술: bool = False
+    기타: bool = False
+    images: List[str]  # base64로 인코딩된 이미지 리스트
+    created_at: Optional[datetime] = None  # 작성 시간 필드 추가
 
+@app.post("/journal/upload/")
+async def add_journal(
+    user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
+    journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
+    db=Depends(get_db)
+):
+    try:
+        cursor = db.cursor()
+
+        # 현재 시간을 기본값으로 설정
+        created_at = journal_post.created_at or datetime.now()
+
+        # journal_post 테이블에 일지 내용 삽입
+        insert_post_query = """
+        INSERT INTO journal_post (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_post_query, (
+            user_id, journal_post.title, journal_post.content,
+            journal_post.혼캎, journal_post.혼영, journal_post.혼놀, journal_post.혼밥,
+            journal_post.혼박, journal_post.혼술, journal_post.기타, created_at
+        ))
+
+        # 삽입된 일지의 POST_ID 가져오기
+        post_id = cursor.lastrowid
+
+        # journal_image 테이블에 이미지 데이터 삽입
+        insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
+        for image in journal_post.images:
+            cursor.execute(insert_image_query, (post_id, image))
+
+        db.commit()
+        cursor.close()
+
+        return {"message": "Journal post and images added successfully", "post_id": post_id}
+    
+    except mysql.connector.Error as err:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
 # 서버 실행
 if __name__ == "__main__":
