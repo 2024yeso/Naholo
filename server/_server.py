@@ -638,37 +638,53 @@ def my_page(user_id: str, db=Depends(get_db)):
         logger.error(f"Unexpected error in my_page: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
 
-# 팔로우 페이지 엔드포인트
+
+# 팔로워 및 팔로잉 정보 반환하는 엔드포인트
 @app.get("/follow_page/")
-def follow_page(user_id: str, db=Depends(get_db)):
-    logger.info(f"Fetching follow_page data for user_id: {user_id}")
+async def get_follow_info(user_id: str, db=Depends(get_db)):
     try:
-        with db.cursor(dictionary=True) as cursor:
-            # 내가 팔로우한 사람
-            cursor.execute("""
-                SELECT Users.USER_ID, Users.NICKNAME, Users.IMAGE
-                FROM Follow
-                JOIN Users ON Follow.FOLLOWER = Users.USER_ID
-                WHERE Follow.USER_ID = %s
-            """, (user_id,))
-            following = cursor.fetchall()
+        cursor = db.cursor(dictionary=True)
+        
+        # 팔로잉 정보 가져오기 (해당 유저가 팔로우하는 유저들)
+        cursor.execute("""
+            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
+            FROM Follow F
+            JOIN Users U ON F.FOLLOWER = U.USER_ID
+            WHERE F.USER_ID = %s
+        """, (user_id,))
+        following_users = cursor.fetchall()
 
-            # 나를 팔로우한 사람
-            cursor.execute("""
-                SELECT Users.USER_ID, Users.NICKNAME, Users.IMAGE
-                FROM Follow
-                JOIN Users ON Follow.USER_ID = Users.USER_ID
-                WHERE Follow.FOLLOWER = %s
-            """, (user_id,))
-            followers = cursor.fetchall()
+        logger.info(f"Following users for {user_id}: {following_users}")
 
-        return {"following": following, "followers": followers}
+        # 팔로워 정보 가져오기 (해당 유저를 팔로우하는 유저들)
+        cursor.execute("""
+            SELECT U.USER_ID, U.NICKNAME, U.IMAGE, U.INTRODUCE, U.LV
+            FROM Follow F
+            JOIN Users U ON F.USER_ID = U.USER_ID
+            WHERE F.FOLLOWER = %s
+        """, (user_id,))
+        followers = cursor.fetchall()
+
+        logger.info(f"Followers for {user_id}: {followers}")
+
+        if not following_users and not followers:
+            raise HTTPException(status_code=404, detail="No follow data found")
+
+        return {
+            "user_id": user_id,
+            "following": following_users,
+            "followers": followers
+        }
+
     except mysql.connector.Error as err:
-        logger.error(f"Database error in follow_page: {err}")
+        logger.error(f"Database error: {err}")
         raise HTTPException(status_code=500, detail=f"Database error: {err}")
     except Exception as e:
-        logger.error(f"Unexpected error in follow_page: {e}")
+        logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
 
 @app.get("/where/top-rated")
 def get_top_rated_places(page: int = 0, db=Depends(get_db)):
@@ -1505,6 +1521,230 @@ def check_attendance(attendance: AttendanceCheck = Body(...)):
     except Exception as e:
         logger.error(f"Unexpected error: {e}")
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+class JournalPost(BaseModel):
+    title: str
+    content: str
+    혼캎: bool = False
+    혼영: bool = False
+    혼놀: bool = False
+    혼밥: bool = False
+    혼박: bool = False
+    혼술: bool = False
+    기타: bool = False
+    images: List[str]  # base64로 인코딩된 이미지 리스트
+    created_at: Optional[datetime] = None  # 작성 시간 필드 추가
+
+@app.post("/journal/upload/")
+async def add_journal(
+    user_id: str = Query(...),  # user_id를 쿼리 매개변수로 받음
+    journal_post: JournalPost = Body(...),  # JournalPost 모델의 JSON 본문으로 데이터를 받음
+    db=Depends(get_db)
+):
+    try:
+        cursor = db.cursor()
+
+        # 현재 시간을 기본값으로 설정
+        created_at = journal_post.created_at or datetime.now()
+
+        # journal_post 테이블에 일지 내용 삽입
+        insert_post_query = """
+        INSERT INTO journal_post (USER_ID, POST_NAME, POST_CONTENT, 혼캎, 혼영, 혼놀, 혼밥, 혼박, 혼술, 기타, POST_CREATE)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insert_post_query, (
+            user_id, journal_post.title, journal_post.content,
+            journal_post.혼캎, journal_post.혼영, journal_post.혼놀, journal_post.혼밥,
+            journal_post.혼박, journal_post.혼술, journal_post.기타, created_at
+        ))
+
+        # 삽입된 일지의 POST_ID 가져오기
+        post_id = cursor.lastrowid
+
+        # journal_image 테이블에 이미지 데이터 삽입
+        insert_image_query = "INSERT INTO journal_image (POST_ID, IMAGE_DATA) VALUES (%s, %s)"
+        for image in journal_post.images:
+            cursor.execute(insert_image_query, (post_id, image))
+
+        db.commit()
+        cursor.close()
+
+        return {"message": "Journal post and images added successfully", "post_id": post_id}
+    
+    except mysql.connector.Error as err:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+
+
+@app.get("/user_likes/{user_id}")
+async def get_user_likes(user_id: str, db=Depends(get_db)):
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # LIKES 테이블과 WHERE 테이블을 조인하여 유저가 좋아요한 장소의 정보를 가져오는 쿼리
+        cursor.execute("""
+            SELECT W.WHERE_ID, W.WHERE_NAME, W.WHERE_LOCATE, W.WHERE_RATE, W.WHERE_TYPE, W.LATITUDE, W.LONGITUDE, W.WHERE_IMAGE
+            FROM LIKES L
+            JOIN `Where` W ON L.WHERE_ID = W.WHERE_ID
+            WHERE L.USER_ID = %s
+        """, (user_id,))
+        liked_places = cursor.fetchall()
+
+        # 유저가 좋아요한 장소가 없을 경우 예외 처리
+        if not liked_places:
+            raise HTTPException(status_code=404, detail="No likes found for this user")
+
+        logger.info(f"User {user_id} liked places: {liked_places}")
+        return {"user_id": user_id, "liked_places": liked_places}
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
+
+
+
+class LikeToggleRequest(BaseModel):
+    user_id: str
+    where_id: str
+
+@app.post("/toggle_like")
+async def toggle_like(request: LikeToggleRequest, db=Depends(get_db)):
+    try:
+        cursor = db.cursor(dictionary=True)
+
+        # 먼저 해당 유저가 장소에 대해 좋아요를 눌렀는지 확인
+        cursor.execute("""
+            SELECT LIKES_ID
+            FROM LIKES
+            WHERE USER_ID = %s AND WHERE_ID = %s
+        """, (request.user_id, request.where_id))
+        like = cursor.fetchone()
+
+        if like:
+            # 이미 좋아요한 경우: 좋아요를 삭제
+            cursor.execute("""
+                DELETE FROM LIKES
+                WHERE USER_ID = %s AND WHERE_ID = %s
+            """, (request.user_id, request.where_id))
+            db.commit()
+            logger.info(f"Like removed for user {request.user_id} on place {request.where_id}")
+            return {"message": "remove"}
+        else:
+            # 좋아요하지 않은 경우: 좋아요를 추가
+            cursor.execute("""
+                INSERT INTO LIKES (USER_ID, WHERE_ID)
+                VALUES (%s, %s)
+            """, (request.user_id, request.where_id))
+            db.commit()
+            logger.info(f"Like added for user {request.user_id} on place {request.where_id}")
+            return {"message": "add"}
+
+    except mysql.connector.Error as err:
+        logger.error(f"Database error: {err}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        cursor.close()
+        db.close()
+
+@app.get("/user_journals/{user_id}")
+def get_user_journals(user_id: str, db=Depends(get_db)):
+    logger.info(f"Fetching journal posts for user_id: {user_id}")
+    results = {"latest": [], "top_liked": []}
+    
+    try:
+        with db.cursor(dictionary=True) as cursor:
+            # user_id에 맞는 모든 게시물을 조회하는 쿼리
+            query = """
+            SELECT jp.*, u.IMAGE AS USER_IMAGE
+            FROM Journal_post jp
+            LEFT JOIN Users u ON jp.USER_ID = u.USER_ID
+            WHERE jp.USER_ID = %s
+            """
+            cursor.execute(query, (user_id,))
+            journal_posts = cursor.fetchall()
+            
+            if not journal_posts:
+                raise HTTPException(status_code=404, detail="No journal posts found for this user")
+            
+            # 최신순으로 정렬
+            latest_sorted = sorted(journal_posts, key=lambda x: x['POST_CREATE'], reverse=True)
+            
+            # 인기순으로 정렬 (POST_LIKE 기준으로 정렬)
+            top_liked_sorted = sorted(journal_posts, key=lambda x: x['POST_LIKE'], reverse=True)
+
+            # 최신순, 인기순 결과를 각각 할당
+            results["latest"] = latest_sorted
+            results["top_liked"] = top_liked_sorted
+
+            # 모든 POST_ID 수집
+            all_post_ids = set(post['POST_ID'] for post in journal_posts)
+            
+            if all_post_ids:
+                # POST_ID를 문자열로 변환하고 SQL에 안전하게 포함
+                post_ids_list = [str(int(post_id)) for post_id in all_post_ids]
+                post_ids_str = ','.join(post_ids_list)
+
+                # POST_ID별 이미지 데이터 조회
+                images_query = f"""
+                SELECT POST_ID, IMAGE_DATA
+                FROM journal_image
+                WHERE POST_ID IN ({post_ids_str});
+                """
+                logger.debug(f"Fetching images for POST_IDs: {post_ids_list}")
+                cursor.execute(images_query)
+                images_data = cursor.fetchall()
+                
+                # POST_ID별 이미지 매핑
+                post_images_map: Dict[int, List[str]] = {}
+                for image in images_data:
+                    post_id = image['POST_ID']
+                    post_images_map.setdefault(post_id, []).append(image['IMAGE_DATA'])
+                
+                # 각 게시물에 이미지 추가
+                for post in journal_posts:
+                    post_id = post['POST_ID']
+                    post['images'] = post_images_map.get(post_id, [])
+
+                # 혼캎, 혼영 등 필드를 bool 리스트로 변환
+                for post in journal_posts:
+                    post['subjList'] = [
+                        bool(post.get('혼캎', False)),
+                        bool(post.get('혼영', False)),
+                        bool(post.get('혼놀', False)),
+                        bool(post.get('혼밥', False)),
+                        bool(post.get('혼박', False)),
+                        bool(post.get('혼술', False)),
+                        bool(post.get('기타', False)),
+                    ]
+    
+            # USER_IMAGE 필드를 제거한 결과로 변경
+            for post in journal_posts:
+                if 'USER_IMAGE' in post:
+                    del post['USER_IMAGE']
+    
+    except mysql.connector.Error as err:
+        logger.error(f"Database error in get_user_journals: {err}")
+        raise HTTPException(status_code=500, detail=f"Database error: {err}")
+    except Exception as e:
+        logger.error(f"Unexpected error in get_user_journals: {e}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {e}")
+    finally:
+        logger.debug(f"Final Results: {results}")
+    
+    return {"data": results}
 
 
 

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 // screens/profile_scaffold.dart
 
 import 'dart:async';
@@ -24,14 +25,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
-class ProfileScaffold extends StatefulWidget {
-  const ProfileScaffold({super.key});
+class YourProfile extends StatefulWidget {
+  String user_id;
+
+  YourProfile({super.key, required this.user_id});
 
   @override
-  _ProfileScaffoldState createState() => _ProfileScaffoldState();
+  State<YourProfile> createState() => _YourProfileState();
 }
 
-class _ProfileScaffoldState extends State<ProfileScaffold> {
+class _YourProfileState extends State<YourProfile> {
+  bool isFollowing = false;
   int _selectedTab = 0;
   List<Map<String, dynamic>> _reviews = [];
   final List<String> _reviewImages = [];
@@ -60,11 +64,85 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
     }
   }
 
+  // 팔로우 추가 API 호출 함수
+  Future<void> addFollow() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    final url = Uri.parse('${Api.baseUrl}/add_follow/');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'USER_ID': userId, // 현재 사용자의 ID
+          'FOLLOWER': widget.user_id, // 팔로우할 대상 사용자의 ID
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('팔로우 성공: ${data['message']}');
+        setState(() {
+          isFollowing = true;
+        });
+        print(isFollowing);
+      } else if (response.statusCode == 400) {
+        print('이미 팔로우한 상태입니다.');
+
+        deleteFollow();
+      } else {
+        print('팔로우 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('팔로우 요청 중 오류 발생: $e');
+    }
+  }
+
+  // 팔로우 삭제 API 호출 함수
+  Future<void> deleteFollow() async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+
+    final url = Uri.parse('${Api.baseUrl}/delete_follow/');
+    try {
+      final response = await http.delete(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'USER_ID': userId, // 현재 사용자의 ID
+          'FOLLOWER': widget.user_id, // 팔로우 취소할 대상 사용자의 ID
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('팔로우 취소 성공: ${data['message']}');
+        setState(() {
+          isFollowing = false;
+        });
+      } else {
+        print('팔로우 취소 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('팔로우 취소 요청 중 오류 발생: $e');
+    }
+  }
+
+  // 팔로우 버튼 동작 정의
+  void followButton() async {
+    // isFollowing 값이 false이면 팔로우를 추가하고, true이면 팔로우를 삭제합니다.
+    if (!isFollowing) {
+      await addFollow(); // 팔로우 추가
+    } else {
+      await deleteFollow(); // 팔로우 삭제
+    }
+    print(isFollowing);
+  }
+
   Future<void> _fetchMyPageData() async {
     print("데이터 가져오기 시작");
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userId = userProvider.user?.userId ?? '';
-
+    final userId = widget.user_id;
     try {
       print("사용자 ID: $userId");
       final response = await http.get(
@@ -87,12 +165,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : [];
           _isLoading = false;
         });
-        print(userProfile);
         _addMarkers();
         // UserProfileProvider를 사용하여 _userProfile을 설정
         final userProfileProvider =
             Provider.of<UserProfileProvider>(context, listen: false);
         if (_userProfile != null) {
+          print("굿");
           userProfileProvider.setUserProfile(_userProfile!);
         }
       } else {
@@ -118,7 +196,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           // 리뷰에서 위도와 경도 정보를 가져옵니다.
           double latitude = review["LATITUDE"];
           double longitude = review["LONGITUDE"];
-          print(review);
+
           // Marker 객체를 생성하여 _markers에 추가합니다.
           _markers.add(
             Marker(
@@ -152,7 +230,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           ),
         ),
         title: Text(
-          '마이페이지',
+          '${_userProfile?.nickname}님의 프로필',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.black,
@@ -224,49 +302,26 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
         SizedBox(
           width: SizeScaler.scaleSize(context, 6),
         ),
-        GestureDetector(
-          onTap: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ProfileEditPage(
-                  image: _userProfile?.image,
-                ),
-              ),
-            );
-
-            // 반환된 값을 확인
-            print("수정 후 반환된 값: $result");
-
-            // result가 true일 경우 데이터를 다시 로드
-            if (result == true) {
-              print("프로필 수정 후 데이터 다시 로드 실행됨");
-              _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
-            } else {
-              print("프로필 수정 결과를 받지 못함. 반환 값: $result");
-            }
-          },
-          child: CircleAvatar(
-            radius: SizeScaler.scaleSize(context, 15),
-            backgroundColor: Colors.grey.withOpacity(0.5),
-            child: _userProfile != null && _userProfile!.image != null
-                ? ClipOval(
-                    child: Image.memory(
-                      _userProfile!.image!,
-                      width: SizeScaler.scaleSize(context, 32),
-                      height: SizeScaler.scaleSize(context, 32),
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : ClipOval(
-                    child: Image.asset(
-                      'assets/images/default_image.png', // 기본 이미지 경로 사용
-                      width: SizeScaler.scaleSize(context, 32),
-                      height: SizeScaler.scaleSize(context, 32),
-                      fit: BoxFit.cover,
-                    ),
+        CircleAvatar(
+          radius: SizeScaler.scaleSize(context, 15),
+          backgroundColor: Colors.grey.withOpacity(0.5),
+          child: _userProfile != null && _userProfile!.image != null
+              ? ClipOval(
+                  child: Image.memory(
+                    _userProfile!.image!,
+                    width: SizeScaler.scaleSize(context, 32),
+                    height: SizeScaler.scaleSize(context, 32),
+                    fit: BoxFit.cover,
                   ),
-          ),
+                )
+              : ClipOval(
+                  child: Image.asset(
+                    'assets/images/default_image.png', // 기본 이미지 경로 사용
+                    width: SizeScaler.scaleSize(context, 32),
+                    height: SizeScaler.scaleSize(context, 32),
+                    fit: BoxFit.cover,
+                  ),
+                ),
         ),
         SizedBox(width: SizeScaler.scaleSize(context, 8)),
         Expanded(
@@ -361,26 +416,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             width: SizeScaler.scaleSize(context, 48),
             height: SizeScaler.scaleSize(context, 15),
             child: ElevatedButton(
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileEditPage(
-                      image: _userProfile?.image,
-                    ),
-                  ),
-                );
-
-                // 반환된 값을 확인
-                print("수정 후 반환된 값: $result");
-
-                // result가 true일 경우 데이터를 다시 로드
-                if (result == true) {
-                  print("프로필 수정 후 데이터 다시 로드 실행됨");
-                  _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
-                } else {
-                  print("프로필 수정 결과를 받지 못함. 반환 값: $result");
-                }
+              onPressed: () {
+                followButton();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF794FFF),
@@ -392,7 +429,7 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 padding: EdgeInsets.zero,
               ),
               child: Text(
-                '프로필 수정',
+                isFollowing ? '팔로잉' : "팔로우",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: SizeScaler.scaleSize(context, 7),

@@ -21,6 +21,22 @@ class UserProvider with ChangeNotifier {
     }
   }
 
+  // userExp만 업데이트하는 메서드
+  void updateUserExp(int newExp) {
+    if (_user != null) {
+      _user!.exp = newExp; // exp만 변경
+      notifyListeners(); // 상태 변경 알림
+    }
+  }
+
+  // userExp만 업데이트하는 메서드
+  void updateUserLv(int newLv) {
+    if (_user != null) {
+      _user!.lv = newLv; // exp만 변경
+      notifyListeners(); // 상태 변경 알림
+    }
+  }
+
   void clearUser() {
     _user = null;
     notifyListeners();

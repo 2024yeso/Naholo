@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nahollo/sizeScaler.dart';
 
 class SavePage extends StatefulWidget {
   const SavePage({super.key});
@@ -35,12 +36,32 @@ class _SavePageState extends State<SavePage> {
     },
   ];
 
+  void saveButtion() {}
+
+  void toggleSave(int index) {
+    setState(() {
+      savedPlaces[index]["saved"] = !savedPlaces[index]["saved"];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('가고 싶어요'),
-        centerTitle: true,
+        title: Text(
+          '가고 싶어요',
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: SizeScaler.scaleSize(context, 10)),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0), // 선의 높이 설정
+          child: Container(
+            color: Colors.grey, // 선 색상 설정
+            height: 1.0, // 선 두께 설정
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -58,6 +79,7 @@ class _SavePageState extends State<SavePage> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: Card(
+              color: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
@@ -113,9 +135,12 @@ class _SavePageState extends State<SavePage> {
                   // 우측 상단의 저장된 장소 표시 (하트 아이콘)
                   Positioned(
                     top: 10,
-                    right: 10,
+                    left: 70,
                     child: GestureDetector(
                       onTap: () {
+                        // 하트 클릭 시 저장 상태 변경
+                        toggleSave(index); // 저장 상태 토글
+                        saveButtion();
                         // 하트 클릭 시 저장 상태 변경
                         print('Save button clicked for ${place["name"]}');
                       },

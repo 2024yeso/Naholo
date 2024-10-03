@@ -67,7 +67,7 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
 
   // 전체 상위 8개의 항목을 반환하는 함수
   List<Map<String, dynamic>> filterBySave() {
-    return List<Map<String, dynamic>>.from(results["overall_top_8"] ?? []);
+    return List<Map<String, dynamic>>.from(results["overall_top_10"] ?? []);
   }
 
   String showAdress(String adress) {
@@ -425,13 +425,26 @@ class _NaholloWhereMainScreenState extends State<NaholloWhereMainScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xff7a4fff),
                         ),
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const NaholloWhereRegisterScreen(),
-                          ),
-                        ),
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const NaholloWhereRegisterScreen(),
+                            ),
+                          );
+
+                          // 반환된 값을 확인
+                          print("수정 후 반환된 값: $result");
+
+                          // result가 true일 경우 데이터를 다시 로드
+                          if (result == true) {
+                            print("나홀로 어디 수정 후 데이터 다시 로드 실행됨");
+                            getNaholloWhereTopRated(); // 프로필 데이터를 다시 불러오기
+                          } else {
+                            print("나홀로 어디 결과를 받지 못함. 반환 값: $result");
+                          }
+                        },
                         child: SizedBox(
                           width: size.width * 0.15,
                           child: Row(

@@ -147,7 +147,6 @@ class _NaholloWhereRegisterScreenState
 
       if (response.statusCode == 200) {
         Fluttertoast.showToast(msg: "리뷰가 성공적으로 등록되었습니다.");
-        Navigator.pop(context);
       } else {
         print("Failed to submit review: ${response.statusCode}");
         Fluttertoast.showToast(msg: "리뷰 등록에 실패하였습니다.");
@@ -155,6 +154,49 @@ class _NaholloWhereRegisterScreenState
     } catch (e) {
       print("Error submitting review: $e");
       Fluttertoast.showToast(msg: "리뷰 등록 중 오류가 발생하였습니다.");
+    }
+  }
+
+  Future<void> increaseUserExp(int additionalExp) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userId = userProvider.user!.userId;
+    final currentExp = userProvider.user!.exp;
+    final currentLv = userProvider.user!.lv;
+
+    int newLv = currentLv;
+    // 새로운 exp 값 계산
+    int newExp = currentExp + additionalExp;
+
+    if (newExp >= 100) {
+      newExp = newExp - 100;
+      newLv += 1;
+    }
+
+    final url = Uri.parse('${Api.baseUrl}/update_user/$userId');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'EXP': newExp.toString(), // 서버에 보낼 exp 값
+          "LV": newLv.toString(),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // exp가 성공적으로 업데이트된 경우
+        final data = jsonDecode(response.body);
+        print('유저 정보 업데이트 성공: ${data['message']}');
+
+        // 로컬 상태에서도 exp 값을 업데이트
+        userProvider.updateUserExp(newExp);
+        userProvider.updateUserLv(newLv);
+      } else {
+        print('유저 정보 업데이트 실패: ${response.body}');
+      }
+    } catch (e) {
+      print('유저 정보 업데이트 중 오류 발생: $e');
     }
   }
 
@@ -483,7 +525,15 @@ class _NaholloWhereRegisterScreenState
                     if (_result["name"] == "장소를 입력해주세요") {
                       Fluttertoast.showToast(msg: "장소를 입력해주세요!");
                     } else {
-                      _submitReview();
+                      print('리뷰 등록 중...');
+                      await _submitReview(); // 리뷰 등록
+
+                      print('리뷰 등록 완료, 경험치 증가 시작...');
+                      await increaseUserExp(50); // 경험치 증가
+                      print('경험치 증가 완료!');
+                      print("프로필 수정 완료, Navigator.pop 호출 직전"); // 로그 추가
+                      Navigator.pop(
+                          context, true); // 수정 성공 후 true 값을 반환하며 화면 닫기
                     }
                   }
                 },
