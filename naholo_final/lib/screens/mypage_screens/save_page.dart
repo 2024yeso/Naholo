@@ -5,6 +5,7 @@ import 'package:nahollo/api/api.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:nahollo/sizeScaler.dart';
 
 class SavePage extends StatefulWidget {
   const SavePage({super.key});
@@ -120,6 +121,8 @@ class _SavePageState extends State<SavePage> {
     }
   }
 
+  String _sortLabel = '   최신순 ';
+
   @override
   void initState() {
     super.initState();
@@ -131,91 +134,200 @@ class _SavePageState extends State<SavePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Liked Places'),
+        backgroundColor: Colors.white,
+        toolbarHeight: SizeScaler.scaleSize(context, 38),
+        title: Text(
+          '가고 싶어요',
+          style: TextStyle(
+            fontSize: SizeScaler.scaleSize(context, 8.8),
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator()) // 데이터 로딩 중
-          : savedPlaces.isEmpty
-              ? const Center(child: Text('No saved places found.'))
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: savedPlaces.length,
-                  itemBuilder: (context, index) {
-                    final place = savedPlaces[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Card(
-                        color: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(right: SizeScaler.scaleSize(context, 7)),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    builder: (context) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(height: SizeScaler.scaleSize(context, 8)),
+                          ListTile(
+                            title: Text('   최신순 '),
+                            onTap: () {
+                              setState(() {
+                                _sortLabel = '   최신순 ';
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            title: Text('   인기순 '),
+                            onTap: () {
+                              setState(() {
+                                _sortLabel = '   인기순 ';
+                              });
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Container(
+                  width: SizeScaler.scaleSize(context, 40),
+                  height: SizeScaler.scaleSize(context, 15),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: const Color(0xFFD1D1D1),
+                        width: SizeScaler.scaleSize(context, 0.3)),
+                    borderRadius: BorderRadius.circular(
+                        SizeScaler.scaleSize(context, 7.5)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center, // 수평 중앙 정렬
+                    crossAxisAlignment: CrossAxisAlignment.center, // 수직 중앙 정렬
+                    children: [
+                      Text(
+                        '   최신순 ',
+                        style: TextStyle(
+                          fontSize: SizeScaler.scaleSize(context, 6),
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black, // const Color(0xFFA0A0A0),
                         ),
-                        elevation: 0,
-                        child: Stack(
-                          children: [
-                            Row(
-                              children: [
-                                // 장소 이미지 표시
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Image.memory(
-                                    place["image"], // Base64 디코딩된 이미지
-                                    width: 100,
-                                    height: 100,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                // 장소 정보 표시
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                      ),
+                      Icon(
+                        Icons.arrow_drop_down, // 최신순 선택을 위한 아이콘
+                        size: SizeScaler.scaleSize(context, 11.25), // 크기 조정
+                        color: Colors.black,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: SizeScaler.scaleSize(context, 8)),
+          Container(
+            color: const Color(0xFFD9D9D9), // 타이틀 회색 구분선 색상
+            height: SizeScaler.scaleSize(context, 0.3), // 구분선 두께
+          ),
+          Expanded(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator()) // 데이터 로딩 중
+                : savedPlaces.isEmpty
+                    ? const Center(child: Text('No saved places found.'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16.0),
+                        itemCount: savedPlaces.length,
+                        itemBuilder: (context, index) {
+                          final place = savedPlaces[index];
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 16.0), // 수정
+                            child: Card(
+                              color: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              elevation: 0,
+                              child: Stack(
+                                children: [
+                                  Row(
                                     children: [
-                                      Text(
-                                        place["name"], // 디코딩된 장소 이름
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                      // 장소 이미지 표시
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                            SizeScaler.scaleSize(context, 6)),
+                                        child: Image.memory(
+                                          place["image"], // Base64 디코딩된 이미지
+                                          width:
+                                              SizeScaler.scaleSize(context, 50),
+                                          height:
+                                              SizeScaler.scaleSize(context, 50),
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        place["location"], // 디코딩된 장소 위치
-                                        style: const TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: 14,
+                                      SizedBox(
+                                          width:
+                                              SizeScaler.scaleSize(context, 9)),
+                                      // 장소 정보 표시
+                                      SizedBox(
+                                        height:
+                                            SizeScaler.scaleSize(context, 45),
+                                        child: Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                place["name"], // 디코딩된 장소 이름
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize:
+                                                      SizeScaler.scaleSize(
+                                                          context, 8),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 5),
+                                              Text(
+                                                place["location"], // 디코딩된 장소 위치
+                                                style: TextStyle(
+                                                  color:
+                                                      const Color(0xff949494),
+                                                  fontSize:
+                                                      SizeScaler.scaleSize(
+                                                          context, 6),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            // 우측 상단에 저장된 상태를 나타내는 하트 아이콘
-                            // 우측 상단에 저장된 상태를 나타내는 하트 아이콘
-                            Positioned(
-                              top: 10,
-                              left: 70,
-                              child: GestureDetector(
-                                onTap: () {
-                                  // 하트 아이콘 클릭 시 상태 변경 (index 전달)
-                                  savePlace(place["id"], context, index);
-                                },
-                                child: Icon(
-                                  place["saved"]
-                                      ? Icons.bookmark // 저장된 상태
-                                      : Icons.bookmark_border, // 저장되지 않은 상태
-                                  color: const Color(0xff7a4fff), // 북마크 아이콘 색상
-                                  size: 25, // 아이콘 크기
-                                ),
+                                  // 우측 상단에 저장된 상태를 나타내는 하트 아이콘
+                                  // 우측 상단에 저장된 상태를 나타내는 하트 아이콘
+                                  Positioned(
+                                    top: SizeScaler.scaleSize(context, 1.5),
+                                    left: SizeScaler.scaleSize(context, 36.5),
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        // 하트 아이콘 클릭 시 상태 변경 (index 전달)
+                                        savePlace(place["id"], context, index);
+                                      },
+                                      child: Icon(
+                                          place["saved"]
+                                              ? Icons.bookmark // 저장된 상태
+                                              : Icons
+                                                  .bookmark_border, // 저장되지 않은 상태
+                                          color: const Color(
+                                              0xff7a4fff), // 북마크 아이콘 색상
+                                          size: SizeScaler.scaleSize(
+                                              context, 13) // 아이콘 크기
+                                          ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
+          ),
+        ],
+      ),
     );
   }
 }
