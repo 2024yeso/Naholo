@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nahollo/firebase_options.dart';
 import 'package:intl/intl.dart';
+import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
 import 'package:nahollo/screens/start_logo_screen.dart';
@@ -29,6 +30,9 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<UserProvider>(
           create: (_) => UserProvider(),
         ),
+        ChangeNotifierProvider<UserProfileProvider>(
+          create: (_) => UserProfileProvider(),
+        ),
       ],
       child: Builder(
         builder: (context) => MaterialApp(
@@ -45,7 +49,7 @@ class MyApp extends StatelessWidget {
               //
               // Notice that the counter didn't reset back to zero; the application
               // state is not lost during the reload. To reset the state, use hot
-              // restart instead. 
+              // restart instead.
               //
               // This works for code too, not just values: Most code changes can be
               // tested with just a hot reload.

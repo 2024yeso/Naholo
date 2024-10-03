@@ -49,4 +49,27 @@ class UserProfile {
       following_count: json['following_count'] as int? ?? 10,
     );
   }
+
+  // copyWith 메서드 추가
+  UserProfile copyWith({
+    String? userId,
+    String? nickname,
+    int? level,
+    String? introduce,
+    Uint8List? image,
+    String? userCharacter,
+    int? follower_count,
+    int? following_count,
+  }) {
+    return UserProfile(
+      userId: userId ?? this.userId,
+      nickname: nickname ?? this.nickname,
+      level: level ?? this.level,
+      introduce: introduce ?? this.introduce,
+      image: image ?? this.image,
+      userCharacter: userCharacter ?? this.userCharacter,
+      follower_count: follower_count ?? this.follower_count,
+      following_count: following_count ?? this.following_count,
+    );
+  }
 }

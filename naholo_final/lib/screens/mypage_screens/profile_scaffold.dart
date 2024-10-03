@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/models/user_profile.dart';
+import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/mypage_screens/follow_page.dart';
 import 'package:nahollo/screens/mypage_screens/profile_edit_page.dart';
@@ -84,6 +85,14 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : [];
           _isLoading = false;
         });
+
+        // UserProfileProvider를 사용하여 _userProfile을 설정
+        final userProfileProvider =
+            Provider.of<UserProfileProvider>(context, listen: false);
+        if (_userProfile != null) {
+          print("굿");
+          userProfileProvider.setUserProfile(_userProfile!);
+        }
       } else {
         print('서버 응답 에러: ${response.statusCode}');
         setState(() {
@@ -218,7 +227,9 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ProfileEditPage(),
+                builder: (context) => ProfileEditPage(
+                  image: _userProfile?.image,
+                ),
               ),
             );
 
@@ -311,18 +322,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             children: [
               GestureDetector(
                 onTap: () async {
-                  // 수정 화면에서 돌아온 후 수정 여부 확인
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileEditPage(),
-                    ),
-                  );
-
-                  // result가 true일 경우 데이터를 다시 로드
-                  if (result == true) {
-                    _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
-                  }
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const FollowPage(selectedIndex: 0),
+                      ));
                 },
                 child: Text(
                   '팔로워 $follower',
@@ -358,7 +363,9 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ProfileEditPage(),
+                    builder: (context) => ProfileEditPage(
+                      image: _userProfile?.image,
+                    ),
                   ),
                 );
 
