@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:nahollo/firebase_options.dart';
 import 'package:intl/intl.dart';
+import 'package:nahollo/providers/save_provider.dart';
 import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/login_screens/login_screen.dart';
@@ -33,6 +34,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider<UserProfileProvider>(
           create: (_) => UserProfileProvider(),
         ),
+        ChangeNotifierProvider(
+            create: (_) => SaveProvider()), // SaveProvider 등록
       ],
       child: Builder(
         builder: (context) => MaterialApp(

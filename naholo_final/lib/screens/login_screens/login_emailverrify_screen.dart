@@ -74,7 +74,7 @@ class _LoginEmailverrifyScreenState extends State<LoginEmailverrifyScreen> {
                 child: ElevatedButton(
                     onPressed: () async {
                       await checkEmailVerified();
-                      /*if (_isEmailVerify) */ {
+                      if (_isEmailVerify) {
                         if (context.mounted) {
                           Navigator.push(
                             context,
