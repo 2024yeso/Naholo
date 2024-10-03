@@ -531,7 +531,9 @@ class _NaholloWhereRegisterScreenState
                       print('리뷰 등록 완료, 경험치 증가 시작...');
                       await increaseUserExp(50); // 경험치 증가
                       print('경험치 증가 완료!');
-                      Navigator.pop(context);
+                      print("프로필 수정 완료, Navigator.pop 호출 직전"); // 로그 추가
+                      Navigator.pop(
+                          context, true); // 수정 성공 후 true 값을 반환하며 화면 닫기
                     }
                   }
                 },
