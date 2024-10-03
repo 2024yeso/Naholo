@@ -2,15 +2,18 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi' as ffi;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:nahollo/models/user_profile.dart';
+import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/mypage_screens/follow_page.dart';
 import 'package:nahollo/screens/mypage_screens/profile_edit_page.dart';
+import 'package:nahollo/screens/mypage_screens/save_page.dart';
 import 'package:nahollo/services/network_service.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/test_where_data.dart';
@@ -84,6 +87,14 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               : [];
           _isLoading = false;
         });
+        _addMarkers();
+        // UserProfileProvider를 사용하여 _userProfile을 설정
+        final userProfileProvider =
+            Provider.of<UserProfileProvider>(context, listen: false);
+        if (_userProfile != null) {
+          print("굿");
+          userProfileProvider.setUserProfile(_userProfile!);
+        }
       } else {
         print('서버 응답 에러: ${response.statusCode}');
         setState(() {
@@ -99,27 +110,27 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
   }
 
   // 마커 추가 메서드 정의
-  void _addMarkers(List<Map<String, dynamic>> wheres) {
+  void _addMarkers() {
     setState(
       () {
-        _markers.clear();
+        _markers.clear(); // 기존 마커를 제거
         for (var review in _reviews) {
-          for (var where in wheres) {
-            if (where["WHERE_ID"] == review["WHERE_ID"]) {
-              double latitude = where["LATITUDE"];
-              double longitude = where["LONGITUDE"];
-              _markers.add(
-                Marker(
-                  markerId: MarkerId(review["WHERE_NAME"]),
-                  position: LatLng(latitude, longitude),
-                  infoWindow: InfoWindow(
-                    title: review["WHERE_NAME"],
-                    snippet: review["REVIEW_CONTENT"],
-                  ),
-                ),
-              );
-            }
-          }
+          // 리뷰에서 위도와 경도 정보를 가져옵니다.
+          double latitude = review["LATITUDE"];
+          double longitude = review["LONGITUDE"];
+
+          // Marker 객체를 생성하여 _markers에 추가합니다.
+          _markers.add(
+            Marker(
+              markerId:
+                  MarkerId(review["REVIEW_ID"].toString()), // 고유한 마커 ID 설정
+              position: LatLng(latitude, longitude), // 위치 정보 (위도, 경도)
+              infoWindow: InfoWindow(
+                title: review["WHERE_NAME"], // 마커의 제목 (장소 이름)
+                snippet: review["REVIEW_CONTENT"], // 마커의 부가 설명 (리뷰 내용)
+              ),
+            ),
+          );
         }
         print("마커 목록: $_markers");
       },
@@ -134,10 +145,10 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
       ),
       appBar: AppBar(
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
+          preferredSize: const Size.fromHeight(1.0), // 높이를 1.0으로 설정
           child: Container(
             color: Colors.grey,
-            height: 1.0,
+            height: 1.0, // 컨테이너의 높이도 1.0으로 설정
           ),
         ),
         title: Text(
@@ -218,7 +229,9 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             final result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const ProfileEditPage(),
+                builder: (context) => ProfileEditPage(
+                  image: _userProfile?.image,
+                ),
               ),
             );
 
@@ -311,18 +324,12 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
             children: [
               GestureDetector(
                 onTap: () async {
-                  // 수정 화면에서 돌아온 후 수정 여부 확인
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileEditPage(),
-                    ),
-                  );
-
-                  // result가 true일 경우 데이터를 다시 로드
-                  if (result == true) {
-                    _fetchMyPageData(); // 프로필 데이터를 다시 불러오기
-                  }
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const FollowPage(selectedIndex: 0),
+                      ));
                 },
                 child: Text(
                   '팔로워 $follower',
@@ -358,7 +365,9 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const ProfileEditPage(),
+                    builder: (context) => ProfileEditPage(
+                      image: _userProfile?.image,
+                    ),
                   ),
                 );
 
@@ -410,7 +419,11 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
           height: SizeScaler.scaleSize(context, 23),
           child: ElevatedButton(
             onPressed: () {
-              // 버튼 클릭 시 동작
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SavePage(),
+                  ));
             },
             style: OutlinedButton.styleFrom(
               shape: RoundedRectangleBorder(

@@ -5,13 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http; // HTTP 요청을 위해 추가
 import 'package:nahollo/models/user_profile.dart';
+import 'package:nahollo/providers/user_profile_provider.dart';
 import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/sizeScaler.dart';
 import 'package:nahollo/api/api.dart';
 import 'package:provider/provider.dart';
 
 class ProfileEditPage extends StatefulWidget {
-  const ProfileEditPage({super.key});
+  Uint8List? image;
+  ProfileEditPage({super.key, this.image});
 
   @override
   State<ProfileEditPage> createState() => _ProfileEditPageState();
@@ -33,6 +35,31 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       setState(() {
         _profileImage = File(pickedFile.path); // 선택된 이미지를 파일로 저장
       });
+    }
+  }
+
+  Widget buildProfileImage(Uint8List? image, File? profileImage) {
+    return CircleAvatar(
+      radius: 60,
+      backgroundColor: Colors.grey[300],
+      backgroundImage: getImageProvider(image, profileImage),
+      child: profileImage == null && (image == null || image.isEmpty)
+          ? const Icon(
+              Icons.person,
+              size: 80,
+              color: Colors.white,
+            )
+          : null,
+    );
+  }
+
+  ImageProvider? getImageProvider(Uint8List? image, File? profileImage) {
+    if (profileImage != null) {
+      return FileImage(profileImage); // 프로필 이미지가 있을 경우
+    } else if (image != null && image.isNotEmpty) {
+      return MemoryImage(image); // Uint8List 타입의 이미지가 있을 경우
+    } else {
+      return null; // 둘 다 없으면 null 반환 (기본 아이콘 표시)
     }
   }
 
@@ -90,6 +117,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfileProvider = Provider.of<UserProfileProvider>(context);
+    final userProfile = userProfileProvider.userProfile;
+    final image = userProfile!.image;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -116,20 +147,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 onTap: _pickImage,
                 child: Stack(
                   children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!)
-                          : null,
-                      child: _profileImage == null
-                          ? const Icon(
-                              Icons.person,
-                              size: 80,
-                              color: Colors.white,
-                            )
-                          : null,
-                    ),
+                    buildProfileImage(image, _profileImage),
                     Positioned(
                       bottom: 5,
                       right: 5,

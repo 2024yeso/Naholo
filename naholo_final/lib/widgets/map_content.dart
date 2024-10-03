@@ -1,13 +1,11 @@
-// widgets/map_content.dart
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../models/review.dart';
-import 'dart:async';
+import 'package:flutter/services.dart' show rootBundle;
 
-class MapContent extends StatelessWidget {
+class MapContent extends StatefulWidget {
   final Set<Marker> markers;
-
   final Completer<GoogleMapController> mapController;
 
   const MapContent({
@@ -16,19 +14,40 @@ class MapContent extends StatelessWidget {
     required this.mapController,
   });
 
-  // 첫 번째 마커의 위도를 가져오는 방법
-  CameraPosition _printFirstMarkerLatitude() {
-    if (markers.isNotEmpty) {
-      Marker firstMarker = markers.first; // 첫 번째 마커에 접근
-      double latitude = firstMarker.position.latitude;
-      double longitude = firstMarker.position.longitude;
+  @override
+  _MapContentState createState() => _MapContentState();
+}
 
+class _MapContentState extends State<MapContent> {
+  BitmapDescriptor? customIcon; // 커스텀 마커 아이콘
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomMarker(); // 커스텀 마커 로드
+  }
+
+  // 커스텀 마커를 로드하는 함수
+  Future<void> _loadCustomMarker() async {
+    BitmapDescriptor bitmap = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(30, 39)), // 이미지 크기 설정
+      'assets/images/review_marker.png', // PNG 파일 경로
+    );
+    setState(() {
+      customIcon = bitmap; // 커스텀 마커 아이콘 설정
+    });
+  }
+
+  // 첫 위치를 반환하는 함수 (마커의 첫 위치 또는 기본 위치)
+  CameraPosition _getInitialCameraPosition() {
+    if (widget.markers.isNotEmpty) {
+      Marker firstMarker = widget.markers.first;
       return CameraPosition(
-        target: LatLng(latitude, longitude),
-        zoom: 14.0, // 필요에 따라 조정
+        target: LatLng(
+            firstMarker.position.latitude, firstMarker.position.longitude),
+        zoom: 12.0, // 줌 레벨 설정
       );
     } else {
-      print("마커가 없습니다.");
       return const CameraPosition(
         target: LatLng(37.5665, 126.9780), // 서울의 대략적인 위치
         zoom: 12.0,
@@ -36,17 +55,29 @@ class MapContent extends StatelessWidget {
     }
   }
 
+  // 마커를 커스텀 아이콘으로 추가하는 함수
+  Set<Marker> _createCustomMarkers() {
+    return widget.markers.map((marker) {
+      return Marker(
+        markerId: marker.markerId,
+        position: marker.position,
+        icon: customIcon ?? BitmapDescriptor.defaultMarker, // 커스텀 아이콘 적용
+        infoWindow: marker.infoWindow,
+      );
+    }).toSet();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300, // 필요에 따라 조정
+      height: 300,
       child: GoogleMap(
         mapType: MapType.normal,
-        initialCameraPosition: _printFirstMarkerLatitude(),
+        initialCameraPosition: _getInitialCameraPosition(),
         onMapCreated: (GoogleMapController controller) {
-          mapController.complete(controller);
+          widget.mapController.complete(controller);
         },
-        markers: markers,
+        markers: _createCustomMarkers(), // 커스텀 마커 적용
         myLocationEnabled: true,
         myLocationButtonEnabled: true,
       ),

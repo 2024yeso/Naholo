@@ -27,6 +27,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
   List<Map<String, dynamic>> reviews = []; // 리뷰 리스트
   final bool _isLoading = true;
   bool isLoading = true; // 데이터 로딩 상태
+  bool _isSave = false;
 
   String showAdress(String adress) {
     var list = adress.split(' ');
@@ -40,6 +41,12 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
 
     var result = '$part1$part2';
     return result;
+  }
+
+  void saveButton() {
+    setState(() {
+      _isSave = !_isSave;
+    });
   }
 
   Future<Map<String, dynamic>> getReviewadd(Map<String, dynamic> review) async {
@@ -516,53 +523,76 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(
-                        left: SizeScaler.scaleSize(context, 10)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                        left: SizeScaler.scaleSize(context, 15)),
+                    child: Stack(
                       children: [
-                        const Text(
-                          "혼자 놀기 좋아요!",
-                          textAlign: TextAlign.start,
-                          style: TextStyle(
-                              color: Color(0xff7f7f7f),
-                              fontWeight: FontWeight.bold),
-                        ),
-                        AutoSizeText(
-                          "${info!["WHERE_NAME"]}",
-                          textAlign: TextAlign.start,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                          maxLines: 1,
-                          minFontSize: 10,
-                        ),
-                        Text(
-                          showAdress(
-                            info!["WHERE_LOCATE"],
-                          ),
-                          style: TextStyle(
-                            color: const Color(0xff7f7f7f),
-                            fontSize: SizeScaler.scaleSize(context, 9),
-                          ),
-                        ),
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const Text(
+                              "혼자 놀기 좋아요!",
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                  color: Color(0xff7f7f7f),
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            AutoSizeText(
+                              "${info!["WHERE_NAME"]}",
+                              textAlign: TextAlign.start,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                              maxLines: 1,
+                              minFontSize: 10,
+                            ),
                             Text(
-                              info!["SAVE"] == null
-                                  ? "8명이 이 장소를 저장했어요"
-                                  : "${info!["SAVE"]}명이 이 장소를 저장했어요",
+                              showAdress(
+                                info!["WHERE_LOCATE"],
+                              ),
                               style: TextStyle(
                                 color: const Color(0xff7f7f7f),
-                                fontSize: SizeScaler.scaleSize(context, 8),
+                                fontSize: SizeScaler.scaleSize(context, 9),
                               ),
                             ),
-                            SizedBox(
-                              width: SizeScaler.scaleSize(context, 6),
-                            ),
-                            buildRatingBar(context, info!["WHERE_RATE"])
+                            Row(
+                              children: [
+                                Text(
+                                  info!["SAVE"] == null
+                                      ? "8명이 이 장소를 저장했어요"
+                                      : "${info!["SAVE"]}명이 이 장소를 저장했어요",
+                                  style: TextStyle(
+                                    color: const Color(0xff7f7f7f),
+                                    fontSize: SizeScaler.scaleSize(context, 8),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: SizeScaler.scaleSize(context, 10),
+                                ),
+                                buildRatingBar(context, info!["WHERE_RATE"])
+                              ],
+                            )
                           ],
-                        )
+                        ),
+
+                        // 이미지 오른쪽 상단에 저장하기 버튼
+                        Positioned(
+                          top: 5,
+                          right: -5,
+                          child: GestureDetector(
+                            onTap: () {
+                              // 저장하기 버튼 클릭 시 동작
+                              saveButton();
+                            },
+                            child: Icon(
+                              _isSave
+                                  ? Icons.bookmark
+                                  : Icons.bookmark_border, // 상태에 따라 아이콘 변경
+                              size: 30,
+                              color: const Color(0xff7a4fff), // 저장하기 아이콘 색상
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -580,7 +610,7 @@ class _NaholloWhereDetailScreenState extends State<NaholloWhereDetailScreen> {
                 ),
               ),
               const SizedBox(
-                height: 10,
+                height: 3,
               ),
               // 이유 칩들 표시
               showReasonChips(),
