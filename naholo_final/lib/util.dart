@@ -10,6 +10,7 @@ import 'package:nahollo/screens/main_screen.dart';
 import 'package:nahollo/screens/mypage_screens/profile_scaffold.dart';
 import 'package:nahollo/screens/nahollo_where_screens/nahollo_where_main_screen.dart';
 import 'package:nahollo/sizeScaler.dart';
+import 'package:nahollo/test_day_data.dart';
 
 void showExitDialog(BuildContext context) {
   //회원가입 취소 팝업창
@@ -172,8 +173,8 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => const AttendMainScreen(
-              hasCheckedInToday: true,
+            builder: (context) => AttendMainScreen(
+              attendance_dates: attendanceDays,
             ),
           ),
         );

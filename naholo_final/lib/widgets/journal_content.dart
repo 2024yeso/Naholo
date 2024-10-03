@@ -19,9 +19,11 @@ import 'package:http/http.dart' as http;
 
 class JournalContent extends StatefulWidget {
   final List<Map<String, dynamic>> reviews;
+  final List<String>? reviewImages;
   final UserProfile? userProfile;
 
-  const JournalContent({super.key, required this.reviews, this.userProfile});
+  const JournalContent(
+      {super.key, required this.reviews, this.userProfile, this.reviewImages});
 
   @override
   State<JournalContent> createState() => _JournalContentState();
@@ -246,6 +248,7 @@ class _JournalContentState extends State<JournalContent> {
                         scrollDirection: Axis.horizontal,
                         itemCount: reviewImages.length,
                         itemBuilder: (context, imgIndex) {
+                          print("갯수 ${reviewImages.length}");
                           // 이미지 데이터를 가져오기
                           final imageData = reviewImages[imgIndex];
                           return Padding(

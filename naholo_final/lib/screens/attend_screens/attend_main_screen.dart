@@ -7,9 +7,9 @@ import 'package:intl/intl.dart';
 import 'package:nahollo/screens/main_screen.dart';
 
 class AttendMainScreen extends StatefulWidget {
-  final bool hasCheckedInToday; // 오늘 출석 체크 여부 전달 받음
+  final List<String> attendance_dates; // 오늘 출석 체크 여부 전달 받음
 
-  const AttendMainScreen({super.key, required this.hasCheckedInToday});
+  const AttendMainScreen({super.key, required this.attendance_dates});
 
   @override
   State<AttendMainScreen> createState() => _AttendMainScreenState();
@@ -18,6 +18,12 @@ class AttendMainScreen extends StatefulWidget {
 class _AttendMainScreenState extends State<AttendMainScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+
+  List<DateTime> convertToDateTimeList(List<String> dateStrings) {
+    return dateStrings.map((date) {
+      return DateTime.parse(date);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +55,7 @@ class _AttendMainScreenState extends State<AttendMainScreen> {
                   },
                   // 오늘 날짜 셀 생성 (오늘 날짜도 출석 체크된 날짜와 동일하게 표기)
                   todayBuilder: (context, day, focusedDay) {
-                    if (attendanceDays.any(
+                    if (convertToDateTimeList(widget.attendance_dates).any(
                         (attendanceDay) => isSameDay(attendanceDay, day))) {
                       return _buildDay(day, const Color(0xff794FFF),
                           const Color.fromARGB(255, 0, 0, 0));
@@ -64,7 +70,7 @@ class _AttendMainScreenState extends State<AttendMainScreen> {
                   },
                   // 출석 체크된 날짜 셀 생성
                   markerBuilder: (context, day, events) {
-                    if (attendanceDays.any(
+                    if (convertToDateTimeList(widget.attendance_dates).any(
                         (attendanceDay) => isSameDay(attendanceDay, day))) {
                       return _buildDay(day, const Color(0xff794FFF),
                           const Color.fromARGB(255, 0, 0, 0));

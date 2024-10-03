@@ -31,6 +31,7 @@ class ProfileScaffold extends StatefulWidget {
 class _ProfileScaffoldState extends State<ProfileScaffold> {
   int _selectedTab = 0;
   List<Map<String, dynamic>> _reviews = [];
+  final List<String> _reviewImages = [];
   bool _isLoading = true;
   Completer<GoogleMapController> _mapController = Completer();
   final Set<Marker> _markers = {};
@@ -83,10 +84,8 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
               ? List<Map<String, dynamic>>.from(data['reviews'])
               : [];
 
-          print(data['user_info']);
-          print(data["reviews"]);
+          //   print("ㅎㅇ ${data["reviews"]["REVIEW_IMAGES"]}");
           _isLoading = false;
-          _addMarkers(where["where"]); // 필요에 따라 수정
         });
       } else {
         print('서버 응답 에러: ${response.statusCode}');
@@ -195,7 +194,10 @@ class _ProfileScaffoldState extends State<ProfileScaffold> {
                     SizedBox(height: SizeScaler.scaleSize(context, 8)),
                     _selectedTab == 0
                         ? JournalContent(
-                            reviews: _reviews, userProfile: _userProfile)
+                            reviews: _reviews,
+                            userProfile: _userProfile,
+                            reviewImages: _reviewImages,
+                          )
                         : MapContent(
                             markers: _markers,
                             mapController: _mapController,
