@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:nahollo/providers/user_provider.dart';
 import 'package:nahollo/screens/diary_screens/diary_text.dart';
 import 'package:nahollo/models/diaryPost_model.dart'; // 포스트 모델
 import 'package:nahollo/models/user_model.dart'; // UserModel 가져오기
 import 'package:intl/intl.dart'; // 날짜 포맷
-import 'package:nahollo/sizeScaler.dart'; // 크기 조절
+import 'package:nahollo/sizeScaler.dart';
+import 'package:provider/provider.dart'; // 크기 조절
 
 final UserModel user = UserModel(
   userId: "user123",
@@ -107,6 +109,9 @@ class _DiaryUserState extends State<DiaryUser> {
 
   @override
   Widget build(BuildContext context) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      String userCharacter = userProvider.user?.userCharacter ?? 'unknown';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -163,12 +168,12 @@ class _DiaryUserState extends State<DiaryUser> {
                         children: [
                           // 위쪽 영역 (배경 사진)
                           Container(
-                            height: SizeScaler.scaleSize(context, 75),
+                            height: SizeScaler.scaleSize(context, 80),
                             color: Colors.grey,
                           ),
                           // 아래쪽 영역
                           Container(
-                            height: SizeScaler.scaleSize(context, 85),
+                            height: SizeScaler.scaleSize(context, 100),
                             color: Colors.white,
                             child: Center(
                                 child: Column(
@@ -176,7 +181,7 @@ class _DiaryUserState extends State<DiaryUser> {
                                   MainAxisAlignment.center, // 중앙 정렬 추가
                               children: [
                                 SizedBox(
-                                  height: SizeScaler.scaleSize(context, 4),
+                                  height: SizeScaler.scaleSize(context, 5),
                                 ),
                                 Text(
                                   user.nickName,
@@ -220,10 +225,10 @@ class _DiaryUserState extends State<DiaryUser> {
                       ),
                       // 두 영역 사이에 겹치는 이미지
                       Positioned(
-                        top: 30, // top 값을 조정
-                        child: Icon(
-                          Icons.person,
-                          size: SizeScaler.scaleSize(context, 70),
+                        top: 22, // top 값을 조정
+                        child: Image.asset(
+                          "assets/images/$userCharacter.png",
+                                scale: 4.5,
                         ),
                       ),
                       Positioned(
