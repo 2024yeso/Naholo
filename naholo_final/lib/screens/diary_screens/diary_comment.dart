@@ -203,7 +203,7 @@ Future<void> addComment(String content) async {
                                 ),
                                 SizedBox(
                                     height: SizeScaler.scaleSize(context, 1)),
-                                Row(
+                                /* Row(
                                   children: [
                                     IconButton(
                                       icon: Icon(Icons.reply,
@@ -223,7 +223,7 @@ Future<void> addComment(String content) async {
                                       ),
                                     ),
                                   ],
-                                ),
+                                ), */
                                 const Divider(), // 각 댓글 구분선
                               ],
                             ),

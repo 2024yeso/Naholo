@@ -5,6 +5,7 @@ import 'package:nahollo/api/api.dart';
 import 'package:nahollo/screens/diary_screens/diary_user.dart';
 import 'package:nahollo/screens/diary_screens/diary_search.dart';
 import 'package:nahollo/screens/diary_screens/diary_writing.dart';
+import 'package:nahollo/screens/mypage_screens/profile_scaffold.dart';
 import 'package:nahollo/screens/diary_screens/diary_text.dart';
 import 'package:nahollo/models/diaryPost_model.dart'; // 포스트 모델
 import 'package:intl/intl.dart'; // 날짜 포맷
@@ -257,9 +258,10 @@ class _DiaryMainState extends State<DiaryMain> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         // Search icon
-                        IconButton(
+                        /* IconButton(
                           icon: Icon(Icons.search,
-                              size: SizeScaler.scaleSize(context, 14)),
+                              size: SizeScaler.scaleSize(context, 14),
+                              color: Colors.transparent,),
                           onPressed: () {
                             Navigator.push(
                               context,
@@ -267,14 +269,14 @@ class _DiaryMainState extends State<DiaryMain> {
                                   builder: (context) => DiarySearch()),
                             );
                           },
-                        ),
+                        ), */
                         // User profile picture
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const DiaryUser(),
+                                builder: (context) => const ProfileScaffold(),
                               ),
                             );
                           },
@@ -548,13 +550,13 @@ class _DiaryMainState extends State<DiaryMain> {
                                         GestureDetector(
                                           onTap: () {
                                             // Navigate to user profile
-                                            Navigator.push(
+                                            /* Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (context) =>
                                                     const DiaryUser(),
                                               ),
-                                            );
+                                            );*/
                                           },
                                           child: Row(
                                             children: [

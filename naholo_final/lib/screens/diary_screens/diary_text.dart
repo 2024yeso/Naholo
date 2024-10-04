@@ -377,12 +377,12 @@ class _DiaryTextState extends State<DiaryText> {
                         GestureDetector(
                           onTap: () {
                             // 유저 프로필 페이지로 이동
-                            Navigator.push(
+                            /* Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => DiaryUser(),
                               ),
-                            );
+                            ); */
                           },
                           child: Row(
                             children: [
